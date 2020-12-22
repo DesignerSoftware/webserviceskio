@@ -71,7 +71,7 @@ public class ReportesFacadeREST {
             @QueryParam("descripcionReporte") String descripcionReporte, 
             @QueryParam("codigoReporte") String codigoReporte, @QueryParam("nit") String nit,
             @QueryParam("cadena") String cadena) {
-        System.out.println("generaReporte()");
+        System.out.println("generaReporte() codigo: "+codigoReporte+" nit: "+nit);
         //this.getEntityManager(cadena);
         setearPerfil();
         System.out.println("Parametros para generar reporte: [ reporte: "+reporte+ ", secuenciaEmpleado: "+id+
@@ -87,10 +87,10 @@ public class ReportesFacadeREST {
         //String rutaGenerado = iniciarReporte.ejecutarReporte(reporte, "C:\\DesignerRHN12\\Basico12\\ReportesKiosko\\", "C:\\DesignerRHN12\\Reportes\\ArchivosPlanosRHNPKKiosko\\", nombreReporte, "PDF", parametros, getEntityManager());
         String rutaGenerado = iniciarReporte.ejecutarReporte(reporte, getPathReportes(), getPathArchivosPlanos(), nombreReporte, "PDF", parametros, getEntityManager());
         File file = new File(rutaGenerado);
-        System.out.println(rutaGenerado);
+        System.out.println("Ruta generado: "+rutaGenerado);
         EnvioCorreo c= new EnvioCorreo();
         try {
-            setearPerfil();
+            // setearPerfil();
             // valida si el reporte tiene auditoria
             BigDecimal retorno = null;
             String query1="select count(*) from kioconfigmodulos where codigoopcion=? and nitempresa=?";
@@ -100,6 +100,7 @@ public class ReportesFacadeREST {
             query.setParameter(1, codigoReporte);
             query.setParameter(2, nit);
             retorno = (BigDecimal) query.getSingleResult();
+            System.out.println("retorno: "+retorno);
             if (retorno.compareTo(BigDecimal.ZERO) > 0) {
                 // si lleva auditoria
                 System.out.println("Si lleva auditoria");
@@ -115,13 +116,16 @@ public class ReportesFacadeREST {
                 System.out.println("size: "+lista.size());
                 while(it.hasNext()) {
                     String correoenviar = it.next();
-                    System.out.println("correo: "+correoenviar);
+                    System.out.println("correo auditoria: "+correoenviar);
                     //c.pruebaEnvio2("smtp.gmail.com","587","pruebaskiosco534@gmail.com","Nomina01", "S", correoenviar,
-                  c.pruebaEnvio2("smtp.designer.com.co","587","kioskodesigner@designer.com.co","Nomina01", "S", correo,
+                  System.out.println("codigoopcion: "+codigoReporte);
+                  c.pruebaEnvio2("smtp.designer.com.co","587","kioskodesigner@designer.com.co","Nomina01", "S", correoenviar,
                   rutaGenerado, nombreReporte,
-                  "Auditoria Reporte Kiosco - " + descripcionReporte, "Mensaje enviado automáticamente, por favor no responda a este correo."); 
+                  "Auditoria Reporte Kiosco - " + descripcionReporte, "Mensaje enviado automáticamente, por favor no responda a este correo.", getPathFoto()); 
                 }
                 
+            } else {
+                System.out.println("No lleva auditoria.");
             }
                 
             System.out.println("nombreReporte recibido: "+reporte+" codigo: "+codigoReporte);
@@ -129,14 +133,14 @@ public class ReportesFacadeREST {
                 setearPerfil();      
             }*/
             if (envioCorreo == true){
-                System.out.println("Se debe enviar correo al empleado");
-            ConexionesKioskosFacadeREST ck= new ConexionesKioskosFacadeREST();
+                System.out.println("Se debe enviar correo al empleado: "+correo);
+            ConexionesKioskosFacadeREST ck = new ConexionesKioskosFacadeREST();
             // Enviar correo
             
-             c.pruebaEnvio2("smtp.designer.com.co","587","kioskodesigner@designer.com.co","Nomina01", "S", correo,
-            //c.pruebaEnvio2("smtp.designer.com.co","587","kioskodesigner@designer.com.co","Nomina01", "S", correo,
+             //c.pruebaEnvio2(getConfigCorreoServidorSMTP(nit),getConfigCorreo(nit, "PUERTO"),getConfigCorreo(nit, "REMITENTE"),getConfigCorreo(nit, "CLAVE"), getConfigCorreo(nit, "AUTENTICADO"), correo,
+            c.pruebaEnvio2("smtp.designer.com.co","587","kioskodesigner@designer.com.co","Nomina01", "S", correo,
                   rutaGenerado, nombreReporte,
-                  "Reporte Kiosco - " + descripcionReporte, "Mensaje enviado automáticamente, por favor no responda a este correo.");
+                  "Reporte Kiosco - " + descripcionReporte, "Mensaje enviado automáticamente, por favor no responda a este correo.", getPathFoto());
             }
         } catch (Exception e) {
             System.out.println("Error: "+e.getMessage());
@@ -238,5 +242,39 @@ public class ReportesFacadeREST {
         }
         return rutaFoto;
     }
+    
+    public String getConfigCorreo(String nit, String valor) {
+        System.out.println("getPathArchivosPlanos()");
+        String servidorsmtp="smtp.designer.com.co";
+        try {
+            setearPerfil();
+            String sqlQuery = "SELECT "+valor+" FROM CONFICORREOKIOSKO WHERE EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?)";
+            System.out.println("Query: "+sqlQuery);
+            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            query.setParameter(1, nit);
+            servidorsmtp =  query.getSingleResult().toString();
+            System.out.println(valor+": "+servidorsmtp);
+        } catch (Exception e) {
+            System.out.println("Error: "+e.getMessage());
+        }
+        return servidorsmtp;
+    }    
+    
+    public String getConfigCorreoServidorSMTP(String nit) {
+        System.out.println("getConfigCorreoServidorSMTP()");
+        String servidorsmtp="smtp.designer.com.co";
+        try {
+            setearPerfil();
+            String sqlQuery = "SELECT SERVIDORSMTP FROM CONFICORREOKIOSKO WHERE EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?)";
+            System.out.println("Query: "+sqlQuery);
+            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            query.setParameter(1, nit);
+            servidorsmtp =  query.getSingleResult().toString();
+            System.out.println("Servidor smtp: "+servidorsmtp);
+        } catch (Exception e) {
+            System.out.println("Error: getConfigCorreoServidorSMTP: "+e.getMessage());
+        }
+        return servidorsmtp;
+    }      
 
 }

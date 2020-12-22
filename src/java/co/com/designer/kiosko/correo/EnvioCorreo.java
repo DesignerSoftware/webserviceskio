@@ -58,7 +58,7 @@ public class EnvioCorreo {
         }
     }
     
-    public void pruebaEnvio2(String servidorsmtp, String puerto, String remitente, String clave,
+    public void pruebaEnvio2No(String servidorsmtp, String puerto, String remitente, String clave,
             String autenticado, String destinatario, String rutaReporte,
             String nombreReporte, String asunto, String mensaje){
         try {
@@ -95,6 +95,7 @@ public class EnvioCorreo {
             Transport t = session.getTransport("smtp");
             t.connect(remitente, clave);
             t.sendMessage(message,message.getAllRecipients());
+            System.out.println("Mail sent successfully!!! "+destinatario);
             t.close();
         } catch (MessagingException ex) {
             Logger.getLogger(EnvioCorreo.class.getName()).log(Level.SEVERE, null, ex);
@@ -164,6 +165,84 @@ public class EnvioCorreo {
         }
     }
     
+    
+   public void pruebaEnvio2(String servidorsmtp, String puerto, String remitente, String clave,
+            String autenticado, String destinatario, String rutaReporte,
+            String nombreReporte, String asunto, String mensaje, String rutaImagenes){
+       /*String servidorsmtp="smtp.designer.com.co"; 
+       String puerto="587"; 
+       String remitente="kioskodesigner@designer.com.co"; 
+       String clave="Nomina01";
+       String autenticado="true"; 
+       String destinatario="tmanrique@nomina.com.co"; 
+       String rutaReporte="D:\\DesignerRHN10\\Reportes\\ArchivosPlanosKiosko\\";
+       String nombreReporte="b"; 
+       String asunto="Un asunto"; 
+       String mensaje="Un mensaje";*/
+      Properties propiedad = new Properties();
+      propiedad.put("mail.smtp.host", servidorsmtp);
+      propiedad.setProperty("mail.smtp.starttls.enable", "true");
+      propiedad.setProperty("mail.smtp.port", puerto);
+      propiedad.setProperty("mail.smtp.user", remitente);
+      propiedad.setProperty("mail.smtp.auth", autenticado.equals("S") ? "true" : "false");
+      
+      Session sesion = Session.getDefaultInstance(propiedad);
+
+        Session session = Session.getInstance(propiedad,
+                new javax.mail.Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(remitente, clave);
+            }
+        });
+
+        try {
+            Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(remitente));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(destinatario));
+            message.setSubject(asunto);
+
+// This mail has 2 part, the BODY and the embedded image
+            MimeMultipart multipart = new MimeMultipart("related");
+// first part (the html)
+            BodyPart messageBodyPart = new MimeBodyPart();
+            String htmlText
+                    = "<center>"
+                    + "<img src=\'cid:image\'>"
+                    + "<H1>Estimado usuario:</H1>"
+                    + "\n"
+                    + "<p style='font-size: 20px'>Te informamos que este reporte se ha generado automáticamente desde Kiosco Nómina Designer.<br></p>"
+                    + "<p style='font-size: 20px'>Revisa los archivos adjuntos.<br></p>"
+                    + "</center>";
+            messageBodyPart.setContent(htmlText, "text/html");
+// add it
+            multipart.addBodyPart(messageBodyPart);     
+// second part (the image)
+            messageBodyPart = new MimeBodyPart();
+            //DataSource fds = new FileDataSource("C:\\DesignerRHN12\\Basico12\\fotos_empleados\\headerlogocorreoKiosko.png");
+            //String rutaImagenes = "C:\\DesignerRHN10\\Basico10\\fotos_empleados\\";
+            DataSource fds = new FileDataSource(rutaImagenes + "imagencorreoreporte.jpg");
+            messageBodyPart.setDataHandler(new DataHandler(fds));
+            messageBodyPart.setHeader("Content-ID", "<image>");
+// add image to the multipart
+            multipart.addBodyPart(messageBodyPart);
+            
+            BodyPart adjunto = new MimeBodyPart();
+            System.out.println("Ruta del reporte a enviar: "+rutaReporte);
+            adjunto.setDataHandler(new DataHandler(new FileDataSource(rutaReporte)));
+            adjunto.setFileName(nombreReporte); // opcional
+            
+            // Juntar el texto y la imagen adjunta
+            multipart.addBodyPart(adjunto);
+            
+// put everything together
+            message.setContent(multipart);
+// Send the actual HTML message, as big as you like
+            Transport.send(message);
+            System.out.println("Mail sent successfully!!!");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }    
     
     public boolean enviarNuevaClave(String servidorsmtp, String puerto, String autenticado, String remitente, String clave, String destinatario, String nombreUsuario,
             String nuevaClave, String urlKiosco) {
@@ -245,7 +324,7 @@ public class EnvioCorreo {
     }   
     
     
-        public boolean enviarEnlaceValidacionCuenta(String servidorsmtp, String puerto, String autenticado, String remitente, String clave, String destinatario, String nombreUsuario,
+    public boolean enviarEnlaceValidacionCuenta(String servidorsmtp, String puerto, String autenticado, String remitente, String clave, String destinatario, String nombreUsuario,
             String jwt, String urlKiosco) {
         boolean envioCorreo = false;
         Properties props = new Properties();
@@ -398,10 +477,12 @@ public class EnvioCorreo {
         return resEnvio;
     }
         
-        
+     */   
     public static void main(String[] args) {
-        new EnvioCorreo().enviarCorreo("", "thalia.manrike@gmail.com", "Prueba 2", 
-                "Esto es un correo de prueba", "");
-    }*/
+        /*new EnvioCorreo().enviarCorreo("", "thalia.manrike@gmail.com", "Prueba 2", 
+                "Esto es un correo de prueba", "");*/
+     //new EnvioCorreo().pruebaEnvio3();
+        //new EnvioCorreo().pruebaEnvio2();
+    }
       
 }
