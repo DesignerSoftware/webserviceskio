@@ -83,23 +83,29 @@ public class EmpleadosFacadeREST {
 "          p.NUMERODOCUMENTO documento,  \n" +
 "          (select nombre from ciudades where secuencia=p.CIUDADDOCUMENTO) lugarExpediDocu, \n" +
 "          p.EMAIL email, \n" +
-"          'DIRECCION' direccion,  \n" +
+"          'DIRECCION' direccion,  \n" +              
 "          ck.ULTIMACONEXION ultimaConexion,\n" +
-"          em.codigo codigoEmpresa, \n" +
+"          em.codigo codigoEmpresa, \n" +     
 "          em.nit nitEmpresa,  \n" +
 "          em.nombre nombreEmpresa, \n" +
 "          empleadocurrent_pkg.descripciontipocontrato(e.secuencia, sysdate) contrato, \n" +
 "          empleadocurrent_pkg.ValorBasicoCorte(e.secuencia, sysdate) salario,  \n" +
-"          empleadocurrent_pkg.DescripcionCargoCorte(e.secuencia, sysdate) cargo,  \n" +
+"          empleadocurrent_pkg.DescripcionCargoCorte(e.secuencia, sysdate) cargo,  \n" +                
 // "          DIAS360(empleadocurrent_pkg.FechaVigenciaTipoContrato(e.secuencia, sysdate), sysdate) diasW,  \n" +
 "          empleadocurrent_pkg.FechaVigenciaTipoContrato(e.secuencia, sysdate) inicioContratoActual,\n" +
 // "         (select nombre from estructuras where secuencia=empleadocurrent_pkg.estructuracargocorte(e.secuencia, sysdate)) estructura, \n" +
-"          em.logo logoEmpresa \n" +
+"          em.logo logoEmpresa, \n" +
+"          empleadocurrent_pkg.DireccionAlternativa(p.secuencia, sysdate) direccionPersona,  \n" +
+"          t.numerotelefono numeroTelefono, \n" +
+"          tt.nombre tipoTelefono \n" +             
 "          from  \n" +
-"          empleados e, conexioneskioskos ck, empresas em, personas p \n" +
+"          empleados e, conexioneskioskos ck, empresas em, personas p, telefonos t, tipostelefonos tt \n" +
 "          where \n" +
 "          e.persona=p.secuencia  \n" +
 "          and e.empresa=em.secuencia  \n" +
+"          and e.persona = t.persona\n" +
+"          and t.fechavigencia = (select max(ti.fechavigencia) from telefonos ti where ti.persona = t.persona and ti.fechavigencia <= sysdate)  \n" +
+"          and t.tipotelefono = tt.secuencia  \n" +
 "          and ck.empleado=e.secuencia\n" +
 "          and p.numerodocumento= ? \n" +
 "          and em.nit=?";
@@ -112,10 +118,104 @@ public class EmpleadosFacadeREST {
             return Response.status(Response.Status.OK).entity(s).build();
         } catch (Exception ex) {
             System.out.println("Error getDatosEmpleadoNit: " + ex);
-            return Response.status(Response.Status.OK).entity("Error").build();
+            return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
         }
     }
+    
+    @GET
+    @Path("/datosFamiliaEmpleado/{empleado}/{nit}")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response getDatosFamiliaEmpleado(@PathParam("empleado") String empleado, @PathParam("nit") String nit, @QueryParam("cadena") String cadena) {
+        System.out.println("getDatosFamiliaEmpleado()");
+        System.out.println("parametros: empleado: "+empleado+" nit: "+nit+ " cadena "+cadena);
+        List s = null;
+        try {
+        String documento = getDocumentoPorSeudonimo(empleado, nit);
+        setearPerfil();
+        String sqlQuery="  select \n" +
+"          fam.nombre ||' '|| fam.primerapellido ||' '|| fam.segundoapellido nombreFamiliar,   \n" +
+"          t.tipo Parentezco \n" +            
+"          from empleados e, empresas em, personas p, familiares f, tiposfamiliares t, personas fam \n" +
+"          where \n" +
+"          p.secuencia = e.persona  \n" +
+"          and e.empresa = em.secuencia  \n" +
+"          and f.persona = p.secuencia   \n" + 
+"          and f.personafamiliar=fam.secuencia   \n" +        
+"          and t.secuencia = f.tipofamiliar  \n" +
+"          and p.numerodocumento= ? \n" +
+"          and em.nit=?";
+            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            query.setParameter(1, documento);
+            query.setParameter(2, nit);
 
+            s = query.getResultList();
+            s.forEach(System.out::println);
+            return Response.status(Response.Status.OK).entity(s).build();
+        } catch (Exception ex) {
+            System.out.println("Error getDatosFamiliaEmpleado: " + ex);
+            return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
+        }
+    }
+    
+    @GET
+    @Path("/soliciSinProcesarJefe/{nit}/{jefe}/{estado}")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response getSoliciSinProcesarJefe(@PathParam("nit") String nit,@PathParam("jefe") String jefe, 
+        @PathParam("estado") String estado, @QueryParam("cadena") String cadena) {
+        System.out.println("getSoliciSinProcesarJefe()");
+        System.out.println("parametros: nit: "+nit+ " jefe "+jefe+" estado: "+estado+ " cadena "+cadena);
+        List s = null;
+        try {
+        String secuenciaJefe = getSecuenciaEmplPorSeudonimo(jefe, nit );
+        String secuenciaEmpresa = getSecuenciaPorNitEmpresa(nit);
+        setearPerfil();
+        String sqlQuery="   SELECT \n" +
+        " t1.codigoempleado, REPLACE(TRIM(P.PRIMERAPELLIDO||' '||P.SEGUNDOAPELLIDO||' '||P.NOMBRE), '  ', ' ') NOMBRE,\n" +
+        " t0.SECUENCIA, \n" +
+        " TO_CHAR(t0.FECHAPROCESAMIENTO, 'DD/MM/YYYY HH:MI:SS') SOLICITUD, \n" +
+        " KNS.FECHAINICIALDISFRUTE, TO_CHAR(T0.FECHAPROCESAMIENTO, 'DD/MM/YYYY HH:MI:SS') FECHAULTMODIF,\n" +
+        " t0.ESTADO, \n" +
+        " t0.MOTIVOPROCESA, t0.NOVEDADSISTEMA, t0.EMPLEADOEJECUTA, t0.PERSONAEJECUTA, t0.KIOSOLICIVACA,\n" +
+        " KNS.ADELANTAPAGOHASTA FECHAFIN,\n" +
+        " KNS.FECHASIGUIENTEFINVACA FECHAREGRESO,\n" +
+        " KNS.DIAS,\n" +
+        " V.INICIALCAUSACION||' a '||V.FINALCAUSACION PERIODOCAUSADO,\n" +
+        " (SELECT PER.PRIMERAPELLIDO||' '||PER.SEGUNDOAPELLIDO||' '||PER.NOMBRE FROM PERSONAS PER, EMPLEADOS EMPL\n" +
+        " WHERE EMPL.PERSONA=PER.SECUENCIA\n" +
+        " AND EMPL.SECUENCIA=JEFE.SECUENCIA) EMPLEADOJEFE,\n" +
+        " KNS.FECHAPAGO FECHAPAGO\n" +
+        " FROM \n" +
+        " KIOESTADOSSOLICI t0, \n" +
+        " KIOSOLICIVACAS t2, \n" +
+        " EMPLEADOS t1, \n" +   
+        " PERSONAS P,\n" +
+        " KIONOVEDADESSOLICI KNS,\n" +
+        " VwVacaPendientesEmpleados V, \n" +
+        " EMPLEADOS JEFE\n" +
+        " WHERE \n" +
+        " (((((t1.EMPRESA = ?) AND (t0.ESTADO = ?)) AND (t2.EMPLEADOJEFE =?)) \n" +
+        " AND (t0.SECUENCIA = (SELECT MAX(t3.SECUENCIA) FROM KIOSOLICIVACAS t4, KIOESTADOSSOLICI t3 \n" +
+        " WHERE ((t4.SECUENCIA = t2.SECUENCIA) AND (t4.SECUENCIA = t3.KIOSOLICIVACA))))) \n" +
+        " AND ((t2.SECUENCIA = t0.KIOSOLICIVACA) AND (t1.SECUENCIA = t2.EMPLEADO))) \n" +
+        " AND T1.PERSONA=P.SECUENCIA\n" +
+        " AND t2.KIONOVEDADSOLICI=KNS.SECUENCIA\n" +
+        " AND KNS.VACACION=v.RFVACACION\n" +
+        " AND t2.EMPLEADOJEFE=JEFE.SECUENCIA\n" +        
+        " ORDER BY t0.FECHAPROCESAMIENTO DESC\n" ;
+            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            query.setParameter(1, secuenciaEmpresa);
+            query.setParameter(2, estado);
+            query.setParameter(3, secuenciaJefe);
+
+            s = query.getResultList();
+            s.forEach(System.out::println);
+            return Response.status(Response.Status.OK).entity(s).build();
+        } catch (Exception ex) {
+            System.out.println("Error getSoliciSinProcesarJefe: " + ex);
+            return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
+        }
+    }
+    
     public String getDocumentoCorreoODocumento(String usuario) {
        String documento=null;
         try {
@@ -155,6 +255,42 @@ public class EmpleadosFacadeREST {
         }
         return documento;
    }
+    
+    public String getSecuenciaEmplPorSeudonimo(String seudonimo, String nitEmpresa) {
+       String secuencia=null;
+        try {
+            setearPerfil();
+            String sqlQuery = "SELECT E.SECUENCIA SECUENCIAEMPLEADO FROM EMPLEADOS E, CONEXIONESKIOSKOS CK WHERE CK.EMPLEADO=E.SECUENCIA AND CK.SEUDONIMO=? AND CK.NITEMPRESA=?";
+            System.out.println("Query: "+sqlQuery);
+            Query query = getEntityManager().createNativeQuery(sqlQuery);
+
+            query.setParameter(1, seudonimo);
+            query.setParameter(2, nitEmpresa);
+            secuencia =  query.getSingleResult().toString();
+            System.out.println("secuencia: "+secuencia);
+        } catch (Exception e) {
+            System.out.println("Error: getSecuenciaEmplPorSeudonimo: "+e.getMessage());
+        }
+        return secuencia;
+   }    
+    
+    public String getSecuenciaPorNitEmpresa( String nitEmpresa) {
+       String secuencia=null;
+        try {
+            setearPerfil();
+            String sqlQuery = "SELECT EM.SECUENCIA SECUENCIAEMPRESA FROM EMPRESAS EM WHERE EM.NIT=?";
+            System.out.println("Query: "+sqlQuery);
+            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            query.setParameter(1, nitEmpresa);
+            secuencia =  query.getSingleResult().toString();
+            System.out.println("secuencia: "+secuencia);
+        } catch (Exception e) {
+            System.out.println("Error: getSecuenciaPorNitEmpresa: "+e.getMessage());
+        }
+        return secuencia;
+   }  
+    
+    
     
     public boolean validarCodigoUsuario(String usuario) {
         boolean resultado = false;

@@ -670,7 +670,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                     + "from KioEstadosSolici ei, kiosolicivacas ksi \n"
                     + "where ei.kioSoliciVaca = ksi.secuencia \n"
                     + "and ksi.secuencia=ks.secuencia) \n"
-                    + "order by e.fechaProcesamiento";
+                    + "order by e.fechaProcesamiento DESC";
             Query query = getEntityManager().createNativeQuery(sqlQuery);
             query.setParameter(1, empresa);
             query.setParameter(2, documento);
