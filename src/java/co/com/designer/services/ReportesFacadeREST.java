@@ -119,7 +119,8 @@ public class ReportesFacadeREST {
                     System.out.println("correo auditoria: "+correoenviar);
                     //c.pruebaEnvio2("smtp.gmail.com","587","pruebaskiosco534@gmail.com","Nomina01", "S", correoenviar,
                   System.out.println("codigoopcion: "+codigoReporte);
-                  c.pruebaEnvio2("smtp.designer.com.co","587","kioskodesigner@designer.com.co","Nomina01", "S", correoenviar,
+                  c.pruebaEnvio2(getConfigCorreoServidorSMTP(nit),getConfigCorreo(nit, "PUERTO"),
+                          getConfigCorreo(nit, "REMITENTE"), getConfigCorreo(nit, "CLAVE"), getConfigCorreo(nit, "AUTENTICADO"), correoenviar,
                   rutaGenerado, nombreReporte,
                   "Auditoria Reporte Kiosco - " + descripcionReporte, "Mensaje enviado automáticamente, por favor no responda a este correo.", getPathFoto()); 
                 }
@@ -138,7 +139,8 @@ public class ReportesFacadeREST {
             // Enviar correo
             
              //c.pruebaEnvio2(getConfigCorreoServidorSMTP(nit),getConfigCorreo(nit, "PUERTO"),getConfigCorreo(nit, "REMITENTE"),getConfigCorreo(nit, "CLAVE"), getConfigCorreo(nit, "AUTENTICADO"), correo,
-            c.pruebaEnvio2("smtp.designer.com.co","587","kioskodesigner@designer.com.co","Nomina01", "S", correo,
+            c.pruebaEnvio2(getConfigCorreoServidorSMTP(nit),getConfigCorreo(nit, "PUERTO") ,getConfigCorreo(nit, "REMITENTE"),getConfigCorreo(nit, "CLAVE"), 
+                    getConfigCorreo(nit, "AUTENTICADO"), correo,
                   rutaGenerado, nombreReporte,
                   "Reporte Kiosco - " + descripcionReporte, "Mensaje enviado automáticamente, por favor no responda a este correo.", getPathFoto());
             }

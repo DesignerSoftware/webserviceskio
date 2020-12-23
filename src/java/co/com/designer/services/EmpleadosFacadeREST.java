@@ -2,10 +2,13 @@ package co.com.designer.services;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
+import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -321,5 +324,41 @@ public class EmpleadosFacadeREST {
         }
         return res.toString();
     }
+    
+    // por validar
+   public BigDecimal consultarCodigoJornada(String secEmpleado, Date fechaDisfrute) throws Exception {
+        System.out.println(this.getClass().getName() + "." + "consultarCodigoJornada" + "()");
+        String consulta = "select nvl(j.codigo, 1) "
+                + "from vigenciasjornadas v, jornadaslaborales j "
+                + "where v.empleado = ? "
+                + "and j.secuencia = v.jornadatrabajo "
+                + "and v.fechavigencia = (select max(vi.fechavigencia) "
+                + "from vigenciasjornadas vi "
+                + "where vi.empleado = v.empleado "
+                + "and vi.fechavigencia <= to_date( ? , 'ddmmyyyy') ) ";
+        Query query = null;
+        BigDecimal codigoJornada;
+        SimpleDateFormat formatoFecha = new SimpleDateFormat("ddMMyyyy");
+        String strFechaDisfrute = formatoFecha.format(fechaDisfrute);
+        System.out.println("secuencia: " + secEmpleado);
+        System.out.println("fecha en txt: " + strFechaDisfrute);
+        try {
+            query = getEntityManager().createNativeQuery(consulta);
+            query.setParameter(1, secEmpleado);
+            query.setParameter(2, strFechaDisfrute);
+            codigoJornada = new BigDecimal(query.getSingleResult().toString());
+            return codigoJornada;
+        } catch (PersistenceException pe) {
+            System.out.println("Error de persistencia.");
+            throw new Exception(pe.toString());
+        } catch (NullPointerException npee) {
+            System.out.println("Nulo general");
+//            throw new Exception(npee.toString());
+            return null;
+        } catch (Exception e) {
+            System.out.println("Error general. " + e);
+            throw new Exception(e.toString());
+        }
+    }    
     
 }
