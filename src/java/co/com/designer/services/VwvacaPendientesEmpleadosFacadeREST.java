@@ -2,6 +2,7 @@ package co.com.designer.services;
 
 import co.com.designer.kiosko.entidades.VwVacaPendientesEmpleados;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -123,6 +124,39 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
     }
     
     @GET
+    @Path("/consultarDiasPendientesPerMasAntiguo")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public BigDecimal consultarDiasPendientesPerMasAntiguo(@QueryParam("seudonimo") String seudonimo, @QueryParam("nitempresa") String nitEmpresa) {
+        setearPerfil();
+        System.out.println(this.getClass().getName() + "." + "consultarPeriodoMasAntiguo" + "()");
+        BigDecimal retorno = new BigDecimal(BigInteger.ZERO);
+        String documento = getDocumentoPorSeudonimo(seudonimo, nitEmpresa);
+        String consulta = "select vw.diasPendientes " +
+                " from VwVacaPendientesEmpleados vw " +
+                " where vw.empleado = (select ei.secuencia from empleados ei, empresas emi "
+                + "where ei.empresa=emi.secuencia and ei.codigoempleado=?) " +
+                " and vw.inicialCausacion = ( select min( vwi.inicialCausacion ) " +
+                " from VwVacaPendientesEmpleados vwi " +
+                " where vwi.empleado = vw.empleado " +
+                " and KIOVACACIONES_PKG.DIASDISPOPER(vwi.rfVacacion) > 0 " +
+                "and vwi.inicialCausacion >=empleadocurrent_pkg.fechatipocontrato(vw.empleado, sysdate) ) ";
+        try {
+            Query query = getEntityManager().createNativeQuery(consulta);
+            query.setParameter(1, documento);
+            retorno = (BigDecimal) query.getSingleResult();
+            System.out.println("Dias pendientes periodo más antiguo: "+retorno);
+            BigDecimal diasReservados = getDiasVacacionesSolicitados(documento, nitEmpresa, "GUARDADO")
+                    .add(getDiasVacacionesSolicitados(documento, nitEmpresa, "ENVIADO"))
+                    .add(getDiasVacacionesSolicitados(documento, nitEmpresa, "AUTORIZADO"));
+            System.out.println("Dias reservados solicitudes: "+diasReservados);
+            retorno = retorno.subtract(diasReservados);
+        } catch (Exception e) {
+            System.out.println("Error consultarDiasPendientesPerMasAntiguo." + e);
+        }
+        return retorno;
+    }
+    
+    @GET
     @Path("/consultarDiasVacacionesProvisionados")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public BigDecimal consultarDiasVacacionesProvisionados(@QueryParam("seudonimo") String seudonimo, @QueryParam("nitempresa") String nitEmpresa) {
@@ -171,8 +205,14 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
         System.out.println(this.getClass().getName() + "." + "consultarDiasVacacionesSolicitados" + "()");
         BigDecimal retorno = null;
         String documento = getDocumentoPorSeudonimo(seudonimo, nitEmpresa);
+        retorno = getDiasVacacionesSolicitados(documento, nitEmpresa, estado);
+        return retorno;
+    }
+    
+    public BigDecimal getDiasVacacionesSolicitados(String documento, String nitEmpresa, String estado){
+        BigDecimal retorno = BigDecimal.ZERO;
         String consulta = "select " +
-        "sum(kn.dias) dias " +
+        "nvl(sum(kn.dias), 0) dias " +
         "from KioEstadosSolici e,  kiosolicivacas ks, kionovedadessolici kn, VwVacaPendientesEmpleados v " +
         "where " +
         "e.kiosolicivaca = ks.secuencia " +
@@ -199,9 +239,9 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
         } catch (Exception e) {
             System.out.println("Error consultarDiasVacacionesSolicitados." + e);
         }
+        System.out.println("resultados dias estado "+estado+": "+retorno);
         return retorno;
     }
-    
 
     @GET
     @Path("/consultaFechaUltimoPago")
@@ -299,12 +339,12 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
             @QueryParam("fechainicio") String fechainicio,
             @QueryParam("dias") int dias) {
         setearPerfil();
-        System.out.println(this.getClass().getName() + "." + "verificaExistenciaSolicitud" + "()");
+        System.out.println(this.getClass().getName() + "." + "calculaFechaRegreso" + "()");
         Timestamp retorno = null;
         String documento = getDocumentoPorSeudonimo(seudonimo, nitEmpresa);
         String consulta = "SELECT " +
 "       KIOVACACIONES_PKG.CALCULARFECHAREGRESO((select secuencia from empleados where codigoempleado=?), "
-                + "to_date('?','yyyy-mm-dd'), ? ) " +
+                + "to_date(?,'yyyy-mm-dd'), ? ) " +
 "                FROM DUAL          ";
         try {
             Query query = getEntityManager().createNativeQuery(consulta);
