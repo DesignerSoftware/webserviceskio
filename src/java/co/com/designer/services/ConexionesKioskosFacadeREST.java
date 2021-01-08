@@ -173,13 +173,13 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @Path("/updateFechas")
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateFechasConexionesKioskos(@QueryParam("usuario") String usuario, @QueryParam("nitEmpresa") String nitEmpresa, @QueryParam("fechadesde") String fechadesde,
-            @QueryParam("fechahasta") String fechahasta, @QueryParam("enviocorreo") boolean enviocorreo) {
+            @QueryParam("fechahasta") String fechahasta, @QueryParam("enviocorreo") boolean enviocorreo, @QueryParam("dirigidoa") String dirigidoa) {
         int conteo = 0;
-        System.out.println("Parametros: seudonimo: " + usuario + ", fechadesde: " + fechadesde + ", fechahasta: " + fechahasta);
+        System.out.println("Parametros: seudonimo: " + usuario + ", fechadesde: " + fechadesde + ", fechahasta: " + fechahasta+", dirigidoa: "+dirigidoa);
         try {
             setearPerfil();
             String sqlQuery = "UPDATE CONEXIONESKIOSKOS "
-                    + " SET FECHADESDE=TO_DATE(?, 'yyyy-mm-dd'), FECHAHASTA=TO_DATE(?, 'yyyy-mm-dd'), ENVIOCORREO=?"
+                    + " SET FECHADESDE=TO_DATE(?, 'yyyy-mm-dd'), FECHAHASTA=TO_DATE(?, 'yyyy-mm-dd'), ENVIOCORREO=?, DIRIGIDOA=? "
                     + " WHERE SEUDONIMO=? "
                     + " AND NITEMPRESA=?";
             String envioc = (enviocorreo == true ? "S" : "N");
@@ -187,8 +187,9 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             query.setParameter(1, fechadesde);
             query.setParameter(2, fechahasta);
             query.setParameter(3, envioc);
-            query.setParameter(4, usuario);
-            query.setParameter(5, nitEmpresa);
+            query.setParameter(4, dirigidoa);
+            query.setParameter(5, usuario);
+            query.setParameter(6, nitEmpresa);
 
             conteo = query.executeUpdate();
             System.out.println("update conexioneskioskos: " + conteo);
@@ -246,7 +247,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         System.out.println("Parametros: seudonimo: " + usuario + ", nitEmpresa: " + nitEmpresa);
         try {
             setearPerfil();
-            String sqlQuery = "SELECT TO_CHAR(FECHADESDE, 'yyyy-mm-dd'), TO_CHAR(FECHAHASTA, 'yyyy-mm-dd'), ENVIOCORREO FROM CONEXIONESKIOSKOS "
+            String sqlQuery = "SELECT TO_CHAR(FECHADESDE, 'yyyy-mm-dd'), TO_CHAR(FECHAHASTA, 'yyyy-mm-dd'), ENVIOCORREO, DIRIGIDOA FROM CONEXIONESKIOSKOS "
                     + " WHERE SEUDONIMO=? "
                     + " AND NITEMPRESA=?";
             Query query = getEntityManager().createNativeQuery(sqlQuery);
@@ -291,8 +292,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @Path("/creaUsuario")
     @Produces(MediaType.APPLICATION_JSON)
     public Response crearUsuario(@QueryParam("seudonimo") String seudonimo, @QueryParam("usuario") String usuario,
-            @QueryParam("clave") String clave, @QueryParam("nitEmpresa") String nitEmpresa,
-            @QueryParam("correo") String email) {
+            @QueryParam("clave") String clave, @QueryParam("nitEmpresa") String nitEmpresa) {
         String res = "creaUsuario: seudonimo: " + seudonimo + " usuario:" + usuario + " clave: " + clave
                 + " nitEmpresa: " + nitEmpresa;
         boolean resultado = false;
@@ -320,17 +320,16 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                 System.out.println("resultado usuarioRegistrado: " + resultado + " Mensaje: " + mensaje);
             } else {
                 String sqlQueryInsert = "INSERT INTO CONEXIONESKIOSKOS (SEUDONIMO, EMPLEADO, PERSONA, PWD, "
-                        + "NITEMPRESA, ACTIVO, EMAIL) "
+                        + "NITEMPRESA, ACTIVO) "
                         + "VALUES (?, (SELECT SECUENCIA FROM EMPLEADOS WHERE CODIGOEMPLEADO=?), "
                         + "(SELECT SECUENCIA FROM PERSONAS WHERE NUMERODOCUMENTO=?), "
-                        + " GENERALES_PKG.ENCRYPT(?), ?, 'P', ?)";
+                        + " GENERALES_PKG.ENCRYPT(?), ?, 'P')";
                 Query queryInsert = getEntityManager().createNativeQuery(sqlQueryInsert);
                 queryInsert.setParameter(1, seudonimo);
                 queryInsert.setParameter(2, usuario);
                 queryInsert.setParameter(3, usuario);
                 queryInsert.setParameter(4, clave);
                 queryInsert.setParameter(5, nitEmpresa);
-                queryInsert.setParameter(6, email);
                 conteo = queryInsert.executeUpdate();
                 resultado = conteo > 0 ? true : false;
                 System.out.println("resultado registrar usuario " + resultado);

@@ -70,7 +70,7 @@ public class ReportesFacadeREST {
             @PathParam("enviocorreo") boolean envioCorreo, @PathParam("correo") String correo, 
             @QueryParam("descripcionReporte") String descripcionReporte, 
             @QueryParam("codigoReporte") String codigoReporte, @QueryParam("nit") String nit,
-            @QueryParam("cadena") String cadena) {
+            @QueryParam("cadena") String cadena, @QueryParam("usuario") String seudonimo) {
         System.out.println("generaReporte() codigo: "+codigoReporte+" nit: "+nit);
         //this.getEntityManager(cadena);
         setearPerfil();
@@ -104,6 +104,12 @@ public class ReportesFacadeREST {
             if (retorno.compareTo(BigDecimal.ZERO) > 0) {
                 // si lleva auditoria
                 System.out.println("Si lleva auditoria");
+                       Calendar dtGen = Calendar.getInstance();
+                       String mensaje=  "Nos permitimos informar que el "
+                        + dtGen.get(Calendar.DAY_OF_MONTH) + "/" + (dtGen.get(Calendar.MONTH) + 1) + "/" + dtGen.get(Calendar.YEAR) + " a las " + dtGen.get(Calendar.HOUR_OF_DAY) + ":" + dtGen.get(Calendar.MINUTE)
+                        + " se generó el reporte " + descripcionReporte
+                        + " en el módulo de Kiosco Nómina Designer. "
+                        + "La persona que GENERÓ el reporte es: "+getNombrePersonaXSeudonimo(seudonimo, nit);
                 String sqlQuery = "select email from kioconfigmodulos where codigoopcion=? and nitempresa=?";
                 //Query query2 = getEntityManager(cadena).createNativeQuery(sqlQuery);
                 System.out.println("Query2: "+sqlQuery);
@@ -122,7 +128,8 @@ public class ReportesFacadeREST {
                   c.pruebaEnvio2(getConfigCorreoServidorSMTP(nit),getConfigCorreo(nit, "PUERTO"),
                           getConfigCorreo(nit, "REMITENTE"), getConfigCorreo(nit, "CLAVE"), getConfigCorreo(nit, "AUTENTICADO"), correoenviar,
                   rutaGenerado, nombreReporte,
-                  "Auditoria Reporte Kiosco - " + descripcionReporte, "Mensaje enviado automáticamente, por favor no responda a este correo.", getPathFoto()); 
+                  "Auditoria: Reporte Kiosco - " + descripcionReporte, 
+                  mensaje, getPathFoto()); 
                 }
                 
             } else {
@@ -138,11 +145,12 @@ public class ReportesFacadeREST {
             ConexionesKioskosFacadeREST ck = new ConexionesKioskosFacadeREST();
             // Enviar correo
             
-             //c.pruebaEnvio2(getConfigCorreoServidorSMTP(nit),getConfigCorreo(nit, "PUERTO"),getConfigCorreo(nit, "REMITENTE"),getConfigCorreo(nit, "CLAVE"), getConfigCorreo(nit, "AUTENTICADO"), correo,
-            c.pruebaEnvio2(getConfigCorreoServidorSMTP(nit),getConfigCorreo(nit, "PUERTO") ,getConfigCorreo(nit, "REMITENTE"),getConfigCorreo(nit, "CLAVE"), 
-                    getConfigCorreo(nit, "AUTENTICADO"), correo,
+             c.pruebaEnvio2(getConfigCorreoServidorSMTP(nit),getConfigCorreo(nit, "PUERTO"),getConfigCorreo(nit, "REMITENTE"),getConfigCorreo(nit, "CLAVE"), getConfigCorreo(nit, "AUTENTICADO"), correo,
+            /*c.pruebaEnvio2("smtp.gmail.com", "587" ,"pruebaskiosco534@gmail.com",
+                    "Nomina01", 
+                    "S", correo,*/
                   rutaGenerado, nombreReporte,
-                  "Reporte Kiosco - " + descripcionReporte, "Mensaje enviado automáticamente, por favor no responda a este correo.", getPathFoto());
+                  "Reporte Kiosco - " + descripcionReporte, "", getPathFoto());
             }
         } catch (Exception e) {
             System.out.println("Error: "+e.getMessage());
@@ -277,6 +285,29 @@ public class ReportesFacadeREST {
             System.out.println("Error: getConfigCorreoServidorSMTP: "+e.getMessage());
         }
         return servidorsmtp;
-    }      
+    }  
+
+    public String getNombrePersonaXSeudonimo(String usuario, String nit) {
+        System.out.println("getNombrePersonaXSeudonimo()");
+        String nombre="";
+        try {
+            setearPerfil();
+            String sqlQuery = "SELECT P.PRIMERAPELLIDO||' '||P.SEGUNDOAPELLIDO||' '||P.NOMBRE NOMBRECOMPLETO "
+                    + "FROM "
+                    + "PERSONAS P, CONEXIONESKIOSKOS CK "
+                    + "WHERE "
+                    + "P.SECUENCIA=CK.PERSONA "
+                    + "AND CK.SEUDONIMO=? AND CK.NITEMPRESA= ? ";
+            System.out.println("Query: "+sqlQuery);
+            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            query.setParameter(1, usuario);
+            query.setParameter(2, nit);
+            nombre =  query.getSingleResult().toString();
+            System.out.println("Nombre completo: "+nombre);
+        } catch (Exception e) {
+            System.out.println("Error: getNombrePersonaXSeudonimo: "+e.getMessage());
+        }
+        return nombre;
+    }     
 
 }
