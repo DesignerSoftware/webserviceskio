@@ -2,14 +2,20 @@ package co.com.designer.services;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
+import javax.persistence.TemporalType;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -326,8 +332,7 @@ public class EmpleadosFacadeREST {
         return res.toString();
     }
     
-    // por validar
-   public BigDecimal consultarCodigoJornada(String secEmpleado, Date fechaDisfrute) throws Exception {
+   public BigDecimal consultarCodigoJornada(String seudonimo, String nitEmpresa, String fechaDisfrute) throws Exception {
         System.out.println(this.getClass().getName() + "." + "consultarCodigoJornada" + "()");
         String consulta = "select nvl(j.codigo, 1) "
                 + "from vigenciasjornadas v, jornadaslaborales j "
@@ -336,17 +341,20 @@ public class EmpleadosFacadeREST {
                 + "and v.fechavigencia = (select max(vi.fechavigencia) "
                 + "from vigenciasjornadas vi "
                 + "where vi.empleado = v.empleado "
-                + "and vi.fechavigencia <= to_date( ? , 'ddmmyyyy') ) ";
+                + "and vi.fechavigencia <= to_date( ? , 'dd/mm/yyyy') ) ";
         Query query = null;
         BigDecimal codigoJornada;
-        SimpleDateFormat formatoFecha = new SimpleDateFormat("ddMMyyyy");
-        String strFechaDisfrute = formatoFecha.format(fechaDisfrute);
+        String secEmpleado=getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa);
+        /*SimpleDateFormat formatoFecha = new SimpleDateFormat("ddMMyyyy");
+        String strFechaDisfrute = formatoFecha.format(fechaDisfrute);*/
         System.out.println("secuencia: " + secEmpleado);
-        System.out.println("fecha en txt: " + strFechaDisfrute);
+        //System.out.println("fecha en txt: " + strFechaDisfrute);
+        System.out.println("fecha en txt: " + fechaDisfrute);
         try {
             query = getEntityManager().createNativeQuery(consulta);
             query.setParameter(1, secEmpleado);
-            query.setParameter(2, strFechaDisfrute);
+            //query.setParameter(2, strFechaDisfrute);
+            query.setParameter(2, fechaDisfrute);
             codigoJornada = new BigDecimal(query.getSingleResult().toString());
             return codigoJornada;
         } catch (PersistenceException pe) {
@@ -361,5 +369,267 @@ public class EmpleadosFacadeREST {
             throw new Exception(e.toString());
         }
     }    
+   
+   
+    private boolean validaFechaPago(String seudonimo, String nitEmpresa, String fechainicialdisfrute) throws Exception {
+            Calendar cl = Calendar.getInstance();
+            cl.setTime(getFechaUltimoPago(seudonimo, nitEmpresa));
+            return getDate(fechainicialdisfrute).after(cl.getTime());
+    }   
+   
+    public Date getFechaUltimoPago(String seudonimo, String nitempresa) throws Exception {
+        BigDecimal res = null;
+        try {
+        setearPerfil();
+        String secEmpleado=getSecuenciaEmplPorSeudonimo(seudonimo, nitempresa);
+        String consulta = "SELECT GREATEST("
+                + "CORTESPROCESOS_PKG.CAPTURARCORTEPROCESO(?, 1), "
+                + "NVL( CORTESPROCESOS_PKG.CAPTURARCORTEPROCESO(?, 80), CORTESPROCESOS_PKG.CAPTURARCORTEPROCESO(?, 1)"
+                + ")) "
+                + "FROM DUAL ";
+        Date fechaUltimoPago = null;
+            Query query = getEntityManager().createNativeQuery(consulta);
+            query.setParameter(1, secEmpleado);
+            query.setParameter(2, secEmpleado);
+            query.setParameter(3, secEmpleado);
+            fechaUltimoPago = (Date) (query.getSingleResult());
+            return fechaUltimoPago;
+        } catch (PersistenceException pe) {
+            System.out.println("Error de persistencia.");
+            throw new Exception(pe.toString());
+        } catch (NullPointerException npee) {
+            System.out.println("Nulo general");
+            throw new Exception(npee.toString());
+        } catch (Exception e) {
+            System.out.println("Error general. " + e);
+            throw new Exception(e.toString());
+        }
+    }
+    
+    private String nombreDia(int dia) {
+        String retorno = "";
+        switch (dia) {
+            case 1:
+                retorno = "DOM";
+                break;
+            case 2:
+                retorno = "LUN";
+                break;
+            case 3:
+                retorno = "MAR";
+                break;
+            case 4:
+                retorno = "MIE";
+                break;
+            case 5:
+                retorno = "JUE";
+                break;
+            case 6:
+                retorno = "VIE";
+                break;
+            case 7:
+                retorno = "SAB";
+                break;
+            default:
+                retorno = "";
+                break;
+        }
+        return retorno;
+    }
+    
+    public Date getDate(String fechaStr) throws PersistenceException, NullPointerException, Exception {
+        System.out.println(this.getClass().getName() + "." + "getDate" + "()");
+        String consulta = "SELECT "
+                + "TO_DATE(?, 'dd/mm/yyyy') "
+                + "FROM DUAL ";
+        Query query = null;
+        Date fechaRegreso = null;
+        try {
+            query = getEntityManager().createNativeQuery(consulta);
+            query.setParameter(1, fechaStr);
+            fechaRegreso = (Date) (query.getSingleResult());
+            return fechaRegreso;
+        } catch (PersistenceException pe) {
+            System.out.println("Error de persistencia en calculaFechaRegreso.");
+            throw new Exception(pe.toString());
+        } catch (NullPointerException npee) {
+            System.out.println("Nulo general en calculaFechaRegreso");
+            throw new Exception(npee.toString());
+        } catch (Exception e) {
+            System.out.println("Error general en calculaFechaRegreso. " + e);
+            throw new Exception(e.toString());
+        }
+    }    
+       
+    public boolean verificarDiaLaboral(String fechaDisfrute, BigDecimal codigoJornada) throws Exception {
+        System.out.println(this.getClass().getName() + "." + "verificarDiaLaboral" + "()");
+        System.out.println("fechaDisfrute: " + fechaDisfrute);
+        System.out.println("codigoJornada: " + codigoJornada);
+        String consulta = "select COUNT(*) "
+                + "FROM JORNADASSEMANALES JS, JORNADASLABORALES JL "
+                + "WHERE JL.SECUENCIA = JS.JORNADALABORAL "
+                + "AND JL.CODIGO = TO_number( ? ) "
+                + "AND JS.DIA = ? ";
+        Query query = null;
+        BigDecimal conteoDiaLaboral;
+        boolean esDiaLaboral;
+        int diaSemana;
+        String strFechaDisfrute = "";
+        GregorianCalendar c = new GregorianCalendar();
+        c.setTime(getDate(fechaDisfrute));
+        diaSemana = c.get(Calendar.DAY_OF_WEEK);
+        strFechaDisfrute = nombreDia(diaSemana);
+        System.out.println("strFechaDisfrute: " + strFechaDisfrute);
+        try {
+            query = getEntityManager().createNativeQuery(consulta);
+            query.setParameter(1, codigoJornada);
+            query.setParameter(2, strFechaDisfrute);
+            conteoDiaLaboral = new BigDecimal(query.getSingleResult().toString());
+            esDiaLaboral = !conteoDiaLaboral.equals(BigDecimal.ZERO);
+            return esDiaLaboral;
+        } catch (PersistenceException pe) {
+            System.out.println("Error de persistencia.");
+            throw new Exception(pe.toString());
+        } catch (NullPointerException npee) {
+            System.out.println("Nulo general");
+            throw new Exception(npee.toString());
+        } catch (Exception e) {
+            System.out.println("Error general. " + e);
+            throw new Exception(e.toString());
+        }
+    }
+    
+    public boolean verificarFestivo(String fechaDisfrute) throws Exception {
+        System.out.println(this.getClass().getName() + "." + "verificarFestivo" + "()");
+        String consulta = "select COUNT(*) "
+                + "FROM FESTIVOS F, PAISES P "
+                + "WHERE P.SECUENCIA = F.PAIS "
+                + "AND P.NOMBRE = ? "
+                + "AND F.DIA = TO_DATE( ? , 'DDMMYYYY') ";
+        Query query = null;
+        BigDecimal conteoDiaFestivo;
+        boolean esDiaFestivo;
+        /*SimpleDateFormat formatoFecha = new SimpleDateFormat("ddMMyyyy");
+        String strFechaDisfrute = formatoFecha.format(fechaDisfrute);*/
+        try {
+            query = getEntityManager().createNativeQuery(consulta);
+            query.setParameter(1, "COLOMBIA");
+            //query.setParameter(2, strFechaDisfrute);
+            query.setParameter(2, fechaDisfrute);
+            conteoDiaFestivo = new BigDecimal(query.getSingleResult().toString());
+            esDiaFestivo = !conteoDiaFestivo.equals(BigDecimal.ZERO);
+            return esDiaFestivo;
+        } catch (PersistenceException pe) {
+            System.out.println("Error de persistencia.");
+            throw new Exception(pe.toString());
+        } catch (NullPointerException npee) {
+            System.out.println("Nulo general");
+            throw new Exception(npee.toString());
+        } catch (Exception e) {
+            System.out.println("Error general. " + e);
+            throw new Exception(e.toString());
+        }
+//        return false;
+    }
+      
+
+    public BigDecimal consultaTraslapamientos(
+             String seudonimo,
+             String nitempresa, 
+             String fechaIniVaca, 
+             String fechaFinVaca) throws PersistenceException, NullPointerException, Exception {
+        System.out.println(this.getClass().getName() + "." + "consultaTraslapamientos" + "()");
+        String secEmpleado = getSecuenciaEmplPorSeudonimo(seudonimo, nitempresa);
+        String consulta = "SELECT "
+                + "KIOVACACIONES_PKG.VERIFICARTRASLAPAMIENTO(?, ? , ? ) "
+                + "FROM DUAL ";
+        Query query = null;
+        BigDecimal contTras = null;
+        try {
+            query = getEntityManager().createNativeQuery(consulta);
+            query.setParameter(1, secEmpleado);
+            //query.setParameter(2, fechaIniVaca, TemporalType.DATE);
+            //query.setParameter(3, fechaFinVaca, TemporalType.DATE);
+            query.setParameter(2, fechaFinVaca);
+            query.setParameter(3, fechaFinVaca);
+            contTras = (BigDecimal) (query.getSingleResult());
+            System.out.println("Resultado consulta traslapamiento: " + contTras);
+            return contTras;
+        } catch (PersistenceException pe) {
+            System.out.println("Error de persistencia en consultaTraslapamientos.");
+            throw new Exception(pe.toString());
+        } catch (NullPointerException npee) {
+            System.out.println("Nulo general en consultaTraslapamientos");
+            throw new Exception(npee.toString());
+        } catch (Exception e) {
+            System.out.println("Error general en consultaTraslapamientos. " + e);
+            throw new Exception(e.toString());
+        }
+    }
+    
+    
+    /*
+       Método que valida si la fecha de disfrute que recibe como parametro ya tiene una solicitud asociada
+    */
+    public BigDecimal verificaExistenciaSolicitud(
+            String seudonimo, 
+            String nitempresa,
+            String fechaIniVaca) throws Exception {
+        String secEmpleado = getSecuenciaEmplPorSeudonimo(seudonimo, nitempresa);
+        System.out.println(this.getClass().getName() + ".verificaExistenciaSolicitud()");
+        System.out.println("verificaExistenciaSolicitud-secEmpleado: " + secEmpleado);
+        System.out.println("verificaExistenciaSolicitud-fechaIniVaca: " + fechaIniVaca);
+        /*SimpleDateFormat formato = new SimpleDateFormat("ddMMyyyy");
+        String txtFecha = formato.format(fechaIniVaca);*/
+        String consulta = "SELECT "
+                + "KIOVACACIONES_PKG.VERIFICAEXISTESOLICITUD(?, to_date(?,'DDMMYYYY') ) "
+                + "FROM DUAL ";
+        System.out.println("verificaExistenciaSolicitud-consulta: " + consulta);
+        Query query = null;
+        BigDecimal conteo = null;
+        try {
+            try {
+                query = getEntityManager().createNativeQuery(consulta);
+                query.setParameter(1, secEmpleado);
+               // query.setParameter(2, txtFecha);
+                query.setParameter(2, fechaIniVaca);
+            } catch (NullPointerException npe) {
+                throw new Exception("verificaExistenciaSolicitud: EntiyManager, query o consulta nulos.");
+            }
+            Object res = query.getSingleResult();
+            System.out.println("verificaExistenciaSolicitud-res: " + res);
+            if (res instanceof BigDecimal) {
+                conteo = (BigDecimal) res;
+                System.out.println("verificaExistenciaSolicitud-conteo: " + conteo);
+            } else {
+                throw new Exception("El conteo de la solicitud no es BigDecimal. " + res + " tipo: " + res.getClass().getName());
+            }
+        } catch (Exception e) {
+            System.out.println("verificaExistenciaSolicitud-excepcion: " + e);
+//            throw e;
+            throw new Exception("Error verificando si la solicitud ya existe " + e);
+        }
+        System.out.println("verificaExistenciaSolicitud-conteo: " + conteo);
+        return conteo;
+    }
+    
+    public String validaFechaInicioSoliciVacaciones(String seudonimo, String nitEmpresa, String fechainicialdisfrute) {
+        String mensaje = "Ha ocurrido un error, por favor intentalo de nuevo más tarde.";
+        try { 
+            if (!validaFechaPago(seudonimo, nitEmpresa, fechainicialdisfrute)) {
+                return "La fecha seleccionada es inferior a la última fecha de pago.";
+            }
+            if (verificarFestivo(fechainicialdisfrute)){
+                return "La fecha seleccionada es un día festivo.";
+            }
+            BigDecimal codigoJornada = consultarCodigoJornada(seudonimo, nitEmpresa, fechainicialdisfrute);
+            if (!verificarDiaLaboral(fechainicialdisfrute,codigoJornada)){
+                return "La fecha seleccionada no es un día laboral.";
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(EmpleadosFacadeREST.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return mensaje;
+    }
     
 }

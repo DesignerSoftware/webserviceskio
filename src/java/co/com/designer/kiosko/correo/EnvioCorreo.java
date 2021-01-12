@@ -226,7 +226,7 @@ public class EnvioCorreo {
             BodyPart messageBodyPart = new MimeBodyPart();
             String htmlText
                     = "<div\n" +
-"        style=\"padding:10%;color:white;background-image:linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,1.0)),url(https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/imgcorreoreporte.jpg/);min-height:100%;background-size:cover\">\n" +
+"        style=\"padding:10%;color:white;background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url(https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/imgcorreoreporte.jpg/);min-height:100%;background-size:cover\">\n" +
 "        <table style=\"max-width:90%;padding:10%;margin:0 auto;border-collapse:collapse\">\n" +
 "            <tbody>\n" +
 "                <tr >\n" +
@@ -285,16 +285,6 @@ public class EnvioCorreo {
 "                                            -o-transition: all 300ms ease;\n" +
 "                                            transition: all 300ms ease;\n" +
 "                                            background: #00abf0;\"></a></li>\n" +
-"                                        <li style=\"background: #d95232; display:inline;\"><a href=\"https://currents.google.com/u/0/108160091435807192215\" target=\"_blank\"\n" +
-"                                                class=\"icon-googleplus\"> <img src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/59490.png\" style=\"width: 19px; height: 19px; display: inline-block;\n" +
-"                                                color: #fff;\n" +
-"                                                background: #000;\n" +
-"                                                padding: 10px 15px;\n" +
-"                                                text-decoration: none;\n" +
-"                                                -webkit-transition: all 300ms ease;\n" +
-"                                                -o-transition: all 300ms ease;\n" +
-"                                                transition: all 300ms ease;\n" +
-"                                                background: #d95232;\"></a></li>\n" +
 "                                        <li style=\"background: #0ad2ec; display:inline;\"><a href=\"https://www.nomina.com.co/\" target=\"_blank\"\n" +
 "                                                class=\"icon-nomina\"> <img src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/3522533.png\" style=\"width: 19px; height: 19px; display: inline-block;\n" +
 "                                                color: #fff;\n" +

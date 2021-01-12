@@ -71,16 +71,24 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
     @GET
     @Path("/consultarPeriodosPendientesEmpleado")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public List<VwVacaPendientesEmpleados> consultarPeriodosPendientesEmpleado(@QueryParam("seudonimo") String seudonimo, @QueryParam("nitempresa") String nitEmpresa) throws Exception {
+    public List consultarPeriodosPendientesEmpleado(@QueryParam("seudonimo") String seudonimo, @QueryParam("nitempresa") String nitEmpresa) throws Exception {
         System.out.println(this.getClass().getName() + "." + "consultarPeriodosPendientesEmpleado" + "()");
         List<VwVacaPendientesEmpleados> periodosPendientes = null;
         String documento = getDocumentoPorSeudonimo(seudonimo, nitEmpresa);
         Query query = null;
-        String consulta = "select vw from VwVacaPendientesEmpleados vw where vw.diasPendientes > 0 and vw.empleado.codigoempleado = :codEmple ";
+        //String consulta = "select KIOVACACIONES_PKG.DIASDISPOPER(vw.rfVacacion), vw.rfVacacion, vw.empleado, vw.inicialCausacion, vw.finalCausacion, vw.diasPendientes from VwVacaPendientesEmpleados vw where vw.diasPendientes > 0 and vw.empleado.codigoempleado = :codEmple ";
+        String consulta="SELECT \n" +
+        "VW.RFVACACION, KIOVACACIONES_PKG.DIASDISPOPER(VW.RFVACACION) DIASPENDIENTES, VW.DIASPENDIENTES DIASPENDIENTESREALES, \n" +
+        "VW.FINALCAUSACION, VW.INICIALCAUSACION, TO_CHAR(VW.INICIALCAUSACION, 'dd/mm/yyyy')||' a '||TO_CHAR(VW.FINALCAUSACION, 'dd/mm/yyyy') PERIODO \n" +
+        "FROM \n" +
+        "VWVACAPENDIENTESEMPLEADOS VW, EMPLEADOS E\n" +
+        "WHERE \n" +
+        "VW.EMPLEADO=E.SECUENCIA AND\n" +
+        "((DIASPENDIENTES > 0) AND (E.CODIGOEMPLEADO = ?))";
         try {
             BigDecimal codigoEmpleado = new BigDecimal(documento);
-            query = getEntityManager().createQuery(consulta);
-            query.setParameter("codEmple", codigoEmpleado);
+            query = getEntityManager().createNativeQuery(consulta);
+            query.setParameter(1, codigoEmpleado);
             periodosPendientes = query.getResultList();
             return periodosPendientes;
         } catch (PersistenceException pe) {
@@ -333,30 +341,80 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
     @GET
     @Path("/calculaFechaRegreso")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public Timestamp calculaFechaRegreso(
+    public List calculaFechaRegreso(
             @QueryParam("seudonimo") String seudonimo, 
             @QueryParam("nitempresa") String nitEmpresa,
             @QueryParam("fechainicio") String fechainicio,
             @QueryParam("dias") int dias) {
         setearPerfil();
         System.out.println(this.getClass().getName() + "." + "calculaFechaRegreso" + "()");
-        Timestamp retorno = null;
+        List retorno = getFechaRegreso(fechainicio, dias, seudonimo, nitEmpresa);
+        return retorno;
+    } 
+    
+    public List getFechaRegreso(String fechainicio, int dias, String seudonimo, String nitEmpresa) {
         String documento = getDocumentoPorSeudonimo(seudonimo, nitEmpresa);
-        String consulta = "SELECT " +
-"       KIOVACACIONES_PKG.CALCULARFECHAREGRESO((select secuencia from empleados where codigoempleado=?), "
-                + "to_date(?,'yyyy-mm-dd'), ? ) " +
-"                FROM DUAL          ";
+        List retorno = null;
+        String consulta = "SELECT \n" +
+        "TO_CHAR(KIOVACACIONES_PKG.CALCULARFECHAFINVACA( (select secuencia from empleados where codigoempleado=?), TO_DATE(?, 'YYYY-MM-DD') , \n" +
+        "KIOVACACIONES_PKG.CALCULARFECHAREGRESO( (select secuencia from empleados where codigoempleado=?) , TO_DATE(?, 'YYYY-MM-DD') , ? ) , 'S' ), 'DD/MM/YYYY') FECHAFIN,\n" +
+        "TO_CHAR(KIOVACACIONES_PKG.CALCULARFECHAREGRESO( (select secuencia from empleados where codigoempleado=?) , TO_DATE(?, 'YYYY-MM-DD') , ? ), 'DD/MM/YYYY') FECHAREGRESO\n" +
+        "FROM DUAL ";
         try {
             Query query = getEntityManager().createNativeQuery(consulta);
             query.setParameter(1, documento);
             query.setParameter(2, fechainicio);
-            query.setParameter(3, dias);
-            retorno = (Timestamp) query.getSingleResult();
+            query.setParameter(3, documento);
+            query.setParameter(4, fechainicio);
+            query.setParameter(5, dias);
+            query.setParameter(6, documento);
+            query.setParameter(7, fechainicio);
+            query.setParameter(8, dias);
+            retorno = query.getResultList();
         } catch (Exception e) {
-            System.out.println("Error calculaFechaRegreso." + e);
+            System.out.println("Error getFechaRegreso." + e);
         }
         return retorno;
-    } 
+    }
+    
+    @GET
+    @Path("/calculaFechaFinVaca")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Timestamp calculaFechaFinVaca (
+            @QueryParam("seudonimo") String seudonimo, 
+            @QueryParam("nitempresa") String nitEmpresa,
+            @QueryParam("fechainicio") String fechainicio,
+            @QueryParam("dias") int dias) {
+        setearPerfil();
+        System.out.println(this.getClass().getName() + "." + "calculaFechaFinVaca" + "()");
+        Timestamp retorno = getFechaFinVaca(fechainicio, getFechaRegreso(fechainicio, dias, seudonimo, nitEmpresa).toString(), dias, seudonimo, nitEmpresa);
+        return retorno;
+    }   
+    
+    public Timestamp getFechaFinVaca(String fechainicio, String fechafin, int dias, String seudonimo, String nitEmpresa) {
+        String documento = getDocumentoPorSeudonimo(seudonimo, nitEmpresa);
+        Timestamp retorno = null;
+        String consulta = "SELECT KIOVACACIONES_PKG.CALCULARFECHAFINVACA( (select secuencia from empleados where codigoempleado=?), TO_DATE(?, 'YYYY-MM-DD') , TO_DATE(?,'YYYY-MM-DD HH:MM:SS') , 'S' ) FROM DUAL";
+        try {
+            Query query = getEntityManager().createNativeQuery(consulta);
+            query.setParameter(1, documento);
+            query.setParameter(2, fechainicio);
+            query.setParameter(3, fechafin);
+            retorno = (Timestamp) query.getSingleResult();
+        } catch (Exception e) {
+            System.out.println("Error getFechaFinVaca." + e);
+        }
+        return retorno;
+    }
+    
+    public boolean creaKioNovedadSolici(String RFVACACION) {
+        setearPerfil();
+        String sql="INSERT INTO KIONOVEDADESSOLICI (EMPLEADO, FECHAINICIALDISFRUTE, DIAS, TIPO, SUBTIPO, FECHASISTEMA, FECHASIGUIENTEFINVACA, ESTADO, \n" +
+        "ADELANTAPAGO, ADELANTAPAGOHASTA, FECHAPAGO, PAGADO)\n" +
+        "VALUES\n" +
+        "((SELECT SECUENCIA FROM EMPLEADOS WHERE CODIGOEMPLEADO=?), ?, ?, 'VACACION', 'TIEMPO', SYSDATE, ?, 'ABIERTO', ?, ?, ?, 'N')";
+        return false;
+    }
     
     public String getDocumentoPorSeudonimo(String seudonimo, String nitEmpresa) {
        String documento=null;
@@ -375,4 +433,24 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
         }
         return documento;
    }
+    
+     public String getSecuenciaEmplPorSeudonimo(String seudonimo, String nitEmpresa) {
+     String secuencia=null;
+        try {
+            setearPerfil();
+            String sqlQuery = "SELECT E.SECUENCIA SECUENCIAEMPLEADO FROM EMPLEADOS E, CONEXIONESKIOSKOS CK WHERE CK.EMPLEADO=E.SECUENCIA AND CK.SEUDONIMO=? AND CK.NITEMPRESA=?";
+            System.out.println("Query: "+sqlQuery);
+            Query query = getEntityManager().createNativeQuery(sqlQuery);
+
+            query.setParameter(1, seudonimo);
+            query.setParameter(2, nitEmpresa);
+            secuencia =  query.getSingleResult().toString();
+            System.out.println("secuencia: "+secuencia);
+        } catch (Exception e) {
+            System.out.println("Error: getSecuenciaEmplPorSeudonimo: "+e.getMessage());
+        }
+        return secuencia;
+   }
+     
+    
 }
