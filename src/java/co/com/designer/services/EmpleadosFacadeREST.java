@@ -23,6 +23,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  *
@@ -192,8 +195,9 @@ public class EmpleadosFacadeREST {
         " V.INICIALCAUSACION||' a '||V.FINALCAUSACION PERIODOCAUSADO,\n" +
         " (SELECT PER.PRIMERAPELLIDO||' '||PER.SEGUNDOAPELLIDO||' '||PER.NOMBRE FROM PERSONAS PER, EMPLEADOS EMPL\n" +
         " WHERE EMPL.PERSONA=PER.SECUENCIA\n" +
-        " AND EMPL.SECUENCIA=JEFE.SECUENCIA) EMPLEADOJEFE,\n" +
-        " KNS.FECHAPAGO FECHAPAGO\n" +
+        " AND EMPL.SECUENCIA=JEFE.SECUENCIA) EMPLEADOJEFE,\n" +        
+        " KNS.FECHAPAGO FECHAPAGO,\n"+
+        " t0.secuencia secuencia" +
         " FROM \n" +
         " KIOESTADOSSOLICI t0, \n" +
         " KIOSOLICIVACAS t2, \n" +
@@ -505,7 +509,7 @@ public class EmpleadosFacadeREST {
                 + "FROM FESTIVOS F, PAISES P "
                 + "WHERE P.SECUENCIA = F.PAIS "
                 + "AND P.NOMBRE = ? "
-                + "AND F.DIA = TO_DATE( ? , 'DDMMYYYY') ";
+                + "AND F.DIA = TO_DATE( ? , 'DD/MM/YYYY') ";
         Query query = null;
         BigDecimal conteoDiaFestivo;
         boolean esDiaFestivo;
@@ -613,23 +617,37 @@ public class EmpleadosFacadeREST {
         return conteo;
     }
     
-    public String validaFechaInicioSoliciVacaciones(String seudonimo, String nitEmpresa, String fechainicialdisfrute) {
-        String mensaje = "Ha ocurrido un error, por favor intentalo de nuevo más tarde.";
+    @GET
+    @Path("/validaFechaInicioVacaciones")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String validaFechaInicioSoliciVacaciones(@QueryParam("seudonimo") String seudonimo, @QueryParam("nitempresa") String nitEmpresa, @QueryParam("fechainicio") String fechainicialdisfrute) {
+        String mensaje = "";
+        boolean valido = true;
         try { 
-            if (!validaFechaPago(seudonimo, nitEmpresa, fechainicialdisfrute)) {
-                return "La fecha seleccionada es inferior a la última fecha de pago.";
-            }
-            if (verificarFestivo(fechainicialdisfrute)){
-                return "La fecha seleccionada es un día festivo.";
-            }
             BigDecimal codigoJornada = consultarCodigoJornada(seudonimo, nitEmpresa, fechainicialdisfrute);
-            if (!verificarDiaLaboral(fechainicialdisfrute,codigoJornada)){
-                return "La fecha seleccionada no es un día laboral.";
+            if (!validaFechaPago(seudonimo, nitEmpresa, fechainicialdisfrute)) {
+                mensaje+= "La fecha seleccionada es inferior a la última fecha de pago.";
+                valido = false;
+            } else if (verificarFestivo(fechainicialdisfrute)){
+                mensaje+= "La fecha seleccionada es un día festivo.";
+                valido = false;
+            } else if (!verificarDiaLaboral(fechainicialdisfrute,codigoJornada)){
+                mensaje+= "La fecha seleccionada no es un día laboral.";
+                valido = false;
             }
+            
         } catch (Exception ex) {
             Logger.getLogger(EmpleadosFacadeREST.class.getName()).log(Level.SEVERE, null, ex);
+            mensaje =  "Ha ocurrido un error, por favor intentalo de nuevo más tarde.";
         }
-        return mensaje;
+        JSONObject obj = new JSONObject();
+        try {
+            obj.put("valido", valido);
+            obj.put("mensaje", mensaje);
+        } catch (JSONException ex) {
+            Logger.getLogger(EmpleadosFacadeREST.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return obj.toString();
     }
     
 }
