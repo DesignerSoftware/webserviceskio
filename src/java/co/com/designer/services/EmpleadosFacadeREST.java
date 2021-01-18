@@ -83,7 +83,7 @@ public class EmpleadosFacadeREST {
         setearPerfil();
         String sqlQuery="  select \n" +
 "          e.codigoempleado usuario,  \n" +
-"          p.nombre nombres, \n" +
+"          p.nombre ||' '|| p.primerapellido ||' '|| p.segundoapellido nombres, \n" +
 "          p.primerapellido apellido1, \n" +
 "          p.segundoapellido apellido2,  \n" +
 "          decode(p.sexo,'M', 'MASCULINO', 'F', 'FEMENINO', '') sexo,  \n" +
@@ -109,7 +109,13 @@ public class EmpleadosFacadeREST {
 "          em.logo logoEmpresa, \n" +
 "          empleadocurrent_pkg.DireccionAlternativa(p.secuencia, sysdate) direccionPersona,  \n" +
 "          t.numerotelefono numeroTelefono, \n" +
-"          tt.nombre tipoTelefono \n" +             
+"          tt.nombre tipoTelefono,  \n"+
+"          empleadocurrent_pkg.CentrocostoNombre(e.secuencia) centroscostos,  \n"+ 
+"          empleadocurrent_pkg.EdadPersona(p.secuencia, sysdate) || ' AÑOS' edad,  \n"   +
+"          empleadocurrent_pkg.entidadafp(e.secuencia) entidadfp,\n" +
+"          empleadocurrent_pkg.entidadeps(e.secuencia) entidadeps, \n" +
+"          empleadocurrent_pkg.entidadarp(e.secuencia)  entidadarp,\n" +
+"          empleadocurrent_pkg.entidadcesantias(e.secuencia, sysdate) entidadcesantias             \n" +             
 "          from  \n" +
 "          empleados e, conexioneskioskos ck, empresas em, personas p, telefonos t, tipostelefonos tt \n" +
 "          where \n" +
@@ -144,18 +150,21 @@ public class EmpleadosFacadeREST {
         try {
         String documento = getDocumentoPorSeudonimo(empleado, nit);
         setearPerfil();
-        String sqlQuery="  select \n" +
-"          fam.nombre ||' '|| fam.primerapellido ||' '|| fam.segundoapellido nombreFamiliar,   \n" +
-"          t.tipo Parentezco \n" +            
-"          from empleados e, empresas em, personas p, familiares f, tiposfamiliares t, personas fam \n" +
-"          where \n" +
-"          p.secuencia = e.persona  \n" +
-"          and e.empresa = em.secuencia  \n" +
-"          and f.persona = p.secuencia   \n" + 
-"          and f.personafamiliar=fam.secuencia   \n" +        
-"          and t.secuencia = f.tipofamiliar  \n" +
-"          and p.numerodocumento= ? \n" +
-"          and em.nit=?";
+        String sqlQuery="select fam.nombre ||' '|| fam.primerapellido ||' '|| fam.segundoapellido nombreFamiliar, t.tipo Parentezco,\n" +
+"            tt.numerotelefono telefonos  \n" +
+"            from empleados e, empresas em, personas p, familiares f, tiposfamiliares t, personas fam, telefonos tt   \n" +
+"            where   \n" +
+"            p.secuencia = e.persona    \n" +
+"            and e.empresa = em.secuencia    \n" +
+"            and f.persona = p.secuencia      \n" +
+"            and f.personafamiliar=fam.secuencia   \n" +
+"            and t.secuencia = f.tipofamiliar \n" +
+"            and fam.secuencia = tt.persona\n" +
+"            and tt.fechavigencia = (select max(ttt.fechavigencia)\n" +
+"                                   from telefonos ttt\n" +
+"                                   where ttt.persona = tt.persona)" +
+"           and p.numerodocumento= ? \n" +
+"           and em.nit=?";
             Query query = getEntityManager().createNativeQuery(sqlQuery);
             query.setParameter(1, documento);
             query.setParameter(2, nit);
