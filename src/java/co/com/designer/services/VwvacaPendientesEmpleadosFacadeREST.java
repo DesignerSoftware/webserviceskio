@@ -413,11 +413,11 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
         return retorno;
     }
        
-    public boolean creaKioNovedadSolici(String seudonimo, String nit, String fechainicial, String fecharegreso, String dias, String RFVACACION) {
+    public boolean creaKioNovedadSolici(String seudonimo, String nit, String fechainicial, String fecharegreso, String dias, String RFVACACION, String fechaFin) {
         int conteo = 0;
         try {
         setearPerfil();
-        System.out.println("parametros creaKioNovedadSolici seudonimo: "+seudonimo+", nit: "+nit+", fechainicial: "+fechainicial+", fecharegreso: "+fecharegreso+", dias: "+dias+", rfvacacion: "+RFVACACION);
+        System.out.println("parametros creaKioNovedadSolici seudonimo: "+seudonimo+", nit: "+nit+", fechainicial: "+fechainicial+", fecharegreso: "+fecharegreso+"fecha fin: "+fechaFin +" dias: "+dias+", rfvacacion: "+RFVACACION);
         String sql = "INSERT INTO KIONOVEDADESSOLICI (EMPLEADO, FECHAINICIALDISFRUTE, DIAS, TIPO, SUBTIPO, FECHASISTEMA, FECHASIGUIENTEFINVACA, ESTADO, \n"
                 + "ADELANTAPAGO, ADELANTAPAGOHASTA, FECHAPAGO, PAGADO, VACACION)\n"
                 + "VALUES\n"
@@ -429,7 +429,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
         query.setParameter(3, dias);
         query.setParameter(4, fecharegreso);
         query.setParameter(5, null);
-        query.setParameter(6, null);
+        query.setParameter(6, fechaFin);
         query.setParameter(7, null);
         query.setParameter(8, RFVACACION);
         conteo = query.executeUpdate();
@@ -771,7 +771,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                     + "sum(k.diasvacadinero) dias, 'DINERO' tipo\n"
                     + "from kioacumvaca k, empleados e\n"
                     + "where\n"
-                    + "e.secuencia=k.empleado\n"
+                    + "e.secuencia=k.empleado(+)\n"
                     + "group by e.secuencia)\n"
                     + "union\n"
                     + "(select e.secuencia empleado, sum(n.dias) dias, 'TIEMPO' tipo\n"
@@ -836,7 +836,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
             @QueryParam("fechainicio") String fechainicial, @QueryParam("fecharegreso") String fecharegreso,
             @QueryParam("dias") String dias, @QueryParam("vacacion") String RFVACACION, @QueryParam("cadena") String cadena,
             @QueryParam("urlKiosco") String urlKiosco, 
-            @QueryParam("grupo") String grupoEmpr) {
+            @QueryParam("grupo") String grupoEmpr, @QueryParam("fechafin") String fechafin) {
         System.out.println("crearSolicitudVacaciones");
         System.out.println("link Kiosco: "+urlKiosco);
         System.out.println("grupoEmpresarial: "+grupoEmpr);
@@ -855,7 +855,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
             String secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nit);
             String secEmplJefe = consultarSecuenciaEmpleadoJefe(secEmpl);
             // Insertar registro en kionovedadessolici
-            if (creaKioNovedadSolici(seudonimo, nit, fechainicial, fecharegreso, dias, RFVACACION)) {
+            if (creaKioNovedadSolici(seudonimo, nit, fechainicial, fecharegreso, dias, RFVACACION, fechafin)) {
                 String secKioNovedad = getSecuenciaKioNovedadesSolici(seudonimo, nit, fechainicial, fecharegreso, dias, RFVACACION);
                 System.out.println("secuencia kionovedadsolici creada: " + secKioNovedad);
                 // Insertar registro en kiosolicivacas
