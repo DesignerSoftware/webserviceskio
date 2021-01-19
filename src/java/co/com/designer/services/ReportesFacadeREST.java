@@ -5,7 +5,9 @@ import co.com.designer.kiosko.correo.EnvioCorreo;
 import co.com.designer.kiosko.reportes.IniciarReporte;
 import java.io.File;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -104,9 +106,11 @@ public class ReportesFacadeREST {
             if (retorno.compareTo(BigDecimal.ZERO) > 0) {
                 // si lleva auditoria
                 System.out.println("Si lleva auditoria");
-                       Calendar dtGen = Calendar.getInstance();
+                Date fechaGeneracion = new Date();
+                String fecha = new SimpleDateFormat("dd/MM/yyyy").format(fechaGeneracion);
+                String hora = new SimpleDateFormat("HH:mm").format(fechaGeneracion);
                        String mensaje=  "Nos permitimos informar que el "
-                        + dtGen.get(Calendar.DAY_OF_MONTH) + "/" + (dtGen.get(Calendar.MONTH) + 1) + "/" + dtGen.get(Calendar.YEAR) + " a las " + dtGen.get(Calendar.HOUR_OF_DAY) + ":" + dtGen.get(Calendar.MINUTE)
+                        + fecha + " a las " + hora
                         + " se generó el reporte " + descripcionReporte
                         + " en el módulo de Kiosco Nómina Designer. "
                         + "La persona que GENERÓ el reporte es: "+getNombrePersonaXSeudonimo(seudonimo, nit);

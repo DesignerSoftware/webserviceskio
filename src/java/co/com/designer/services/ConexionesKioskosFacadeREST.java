@@ -552,12 +552,14 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @Path("/obtenerLogo/{imagen}")
     @Produces({"image/png", "image/jpg", "image/gif"})
     public Response obtenerLogo(@PathParam("imagen") String imagen) {
+        System.out.println("obtenerLogo()");
         FileInputStream fis = null;
         File file = null;
         String RUTAFOTO = getPathFoto();
         try {
             fis = new FileInputStream(new File(RUTAFOTO + imagen));
             file = new File(RUTAFOTO + imagen);
+            System.out.println("IMAGEN: "+RUTAFOTO+imagen);
         } catch (FileNotFoundException ex) {
             try {
                 fis = new FileInputStream(new File(RUTAFOTO + "logodesigner.png"));
