@@ -582,6 +582,28 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
         }
         return secuencia;
     }
+    
+    public String getEmplXsecKioEstadoSolici(String kioEstadoSolici) {
+        String secEmpl = null;
+        try {
+            setearPerfil();
+            String sqlQuery = "SELECT KSV.EMPLEADO\n"
+                    + "FROM \n"
+                    + "KIOESTADOSSOLICI KE, KIOSOLICIVACAS KSV, KIONOVEDADESSOLICI KN\n"
+                    + "WHERE\n"
+                    + "KE.KIOSOLICIVACA=KSV.SECUENCIA\n"
+                    + "AND KSV.KIONOVEDADSOLICI = KN.SECUENCIA\n"
+                    + "AND KE.SECUENCIA=?";
+            System.out.println("Query: " + sqlQuery);
+            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            query.setParameter(1, kioEstadoSolici);
+            secEmpl = query.getSingleResult().toString();
+            System.out.println("secuencia empleado: " + secEmpl);
+        } catch (Exception e) {
+            System.out.println("Error: getSecuenciaEmplPorSeudonimo: " + e.getMessage());
+        }
+        return secEmpl;
+    }
      
     public String getEmplXsecKioEstadoSolici(String kioEstadoSolici) {
         String secEmpl = null;
@@ -635,6 +657,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
             res = query.executeUpdate();
             String fecha = new SimpleDateFormat("dd/MM/yyyy").format(new Date());
             EnvioCorreo c = new EnvioCorreo();
+<<<<<<< HEAD
             String estadoVerbo=estado.equals("CANCELADO")?"CANCELAR":
                     estado.equals("AUTORIZADO")?"PRE-APROBAR":
                     estado.equals("RECHAZADO")?"RECHAZAR":estado;
@@ -643,6 +666,16 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                     estado.equals("RECHAZADO")?"rechazó":estado;
             String mensaje="Nos permitimos informar que se acaba de "+estadoVerbo+" una solicitud de vacaciones";
                     if (estado.equals("RECHAZADO") || estado.equals("AUTORIZADO")){
+=======
+            String estadoVerbo=estado.equals("CANCELADO")?"cancelar":
+                    estado.equals("AUTORIZADO")?"autorizar":
+                    estado.equals("RECHAZADO")?"rechazar":estado;
+            String estadoPasado=estado.equals("CANCELADO")?"canceló":
+                    estado.equals("AUTORIZADO")?"autorizó":
+                    estado.equals("RECHAZADO")?"rechazó":estado;
+            String mensaje="Nos permitimos informar que se acaba de "+estadoVerbo+" una solicitud de vacaciones";
+                    if (estado.equals("RECHAZADO")){
+>>>>>>> 3bb5deeec57656e2e500b5ec39e5681926c260a9
                         mensaje+=" creada para "+getApellidoNombreXsecEmpl(secEmplSolicita);
                     }
                     mensaje+=" en el módulo de Kiosco Nómina Designer. Por favor llevar el caso desde su cuenta de usuario en el portal de Kiosco y continuar con el proceso."
@@ -659,6 +692,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
            System.out.println("url Kiosco: "+urlKio);
             if (res>0) {
                 System.out.println("solicitud "+estado+" con éxito.");
+<<<<<<< HEAD
                 String servidorsmtp = getConfigCorreoServidorSMTP(nit);
                 String puerto = getConfigCorreo(nit, "PUERTO");
                 String autenticado = getConfigCorreo(nit, "AUTENTICADO");
@@ -699,6 +733,18 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                     }                    
                 }
 
+=======
+                if (c.enviarCorreoVacaciones(getCorreoXsecEmpl(secEmplSolicita),
+                        "Solicitud de vacaciones Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de vacaciones: " + fechaInicioDisfrute,
+                        mensaje, urlKio, nit)) {
+                    System.out.println("Correo enviada a la persona que ejecuta");
+                }
+                if (c.enviarCorreoVacaciones(getCorreoXsecEmpl(secEmplEjecuta),
+                        "Solicitud de vacaciones Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de vacaciones: " + fechaInicioDisfrute,
+                        mensaje, urlKio, nit)) {
+                    System.out.println("Correo enviado al empleado que solicita asociado");
+                }
+>>>>>>> 3bb5deeec57656e2e500b5ec39e5681926c260a9
             } else {
                 System.out.println("Error al procesar la solicitud.");
             }
@@ -708,7 +754,286 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
             return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
         }
     }
+  
+    public String getFechaInicioXsecKioEstadoSolici(String secKioEstadoSolici) {
+        String fechaInicio = null;
+        try {
+            setearPerfil();
+            String sqlQuery = "select "
+                    + "TO_CHAR(KN.FECHAINICIALDISFRUTE, 'dd/mm/yyyy') "
+                    + "from "
+                    + "KIOESTADOSSOLICI KE, KIOSOLICIVACAS KSV, KIONOVEDADESSOLICI KN "
+                    + "WHERE "
+                    + "KE.KIOSOLICIVACA = KSV.SECUENCIA "
+                    + "AND KSV.KIONOVEDADSOLICI=KN.SECUENCIA "
+                    + "AND KE.SECUENCIA=?";
+            System.out.println("Query: " + sqlQuery);
+            Query query = getEntityManager().createNativeQuery(sqlQuery);
+
+            query.setParameter(1, secKioEstadoSolici);
+            fechaInicio = query.getSingleResult().toString();
+            System.out.println("Fecha inicio: " + fechaInicio);
+        } catch (Exception e) {
+            System.out.println("Error: getFechaInicioXsecKioEstadoSolici: " + e.getMessage());
+        }
+        return fechaInicio;
+    }
     
+    public String getEmplJefeXsecKioEstadoSolici(String secKioEstadoSolici) {
+        String secEmplJefe = null;
+        try {
+            setearPerfil();
+            String sqlQuery = "SELECT KSV.EMPLEADOJEFE\n"
+                    + "FROM \n"
+                    + "KIOESTADOSSOLICI KE, KIOSOLICIVACAS KSV, KIONOVEDADESSOLICI KN\n"
+                    + "WHERE\n"
+                    + "KE.KIOSOLICIVACA=KSV.SECUENCIA\n"
+                    + "AND KSV.KIONOVEDADSOLICI = KN.SECUENCIA";
+            System.out.println("Query: " + sqlQuery);
+            Query query = getEntityManager().createNativeQuery(sqlQuery);
+
+            query.setParameter(1, secKioEstadoSolici);
+            secEmplJefe = query.getSingleResult().toString();
+            System.out.println("Empl jefe asociado: " + secEmplJefe);
+        } catch (Exception e) {
+            System.out.println("Error: getEmplJefeXsecKioEstadoSolici: " + e.getMessage());
+        }
+        return secEmplJefe;
+    }
+    
+    @GET
+    @Path("/getDiasNovedadesVaca")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response getDiasNovedadesVaca(@QueryParam("nit") String nit, @QueryParam("empleado") String empleado,
+            @QueryParam("cadena") String cadena) {
+        System.out.println("getDiasNovedadesVaca()");
+        System.out.println("parametros: nit: " + nit + " empleado " + empleado + " cadena " + cadena);
+        List s = null;
+        try {
+            String secuenciaEmpleado = getSecuenciaEmplPorSeudonimo(empleado, nit);
+            setearPerfil();
+            String sqlQuery = "select \n" 
+                    + "tablaTotal.empleado, 'TOTAL' tipo, NVL(sum(tablaTotal.dias), 0 )\n"
+                    + "from\n"
+                    + "(select e.secuencia empleado, sum(n.dias) dias\n"
+                    + "from\n"
+                    + "novedadessistema n, empleados e\n"
+                    + "where e.secuencia=n.empleado\n"
+                    + "and tipo='VACACION'\n"
+                    + "and subtipo in ('TIEMPO', 'DINERO')\n"
+                    + "group by e.secuencia\n"
+                    + "union\n"
+                    + "select e.secuencia empleado,\n"
+                    + "sum(k.diasvacadisfrute+k.diasvacadinero) dias\n"
+                    + "from kioacumvaca k, empleados e\n"
+                    + "where\n"
+                    + "e.secuencia=k.empleado(+)\n"
+                    + "group by e.secuencia) tablaTotal, empleados e where tablaTotal.empleado=e.secuencia\n"
+                    + "and e.secuencia=?\n"
+                    + "group by tablaTotal.empleado\n"
+                    + "union\n"
+                    + "(select tabla.empleado secuenciaEmpl, tabla.tipo tipo, NVL(sum(tabla.dias), 0) dias\n"
+                    + "from \n"
+                    + "(\n"
+                    + "(select e.secuencia empleado, NVL(sum(n.dias), 0) dias, 'DINERO' tipo\n"
+                    + "from\n"
+                    + "novedadessistema n, empleados e\n"
+                    + "where e.secuencia=n.empleado\n"
+                    + "and tipo='VACACION'\n"
+                    + "and subtipo='DINERO'\n"
+                    + "group by e.secuencia\n"
+                    + "union\n"
+                    + "select e.secuencia empleado,\n"
+                    + "NVL(sum(k.diasvacadinero), 0) dias, 'DINERO' tipo\n"
+                    + "from kioacumvaca k, empleados e\n"
+                    + "where\n"
+                    + "e.secuencia=k.empleado(+)\n"
+                    + "group by e.secuencia)\n"
+                    + "union\n"
+                    + "(select e.secuencia empleado, NVL(sum(n.dias), 0) dias, 'TIEMPO' tipo\n"
+                    + "from\n"
+                    + "novedadessistema n, empleados e\n"
+                    + "where e.secuencia=n.empleado\n"
+                    + "and tipo='VACACION'\n"
+                    + "and subtipo='TIEMPO'\n"
+                    + "group by e.secuencia\n"
+                    + "union\n"
+                    + "select e.secuencia empleado,\n"
+                    + "NVL(sum(k.diasvacadisfrute), 0) dias, 'TIEMPO' tipo\n"
+                    + "from kioacumvaca k, empleados e\n"
+                    + "where\n"
+                    + "e.secuencia=k.empleado(+)\n"
+                    + "group by e.secuencia)\n"
+                    + ") tabla\n"
+                    + "where tabla.empleado=?\n"
+                    + "group by tabla.empleado, tabla.tipo)";
+            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            query.setParameter(1, secuenciaEmpleado);
+            query.setParameter(2, secuenciaEmpleado);
+            s = query.getResultList();
+            s.forEach(System.out::println);
+            return Response.status(Response.Status.OK).entity(s).build();
+        } catch (Exception ex) {
+            System.out.println("Error getDiasNovedadesVaca: " + ex);
+            return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
+        }
+    }    
+    
+    /*Crea nuevo registro kioestadosolici al crear nueva solicitud de vacaciones*/
+    public boolean creaKioEstadoSolici(
+            String seudonimo, String nit, String kioSoliciVaca, 
+            String fechaProcesa, String estado, String motivo) {
+        System.out.println("parametros: seudonimo: empleado " + seudonimo + ", nit: "+nit+", kiosolicivaca: "+kioSoliciVaca+" estado: " + estado);
+        int res = 0;
+        try {
+            String secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nit);
+            setearPerfil();
+            String sqlQuery = "INSERT INTO KIOESTADOSSOLICI (KIOSOLICIVACA, FECHAPROCESAMIENTO, ESTADO, EMPLEADOEJECUTA, MOTIVOPROCESA)\n"
+                    + "VALUES (?, to_date(?, 'dd/mm/yyyy HH24miss'), ?, ?, ?)";
+            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            query.setParameter(1, kioSoliciVaca);
+            query.setParameter(2, fechaProcesa);
+            query.setParameter(3, estado);
+            query.setParameter(4, secEmpl);
+            query.setParameter(5, motivo);
+            res = query.executeUpdate();
+            System.out.println("registro kioestadosolici: "+res);
+        } catch (Exception ex) {
+            System.out.println("Error creaKioEstadoSolici: " + ex.getMessage());
+            return false;
+        }
+        return res>0;
+    }
+    
+    @POST
+    @Path("/crearSolicitudVacaciones")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public String crearSolicitudVacaciones(@QueryParam("seudonimo") String seudonimo, @QueryParam("nitempresa") String nit,
+            @QueryParam("fechainicio") String fechainicial, @QueryParam("fecharegreso") String fecharegreso,
+            @QueryParam("dias") String dias, @QueryParam("vacacion") String RFVACACION, @QueryParam("cadena") String cadena,
+            @QueryParam("urlKiosco") String urlKiosco, 
+            @QueryParam("grupo") String grupoEmpr, @QueryParam("fechafin") String fechafin) {
+        System.out.println("crearSolicitudVacaciones");
+        System.out.println("link Kiosco: "+urlKiosco);
+        System.out.println("grupoEmpresarial: "+grupoEmpr);
+        boolean soliciCreada = false;
+        String mensaje = "";
+        String urlKio = urlKiosco+"#/login/"+grupoEmpr;
+        try {
+            String pattern = "dd/MM/yyyy HHmmss";
+            String patternFechaCorreo = "dd/MM/yyyy";
+            Date fecha = new Date();
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+            SimpleDateFormat simpleDateFormatCorreo = new SimpleDateFormat(patternFechaCorreo);
+            String fechaGeneracion = simpleDateFormat.format(fecha);
+            String fechaCorreo = simpleDateFormatCorreo.format(fecha);
+            System.out.println("fecha: " + fechaGeneracion);
+            String secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nit);
+            String secEmplJefe = consultarSecuenciaEmpleadoJefe(secEmpl);
+            // Insertar registro en kionovedadessolici
+            if (creaKioNovedadSolici(seudonimo, nit, fechainicial, fecharegreso, dias, RFVACACION, fechafin)) {
+                String secKioNovedad = getSecuenciaKioNovedadesSolici(seudonimo, nit, fechainicial, fecharegreso, dias, RFVACACION);
+                System.out.println("secuencia kionovedadsolici creada: " + secKioNovedad);
+                // Insertar registro en kiosolicivacas
+                if (creaKioSoliciVacas(seudonimo, nit, secKioNovedad, fechaGeneracion)) {
+                    String secKioSoliciVacas = getSecKioSoliciVacas(secEmpl, fechaGeneracion, secEmplJefe, secKioNovedad);
+                    System.out.println("secuencia kiosolicivacas creada: " + secKioSoliciVacas);
+                    // Insertar registro en kioestadossolici
+                    if (creaKioEstadoSolici(seudonimo, nit, secKioSoliciVacas, fechaGeneracion, "ENVIADO", null)) {
+                        soliciCreada = true;
+                        mensaje = "Solicitud creada exitosamente.";
+                        String mensajeCorreo = "Nos permitimos informar que se acaba de crear una solicitud de vacaciones en el módulo de Kiosco Nómina Designer. Por favor llevar el caso desde su cuenta de usuario en el portal de Kiosco y continuar con el proceso."
+                                + " <br><br> "
+                                + "La persona que CREÓ LA SOLICITUD es: "+getApellidoNombreXsecEmpl(secEmpl)
+                                + "<br>"
+                                + "La persona a cargo de DAR APROBACIÓN es: "+getApellidoNombreXsecEmpl(secEmplJefe)
+                                + "<br>"
+                                + "Por favor seguir el proceso en: <a href='"+urlKio+"'>"+urlKio+"</a>"
+                                + "<br><br>"
+                                + "Si no puede ingresar, necesitará instalar la última versión de su navegador, la cual podrá descargar de forma gratuita."
+                                + "<br><br>"
+                                + "En caso de que haya olvidado su clave, ingrese a la página de internet, y de clic en ¿Olvidó su clave? y siga los pasos.";
+                        EnvioCorreo c = new EnvioCorreo();
+                        if (c.enviarCorreoVacaciones(getCorreoXsecEmpl(secEmpl),
+                                "Solicitud de vacaciones Kiosco - Nueva solicitud: "+fechaCorreo+". Inicio de vacaciones: "+fechainicial, 
+                                mensajeCorreo, urlKiosco, nit)){
+                            System.out.println("Correo enviado al empleado.");
+                        } 
+                        if (c.enviarCorreoVacaciones(getCorreoXsecEmpl(secEmplJefe),
+                                "Solicitud de vacaciones Kiosco - Nueva solicitud: "+fechaCorreo+". Inicio de vacaciones: "+fechainicial, 
+                                mensajeCorreo, urlKiosco, nit)){
+                            System.out.println("Correo enviado al jefe.");
+                        }                         
+                    } else {
+                        mensaje = "Ha ocurrido un error y no fue posible crear la solicitud, por favor inténtelo de nuevo más tarde. Si el problema persiste comuniquese con el área de nómina y recursos humanos de su empresa";
+                    }
+                } else {
+                    System.out.println("Ha ocurrido un error al momento de crear el registro 2 de la solicitud");
+                    mensaje= "Ha ocurrido un error y no fue posible crear la solicitud, por favor inténtelo de nuevo más tarde. Si el problema persiste comuniquese con el área de nómina y recursos humanos de su empresa";
+                }
+            } else {
+                System.out.println("Ha ocurrido un error al momento de crear el registro 1 de la solicitud");
+                mensaje = "Ha ocurrido un error y no fue posible crear la solicitud, por favor inténtelo de nuevo más tarde. Si el problema persiste comuniquese con el área de nómina y recursos humanos de su empresa";
+            }
+
+        } catch (Exception e) {
+            System.out.println("Ha ocurrido un error: " + e.getMessage());
+            soliciCreada=false;
+            mensaje="Ha ocurrido un error, por favor inténtelo de nuevo más tarde.";
+        }
+
+        JSONObject obj = new JSONObject();
+        try {
+            obj.put("solicitudCreada", soliciCreada);
+            obj.put("mensaje", mensaje);
+        } catch (JSONException ex) {
+            Logger.getLogger(EmpleadosFacadeREST.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return obj.toString();
+    } 
+    
+    
+    public String getCorreoXsecEmpl(String secEmpl) {
+        System.out.println("getCorreoXsecEmpl()");
+        System.out.println("sec Empleado: "+secEmpl);
+        String correo = null;
+        String sqlQuery;
+        try {
+            setearPerfil();
+            sqlQuery = "SELECT P.EMAIL "
+                    + " FROM CONEXIONESKIOSKOS CK, EMPLEADOS E, PERSONAS P "
+                    + " WHERE CK.EMPLEADO=E.SECUENCIA "
+                    + " AND P.SECUENCIA=E.PERSONA "
+                    + " AND CK.EMPLEADO=?";
+            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            query.setParameter(1, secEmpl);
+            correo = query.getSingleResult().toString();
+        } catch (Exception e) {
+            System.out.println("Error getCorreoXsecEmpl(): " + e.getMessage());
+        }
+        return correo;
+    }
+    
+    public String getApellidoNombreXsecEmpl(String secEmpl) {
+        System.out.println("getApellidoNombreXsecEmpl()");
+        String nombre = null;
+        setearPerfil();
+        try {
+            String sqlQuery = "SELECT UPPER(P.PRIMERAPELLIDO||' '||P.SEGUNDOAPELLIDO||' '||P.NOMBRE) NOMBRE "
+                    + " FROM PERSONAS P, EMPLEADOS EMPL "
+                    + " WHERE P.SECUENCIA=EMPL.PERSONA "
+                    + " AND EMPL.SECUENCIA=?";
+            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            query.setParameter(1, secEmpl);
+            nombre = (String) query.getSingleResult();
+            System.out.println("nombre: "+nombre);
+        } catch (Exception e) {
+            System.out.println("Error getNombrePersona(): " + e);
+        }
+        return nombre;
+    } 
+    
+<<<<<<< HEAD
     public String getFechaInicioXsecKioEstadoSolici(String secKioEstadoSolici) {
         String fechaInicio = null;
         try {
@@ -1361,5 +1686,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
     }    
     
     
+=======
+>>>>>>> 3bb5deeec57656e2e500b5ec39e5681926c260a9
     
 }

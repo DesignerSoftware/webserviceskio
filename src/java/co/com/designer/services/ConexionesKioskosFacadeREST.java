@@ -712,7 +712,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             "  to_char(t2.FECHAGENERACION, 'DD/MM/YYYY HH:mm:ss') solicitud, \n" +
             "  to_char(kn.FECHAINICIALDISFRUTE, 'DD/MM/YYYY HH:mm:ss') FECHAINICIALDISFRUTE,\n" +
             "  to_char(T0.FECHAPROCESAMIENTO, 'DD/MM/YYYY HH:mm:ss') FECHAPROCESAMIENTO,\n" +
-            "  t0.SECUENCIA, t0.MOTIVOPROCESA, \n" +
+            "  t0.SECUENCIA, NVL(t0.MOTIVOPROCESA, 'N/A'), \n" +
             "  to_char(kn.ADELANTAPAGOHASTA, 'DD/MM/YYYY HH:mm:ss') FECHAFINVACACIONES,\n" +
             "  to_char(kn.fechaSiguienteFinVaca, 'DD/MM/YYYY HH:mm:ss') fecharegresolaborar,\n" +
             "  kn.dias,\n" +
@@ -733,7 +733,8 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             "  and kn.vacacion=v.RFVACACION\n" +
             "  ) \n" +
             "  ORDER BY t0.FECHAPROCESAMIENTO";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            //Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = getEntityManager().createNativeQuery(sqlQuery);
             query.setParameter(1, empresa);
             query.setParameter(2, documentoJefe);
             s = query.getResultList();
