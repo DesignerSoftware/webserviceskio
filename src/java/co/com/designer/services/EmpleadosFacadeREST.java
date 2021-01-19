@@ -101,7 +101,7 @@ public class EmpleadosFacadeREST {
 "          em.nit nitEmpresa,  \n" +
 "          em.nombre nombreEmpresa, \n" +
 "          empleadocurrent_pkg.descripciontipocontrato(e.secuencia, sysdate) contrato, \n" +
-"          empleadocurrent_pkg.ValorBasicoCorte(e.secuencia, sysdate) salario,  \n" +
+"          trim(to_char(empleadocurrent_pkg.ValorBasicoCorte(e.secuencia, sysdate),'$999G999G999G999G999G999')) salario,   \n" +
 "          empleadocurrent_pkg.DescripcionCargoCorte(e.secuencia, sysdate) cargo,  \n" +                
 // "          DIAS360(empleadocurrent_pkg.FechaVigenciaTipoContrato(e.secuencia, sysdate), sysdate) diasW,  \n" +
 "          empleadocurrent_pkg.FechaVigenciaTipoContrato(e.secuencia, sysdate) inicioContratoActual,\n" +
