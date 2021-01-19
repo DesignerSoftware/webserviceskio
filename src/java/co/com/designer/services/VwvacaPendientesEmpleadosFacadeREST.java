@@ -658,6 +658,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
             String fecha = new SimpleDateFormat("dd/MM/yyyy").format(new Date());
             EnvioCorreo c = new EnvioCorreo();
 <<<<<<< HEAD
+<<<<<<< HEAD
             String estadoVerbo=estado.equals("CANCELADO")?"CANCELAR":
                     estado.equals("AUTORIZADO")?"PRE-APROBAR":
                     estado.equals("RECHAZADO")?"RECHAZAR":estado;
@@ -667,6 +668,8 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
             String mensaje="Nos permitimos informar que se acaba de "+estadoVerbo+" una solicitud de vacaciones";
                     if (estado.equals("RECHAZADO") || estado.equals("AUTORIZADO")){
 =======
+=======
+>>>>>>> 3bb5deeec57656e2e500b5ec39e5681926c260a9
             String estadoVerbo=estado.equals("CANCELADO")?"cancelar":
                     estado.equals("AUTORIZADO")?"autorizar":
                     estado.equals("RECHAZADO")?"rechazar":estado;
@@ -675,6 +678,9 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                     estado.equals("RECHAZADO")?"rechazó":estado;
             String mensaje="Nos permitimos informar que se acaba de "+estadoVerbo+" una solicitud de vacaciones";
                     if (estado.equals("RECHAZADO")){
+<<<<<<< HEAD
+>>>>>>> 3bb5deeec57656e2e500b5ec39e5681926c260a9
+=======
 >>>>>>> 3bb5deeec57656e2e500b5ec39e5681926c260a9
                         mensaje+=" creada para "+getApellidoNombreXsecEmpl(secEmplSolicita);
                     }
@@ -692,6 +698,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
            System.out.println("url Kiosco: "+urlKio);
             if (res>0) {
                 System.out.println("solicitud "+estado+" con éxito.");
+<<<<<<< HEAD
 <<<<<<< HEAD
                 String servidorsmtp = getConfigCorreoServidorSMTP(nit);
                 String puerto = getConfigCorreo(nit, "PUERTO");
@@ -734,6 +741,8 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                 }
 
 =======
+=======
+>>>>>>> 3bb5deeec57656e2e500b5ec39e5681926c260a9
                 if (c.enviarCorreoVacaciones(getCorreoXsecEmpl(secEmplSolicita),
                         "Solicitud de vacaciones Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de vacaciones: " + fechaInicioDisfrute,
                         mensaje, urlKio, nit)) {
@@ -744,6 +753,9 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                         mensaje, urlKio, nit)) {
                     System.out.println("Correo enviado al empleado que solicita asociado");
                 }
+<<<<<<< HEAD
+>>>>>>> 3bb5deeec57656e2e500b5ec39e5681926c260a9
+=======
 >>>>>>> 3bb5deeec57656e2e500b5ec39e5681926c260a9
             } else {
                 System.out.println("Error al procesar la solicitud.");
@@ -1032,6 +1044,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
         }
         return nombre;
     } 
+<<<<<<< HEAD
     
 <<<<<<< HEAD
     public String getFechaInicioXsecKioEstadoSolici(String secKioEstadoSolici) {
@@ -1687,6 +1700,9 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
     
     
 =======
+>>>>>>> 3bb5deeec57656e2e500b5ec39e5681926c260a9
+=======
+    
 >>>>>>> 3bb5deeec57656e2e500b5ec39e5681926c260a9
     
 }

@@ -583,12 +583,15 @@ public class EnvioCorreo {
  /*    public boolean enviarCorreoVacaciones(String servidorsmtp, String puerto, String autenticado, String starttls, String remitente, String clave, String destinatario, 
         String nombreUsuario, String asunto, String mensaje, String nit) {*/
 <<<<<<< HEAD
+<<<<<<< HEAD
 /*    public boolean enviarCorreoVacaciones(String destinatario,
         String asunto, String mensaje, String urlKiosco, String nit) {*/
         public boolean enviarCorreoVacaciones(String servidorsmtp, String puerto, String autenticado,
                 String starttls, String remitente, String clave, String destinatario,
         String asunto, String mensaje, String urlKiosco, String nit) {
 =======
+=======
+>>>>>>> 3bb5deeec57656e2e500b5ec39e5681926c260a9
     public boolean enviarCorreoVacaciones(String destinatario,
             String asunto, String mensaje, String urlKiosco, String nit) {
         String remitente = getConfigCorreo(nit, "REMITENTE");
@@ -597,6 +600,9 @@ public class EnvioCorreo {
         String autenticado = getConfigCorreo(nit, "AUTENTICADO");
         String starttls = getConfigCorreo(nit, "STARTTLS");
         String clave = getConfigCorreo(nit, "CLAVE");
+<<<<<<< HEAD
+>>>>>>> 3bb5deeec57656e2e500b5ec39e5681926c260a9
+=======
 >>>>>>> 3bb5deeec57656e2e500b5ec39e5681926c260a9
 
         boolean envioCorreo = false;
