@@ -1,5 +1,6 @@
 package co.com.designer.services;
 
+import co.com.designer.kiosko.correo.EnvioCorreo;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
@@ -662,5 +663,53 @@ public class EmpleadosFacadeREST {
         }
         return obj.toString();
     }
+    
+    public String getApellidoNombreXsecEmpl(String secEmpl) {
+        System.out.println("getApellidoNombreXsecEmpl() secuenciaEmpl: "+secEmpl);
+        String nombre = null;
+        setearPerfil();
+        try {
+            String sqlQuery = "SELECT UPPER(P.PRIMERAPELLIDO||' '||P.SEGUNDOAPELLIDO||' '||P.NOMBRE) NOMBRE "
+                    + " FROM PERSONAS P, EMPLEADOS EMPL "
+                    + " WHERE P.SECUENCIA=EMPL.PERSONA "
+                    + " AND EMPL.SECUENCIA=?";
+            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            query.setParameter(1, secEmpl);
+            nombre = (String) query.getSingleResult();
+            System.out.println("nombre: "+nombre);
+        } catch (Exception e) {
+            System.out.println("Error getApellidoNombreXsecEmpl(): " + e);
+        }
+        return nombre;
+    }
+    
+    @GET
+    @Path("/enviaReporteInfoRRHH")
+    @Produces(MediaType.APPLICATION_JSON)
+    public boolean enviaReporteInfoRRHH(@QueryParam("seudonimo") String seudonimo, @QueryParam("nitempresa") String nitEmpresa, 
+            @QueryParam("observacion") String observacionNovedad, @QueryParam("urlKiosco") String urlKiosco, @QueryParam("grupo") String grupo) {
+        String secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa);
+        String nombreEmpl = getApellidoNombreXsecEmpl(secEmpl);
+        String fecha = new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date());
+        String mensaje = "Nos permitimos informar que "+nombreEmpl+" ha reportado la siguiente "
+                + "observación desde el módulo Kiosco para su validación: "
+                + "<br><br>"
+                + observacionNovedad;
+        System.out.println("enviaReporteInfoRRHH(): seudonimo "+seudonimo+", nit: "+nitEmpresa+", urlKiosco: "+urlKiosco+", grupo: "+grupo);
+        boolean enviado = true;
+        try { 
+            EnvioCorreo e= new EnvioCorreo();
+            if (e.enviarCorreoNovedadInfoRRHH("Módulo Kiosco: Reporte de corrección de información de "+nombreEmpl+" "+fecha,
+                    mensaje, nitEmpresa)) {
+                enviado = true;
+            } else {
+                enviado= false;
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(EmpleadosFacadeREST.class.getName()).log(Level.SEVERE, null, ex);
+            mensaje =  "Ha ocurrido un error, por favor intentalo de nuevo más tarde.";
+        }
+        return enviado;
+    }        
     
 }
