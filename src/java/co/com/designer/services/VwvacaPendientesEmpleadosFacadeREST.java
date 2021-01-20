@@ -768,8 +768,8 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
         try {
             String secuenciaEmpleado = getSecuenciaEmplPorSeudonimo(empleado, nit);
             setearPerfil();
-            String sqlQuery = "select \n" 
-                    + "tablaTotal.empleado, 'TOTAL' tipo, NVL(sum(tablaTotal.dias), 0 )\n"
+            String sqlQuery = "select \n" +
+                      "tablaTotal.empleado, 'TOTAL' tipo, ROUND(NVL(sum(tablaTotal.dias), 0 ), 2)\n"
                     + "from\n"
                     + "(select e.secuencia empleado, sum(n.dias) dias\n"
                     + "from\n"
@@ -780,7 +780,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                     + "group by e.secuencia\n"
                     + "union\n"
                     + "select e.secuencia empleado,\n"
-                    + "sum(k.diasvacadisfrute+k.diasvacadinero) dias\n"
+                    + "ROUND(sum(k.diasvacadisfrute+k.diasvacadinero), 2) dias\n"
                     + "from kioacumvaca k, empleados e\n"
                     + "where\n"
                     + "e.secuencia=k.empleado(+)\n"
@@ -806,7 +806,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                     + "e.secuencia=k.empleado(+)\n"
                     + "group by e.secuencia)\n"
                     + "union\n"
-                    + "(select e.secuencia empleado, NVL(sum(n.dias), 0) dias, 'TIEMPO' tipo\n"
+                    + "(select e.secuencia empleado, ROUND(NVL(sum(n.dias), 0), 2) dias, 'TIEMPO' tipo\n"
                     + "from\n"
                     + "novedadessistema n, empleados e\n"
                     + "where e.secuencia=n.empleado\n"
@@ -815,7 +815,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                     + "group by e.secuencia\n"
                     + "union\n"
                     + "select e.secuencia empleado,\n"
-                    + "NVL(sum(k.diasvacadisfrute), 0) dias, 'TIEMPO' tipo\n"
+                    + "ROUND(NVL(sum(k.diasvacadisfrute), 0),2) dias, 'TIEMPO' tipo\n"
                     + "from kioacumvaca k, empleados e\n"
                     + "where\n"
                     + "e.secuencia=k.empleado(+)\n"

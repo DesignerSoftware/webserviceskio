@@ -732,7 +732,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             "  and t2.KIONOVEDADSOLICI = kn.secuencia\n" +
             "  and kn.vacacion=v.RFVACACION\n" +
             "  ) \n" +
-            "  ORDER BY t0.FECHAPROCESAMIENTO";
+            "  ORDER BY t0.FECHAPROCESAMIENTO DESC";
             //Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             Query query = getEntityManager().createNativeQuery(sqlQuery);
             query.setParameter(1, empresa);
