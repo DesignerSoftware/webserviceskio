@@ -81,6 +81,31 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         EntityManager em = Persistence.createEntityManagerFactory(unidadPersistencia).createEntityManager();
         return em;
     }
+    
+    @Override
+    protected void setearPerfil() {
+        try {
+            System.out.println("setearPerfil");
+            String rol = "ROLKIOSKO";
+            String sqlQuery = "SET ROLE " + rol + " IDENTIFIED BY RLKSK ";
+            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            query.executeUpdate();
+        } catch (Exception ex) {
+            System.out.println("Error setearPerfil(): " + ex);
+        }
+    }  
+    
+    protected void setearPerfil(String cadenaPersistencia) {
+        try {
+            System.out.println("setearPerfil(cadena)");
+            String rol = "ROLKIOSKO";
+            String sqlQuery = "SET ROLE " + rol + " IDENTIFIED BY RLKSK ";
+            Query query = getEntityManager(cadenaPersistencia).createNativeQuery(sqlQuery);
+            query.executeUpdate();
+        } catch (Exception ex) {
+            System.out.println("Error setearPerfil(cadenaPersistencia): " + ex);
+        }
+    }    
 
     @POST
     @Override
@@ -173,17 +198,17 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @Path("/updateFechas")
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateFechasConexionesKioskos(@QueryParam("usuario") String usuario, @QueryParam("nitEmpresa") String nitEmpresa, @QueryParam("fechadesde") String fechadesde,
-            @QueryParam("fechahasta") String fechahasta, @QueryParam("enviocorreo") boolean enviocorreo, @QueryParam("dirigidoa") String dirigidoa) {
+            @QueryParam("fechahasta") String fechahasta, @QueryParam("enviocorreo") boolean enviocorreo, @QueryParam("dirigidoa") String dirigidoa, @QueryParam("cadena") String cadena) {
         int conteo = 0;
         System.out.println("Parametros: seudonimo: " + usuario + ", fechadesde: " + fechadesde + ", fechahasta: " + fechahasta+", dirigidoa: "+dirigidoa);
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "UPDATE CONEXIONESKIOSKOS "
                     + " SET FECHADESDE=TO_DATE(?, 'yyyy-mm-dd'), FECHAHASTA=TO_DATE(?, 'yyyy-mm-dd'), ENVIOCORREO=?, DIRIGIDOA=? "
                     + " WHERE SEUDONIMO=? "
                     + " AND NITEMPRESA=?";
             String envioc = (enviocorreo == true ? "S" : "N");
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, fechadesde);
             query.setParameter(2, fechahasta);
             query.setParameter(3, envioc);
@@ -505,20 +530,6 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         // return "hola";
     }
 
-
-    @Override
-    protected void setearPerfil() {
-        try {
-            System.out.println("setearPerfil");
-            String rol = "ROLKIOSKO";
-            String sqlQuery = "SET ROLE " + rol + " IDENTIFIED BY RLKSK ";
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
-            query.executeUpdate();
-        } catch (Exception ex) {
-            System.out.println("Error setearPerfil(): " + ex);
-        }
-    }
-
     @GET
     @Path("/obtenerFoto/{imagen}")
     @Produces({"image/png", "image/jpg", "image/gif"})
@@ -758,14 +769,14 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @GET
     @Path("/datosContactoKiosco/{nit}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getDatosContactoKiosco(@PathParam("nit") String nit) {
+    public Response getDatosContactoKiosco(@PathParam("nit") String nit, @QueryParam("cadena") String cadena) {
         BigDecimal res = null;
         List datos = null;
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "SELECT K.NOMBRECONTACTO NOMBRE, K.EMAILCONTACTO EMAIL, TELEFONOCONTACTO TELEFONO "
                     + "FROM KIOPERSONALIZACIONES K, EMPRESAS EM WHERE K.EMPRESA=EM.SECUENCIA AND EM.NIT=?";
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nit);
             datos = query.getResultList();
         } catch (Exception ex) {
@@ -781,27 +792,27 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @Path("/validarIngresoSeudonimoKiosco")
     @Produces(MediaType.APPLICATION_JSON)
     public Response validarIngresoSeudonimoKiosco(@QueryParam("usuario") String usuario, @QueryParam("clave") String clave, 
-            @QueryParam("nitEmpresa") String nitEmpresa) {
+            @QueryParam("nitEmpresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
         boolean ingresoExitoso = false;
         boolean primeringreso = false;
         String estadoUsuario = "";
         String mensaje = "Error no controlado, por favor inténtelo nuevamente.";  
         List rs = null;
-        System.out.println("Parametro usuario: "+usuario+" clave: "+clave+" nitEmpresa: "+nitEmpresa);
+        System.out.println("validarIngresoSeudonimoKiosco() Parametros usuario: "+usuario+" clave: "+clave+" nitEmpresa: "+nitEmpresa+" cadenaConexion: "+cadena);
         String documento = null;
         try {
-           setearPerfil();
-           documento = getDocumentoCorreoODocumento(usuario);
+            setearPerfil(cadena);
+           documento = getDocumentoCorreoODocumento(usuario, cadena);
            System.out.println("documento asociado a correo o documento: "+usuario+ " es "+documento);
            if (documento!=null){
                 System.out.println("Ingresa ciclo documento!=null");
-                if (validarUsuarioyEmpresa(documento, nitEmpresa)) { // valida si existe relacion con la empresa y se encuentra activo
-                    if (validarUsuarioRegistrado(documento, nitEmpresa)) { // relacion entre conexioneskioskos, empleados y personas
+                if (validarUsuarioyEmpresa(documento, nitEmpresa, cadena)) { // valida si existe relacion con la empresa y se encuentra activo
+                    if (validarUsuarioRegistrado(documento, nitEmpresa, cadena)) { // relacion entre conexioneskioskos, empleados y personas
                         System.out.println("usuario "+usuario+ " esta registrado en conexioneskioskos");
-                        if (validarSeudonimoRegistrado(usuario, nitEmpresa)) {
+                        if (validarSeudonimoRegistrado(usuario, nitEmpresa, cadena)) {
                             System.out.println("El seudonimo  "+usuario+ " existe y esta relacionado con la empresa seleccionada "+nitEmpresa);
                             /// usuario no validado
-                            estadoUsuario = validarEstadoUsuarioSeudonimo(usuario, nitEmpresa);
+                            estadoUsuario = validarEstadoUsuarioSeudonimo(usuario, nitEmpresa, cadena);
                             System.out.println("validarEstadoUsuarioSeudonimo: " + estadoUsuario);
                             if (estadoUsuario.equals("P")) {
                                 System.out.println("El usuario "+usuario+ " no ha validado su cuenta. Estado PENDIENTE");
@@ -811,7 +822,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                                 System.out.println("Mensaje: "+mensaje);
                             } else if (estadoUsuario.equals("S")) {
                                 System.out.println("El estado del usuario "+usuario+ " es activo: S");
-                                if (validarIngresoUsuarioSeudonimoRegistrado(usuario, clave, nitEmpresa)) {
+                                if (validarIngresoUsuarioSeudonimoRegistrado(usuario, clave, nitEmpresa, cadena)) {
                                     mensaje = "El usuario que ingresa es: " + usuario;
                                     System.out.println("Mensaje: "+mensaje);
                                     ingresoExitoso = true;
@@ -873,16 +884,17 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         }                
     }
     
-   public String getDocumentoCorreoODocumento(String usuario) {
+   public String getDocumentoCorreoODocumento(String usuario, String cadena) {
+       System.out.println("parametros getDocumentoCorreoODocumento() usuario: "+usuario+", cadena: "+cadena);
        String documento=null;
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P WHERE P.EMAIL=?";
             if (this.validarCodigoUsuario(usuario)) {
                  sqlQuery+=" OR P.NUMERODOCUMENTO=?"; // si el valor es numerico validar por numero de documento
             }
             System.out.println("Query: "+sqlQuery);
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
 
             query.setParameter(1, usuario);
             if (this.validarCodigoUsuario(usuario)) {
@@ -890,30 +902,31 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             }
             documento =  query.getSingleResult().toString();
         } catch (Exception e) {
-            System.out.println("Error: crearUsuario: "+e.getMessage());
+            System.out.println("Error: getDocumentoCorreoODocumento: "+e.getMessage());
         }
         return documento;
    }
    
-    public boolean validarUsuarioyEmpresa(String usuario, String nitEmpresa) {
+    public boolean validarUsuarioyEmpresa(String usuario, String nitEmpresa, String cadena) {
         boolean resultado = false;
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "SELECT COUNT(*) count FROM EMPLEADOS e, Empresas em "
                     + "WHERE e.empresa = em.secuencia "
                     + "AND e.codigoempleado = ? "
                     + "AND em.nit = ? "
                     + "AND (EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(e.secuencia, SYSDATE) = 'ACTIVO' "
                     + "OR EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(e.secuencia, SYSDATE) = 'PENSIONADO')";
-            System.out.println("Parametros[ usuario: "+usuario+ ", nitEmpresa: "+nitEmpresa+"]");
+            System.out.println("validarUsuarioyEmpresa() Parametros[ usuario: "+usuario+ ", nitEmpresa: "+nitEmpresa+", cadena: "+cadena+ "]");
             System.out.println("Query: "+sqlQuery);
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, usuario);
             query.setParameter(2, nitEmpresa);
 
             BigDecimal retorno = (BigDecimal) query.getSingleResult();
             Integer instancia = retorno.intValueExact();
             resultado = instancia > 0;
+            System.out.println("resultado validarUsuarioyEmpresa: "+instancia);
         }catch (Exception ex) {
             System.out.println("Error: validarUsuarioyEmpresa: "+ex.getMessage());
         }
@@ -933,7 +946,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         return resultado;
     }
     
-     public boolean validarUsuarioRegistrado(String usuario, String nitEmpresa) { //  verifica si se requiere mejora para validar por persona
+     public boolean validarUsuarioRegistrado(String usuario, String nitEmpresa, String cadena) { //  verifica si se requiere mejora para validar por persona
         boolean resultado = false;
         try {
             setearPerfil();
@@ -947,7 +960,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                     + "AND em.nit = ? ";
             System.out.println("Parametros [ usuario: "+usuario+", nitEmpresa: "+nitEmpresa+" ]");
             System.out.println("Query: "+sqlQuery);
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, usuario);
             query.setParameter(2, nitEmpresa);
                        BigDecimal retorno = (BigDecimal) query.getSingleResult();
@@ -959,11 +972,11 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         return resultado;
      }
      
-    public boolean validarSeudonimoRegistrado(String seudonimo, String nitEmpresa) {
+    public boolean validarSeudonimoRegistrado(String seudonimo, String nitEmpresa, String cadena) {
         System.out.println("validarSeudonimoRegistrado()");
         boolean resultado = false;
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "SELECT COUNT(*) count "
                     + "FROM CONEXIONESKIOSKOS ck, PERSONAS per, EMPLEADOS e, EMPRESAS em "
                     + "WHERE "
@@ -975,7 +988,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                     + "AND em.nit = ? ";
             System.out.println("Parametros: [ seudonimo: "+seudonimo+", nitEmpresa: "+nitEmpresa);
             System.out.println("Query: "+sqlQuery);
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, seudonimo);
             query.setParameter(2, nitEmpresa);
             BigDecimal retorno = (BigDecimal) query.getSingleResult();
@@ -989,12 +1002,12 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     
     
     
-    public String validarEstadoUsuarioSeudonimo(String usuario, String nitEmpresa) { // retorna true si el usuario esta activo
+    public String validarEstadoUsuarioSeudonimo(String usuario, String nitEmpresa, String cadena) { // retorna true si el usuario esta activo
         System.out.println("validarEstadoUsuarioSeudonimo()");
         String retorno = null;
         boolean resultado = false;
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "SELECT ACTIVO estado "
                     + "FROM CONEXIONESKIOSKOS ck, PERSONAS per, EMPLEADOS e, EMPRESAS em "
                     //                    + "WHERE ck.PERSONA = per.SECUENCIA "
@@ -1003,9 +1016,9 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                     + "AND e.empresa = em.secuencia "
                     + "AND ck.seudonimo = ? "
                     + "AND em.nit = ? ";
-            System.out.println("Parametros: [usuario: "+usuario+ ", nitEmpresa: "+nitEmpresa);
+            System.out.println("validarEstadoUsuarioSeudonimo() Parametros: [usuario: "+usuario+ ", nitEmpresa: "+nitEmpresa+", cadena: "+cadena+"]");
             System.out.println("Query: "+sqlQuery);
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, usuario);
             query.setParameter(2, nitEmpresa);
             retorno = query.getSingleResult().toString();
@@ -1016,10 +1029,10 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     }
     
     
-    public boolean validarIngresoUsuarioSeudonimoRegistrado(String seudonimo, String clave, String nitEmpresa) { // retorna true si el usuario esta activo
+    public boolean validarIngresoUsuarioSeudonimoRegistrado(String seudonimo, String clave, String nitEmpresa, String cadena) { // retorna true si el usuario esta activo
         boolean resultado = false;
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "SELECT COUNT(*) count "
                     + "FROM CONEXIONESKIOSKOS ck, Personas per, EMPLEADOS e "
                     + "WHERE ck.PERSONA = per.SECUENCIA "
@@ -1030,7 +1043,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                     + "AND ck.nitempresa = ? "
                     + "AND (EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(e.secuencia, SYSDATE) = 'ACTIVO' "
                     + "OR EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(e.secuencia, SYSDATE) = 'PENSIONADO')";
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, seudonimo);
             query.setParameter(2, clave);
             query.setParameter(3, nitEmpresa);
@@ -1049,7 +1062,8 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @POST
     @Path("/restKiosco/jwt")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getJWT(@QueryParam("usuario") String usuario, @QueryParam("clave") String clave, @QueryParam("nit") String nit) throws UnsupportedEncodingException{
+    public Response getJWT(@QueryParam("usuario") String usuario, @QueryParam("clave") String clave, @QueryParam("nit") String nit,
+            @QueryParam("cadena") String cadena) throws UnsupportedEncodingException{
         Boolean r=validarLogin(usuario, clave, nit);
         Boolean registroToken = false;
         //String passwordEncript = "Manager01*"+usuario+nit;
@@ -1069,7 +1083,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                     .setExpiration(fechaExpiracion.getTime())
                     .setIssuer("https://www.designer.com.co") //200721
                     .claim("empresa", nit)
-                    .claim("documento", getDocumentoPorSeudonimo(usuario, nit))
+                    .claim("documento", getDocumentoPorSeudonimo(usuario, nit, cadena))
                     .compact();
                     System.out.println("Token generado: "+jwt);
     
@@ -1118,14 +1132,14 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     }
    
    
-    public String getDocumentoPorSeudonimo(String seudonimo, String nitEmpresa) {
+    public String getDocumentoPorSeudonimo(String seudonimo, String nitEmpresa, String cadena) {
        System.out.println("getDocumentoPorSeudonimo()");
        String documento=null;
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P, CONEXIONESKIOSKOS CK WHERE CK.PERSONA=P.SECUENCIA AND CK.SEUDONIMO=? AND CK.NITEMPRESA=?";
             System.out.println("Query: "+sqlQuery);
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
 
             query.setParameter(1, seudonimo);
             query.setParameter(2, nitEmpresa);
@@ -1329,8 +1343,8 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @GET
     @Path("/restKiosco/documentoconexioneskioskos")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getDocumentoConexioneskioskos(@QueryParam("seudonimo") String usuario, @QueryParam("nit") String nit){
-        String r=getDocumentoPorSeudonimo(usuario, nit);
+    public Response getDocumentoConexioneskioskos(@QueryParam("seudonimo") String usuario, @QueryParam("nit") String nit, @QueryParam("cadena") String cadena){
+        String r=getDocumentoPorSeudonimo(usuario, nit, cadena);
         String[] parametros={usuario, nit};
             return Response.ok(
                 response("documentoconexioneskioskos", "Usuario: "+usuario+", nit: "+nit, String.valueOf(r)), MediaType.APPLICATION_JSON)
@@ -1340,21 +1354,21 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @GET
     @Path("/restKiosco/logoEmpresa/{nit}")
     @Produces(MediaType.TEXT_PLAIN)
-    public Response getLogoEmpresa(@PathParam("nit") String nit){
-        String r= getLogoEmpresaS(nit);
+    public Response getLogoEmpresa(@PathParam("nit") String nit, @QueryParam("cadena") String cadena){
+        String r= getLogoEmpresaS(nit, cadena);
         return Response.ok(r, MediaType.TEXT_PLAIN)
         .build();
     }
     
     
-    public String getLogoEmpresaS(String nitEmpresa) { // retorna true si el usuario esta activo
+    public String getLogoEmpresaS(String nitEmpresa, String cadena) { // retorna true si el usuario esta activo
         ResultSet rs = null;
         String logo = "";
         JSONObject logoE = new JSONObject();
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "SELECT LOGO FROM EMPRESAS WHERE NIT = ?";
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
             logo = query.getSingleResult().toString();
             logoE.put("LOGO", logo.substring(0, logo.length()-4));
@@ -1399,8 +1413,8 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @GET
     @Path("/restKiosco/validarUsuarioyEmpresa/{usuario}/{nitEmpresa}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response validarUsuarioyEmpresaS(@PathParam("usuario") String usuario, @PathParam("nitEmpresa") String nitEmpresa){
-        boolean res=validarUsuarioyEmpresa(usuario, nitEmpresa);
+    public Response validarUsuarioyEmpresaS(@PathParam("usuario") String usuario, @PathParam("nitEmpresa") String nitEmpresa, @QueryParam("cadena") String cadena){
+        boolean res=validarUsuarioyEmpresa(usuario, nitEmpresa, cadena);
         String[] parametros={usuario, nitEmpresa};
         try {
                 return Response.ok(
@@ -1418,8 +1432,8 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @GET
     @Path("/restKiosco/validarSeudonimoyEmpresaRegistrado/{usuario}/{nitEmpresa}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response validarSeudonimoyEmpresaRegistrado(@PathParam("usuario") String usuario, @PathParam("nitEmpresa") String nitEmpresa){
-        boolean res=validarSeudonimoRegistrado(usuario, nitEmpresa);
+    public Response validarSeudonimoyEmpresaRegistrado(@PathParam("usuario") String usuario, @PathParam("nitEmpresa") String nitEmpresa, @QueryParam("cadena") String cadena){
+        boolean res=validarSeudonimoRegistrado(usuario, nitEmpresa, cadena);
         String[] parametros={usuario, nitEmpresa};
         try {
                 return Response.ok(
@@ -1504,8 +1518,8 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @GET
     @Path("/restKiosco/validarUsuarioRegistrado/{usuario}/{nitEmpresa}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response validarUsuarioRegistradoW(@PathParam("usuario") String usuario, @PathParam("nitEmpresa") String nitEmpresa){
-        boolean res=validarUsuarioRegistrado(usuario, nitEmpresa);
+    public Response validarUsuarioRegistradoW(@PathParam("usuario") String usuario, @PathParam("nitEmpresa") String nitEmpresa, @QueryParam("cadena") String cadena){
+        boolean res=validarUsuarioRegistrado(usuario, nitEmpresa, cadena);
         String[] parametros = {usuario, nitEmpresa};
         try {
                 return Response.ok(
@@ -1552,7 +1566,8 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @GET
     @Path("/restKiosco/jwtValidCuenta")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getJWTValidCuenta(@QueryParam("usuario") String usuario, @QueryParam("clave") String clave, @QueryParam("nit") String nit, @QueryParam("urlKiosco") String urlKiosco) throws UnsupportedEncodingException{
+    public Response getJWTValidCuenta(@QueryParam("usuario") String usuario, @QueryParam("clave") String clave, @QueryParam("nit") String nit, 
+            @QueryParam("urlKiosco") String urlKiosco, @QueryParam("cadena") String cadena) throws UnsupportedEncodingException{
         System.out.println("UrlKiosco recibido: "+urlKiosco);
         Boolean r=validarLogin(usuario, clave, nit);
         //String passwordEncript = "Manager01*"+usuario+nit; // contraseña de encriptado Manager01*+usuario+nit
@@ -1572,7 +1587,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                     .setExpiration(fechaExpiracion) // 1 hora de expiración a partir de la generación del Token
                     .setIssuer("https://www.designer.com.co") //200721
                     .claim("empresa", nit)
-                    .claim("documento", getDocumentoPorSeudonimo(usuario, nit))
+                    .claim("documento", getDocumentoPorSeudonimo(usuario, nit, cadena))
                     .compact();
                     System.out.println("Token generado: "+jwt);
                         
@@ -1622,8 +1637,9 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @GET
     @Path("/restKiosco/validarUsuarioSeudonimoRegistrado")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response validarUsuarioSeudonimoRegistrado(@QueryParam("usuario") String usuario, @QueryParam("clave") String clave, @QueryParam("nitEmpresa") String nitEmpresa){
-        boolean res=validarIngresoUsuarioSeudonimoRegistrado(usuario, clave, nitEmpresa);
+    public Response validarUsuarioSeudonimoRegistrado(@QueryParam("usuario") String usuario, @QueryParam("clave") String clave, @QueryParam("nitEmpresa") String nitEmpresa,
+            @QueryParam("cadena") String cadena){
+        boolean res=validarIngresoUsuarioSeudonimoRegistrado(usuario, clave, nitEmpresa, cadena);
         String[] parametros = {usuario, nitEmpresa};
         try {
                 return Response.ok(

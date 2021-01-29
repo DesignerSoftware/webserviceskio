@@ -5,11 +5,13 @@
         <group>
             <file>file:/D:/Kiosco/wsreporte/src/java/co/com/designer/kiosko/entidades/Empleados.java</file>
             <file>file:/D:/Kiosco/wsreporte/src/java/co/com/designer/services/filter/CorsFilter.java</file>
+            <file>file:/D:/Kiosco/wsreporte/src/java/co/com/designer/services/AbstractFacade.java</file>
             <file>file:/D:/Kiosco/wsreporte/src/java/co/com/designer/services/ConexionesKioskosFacadeREST.java</file>
             <file>file:/D:/Kiosco/wsreporte/src/java/co/com/designer/kiosko/correo/EnvioCorreo.java</file>
             <file>file:/D:/Kiosco/wsreporte/src/java/co/com/designer/services/VwvacaPendientesEmpleadosFacadeREST.java</file>
             <file>file:/D:/Kiosco/wsreporte/src/java/co/com/designer/kiosko/reportes/IniciarReporte.java</file>
             <file>file:/D:/Kiosco/wsreporte/src/java/co/com/designer/services/CadenasKioskosFacadeREST.java</file>
+            <file>file:/D:/Kiosco/wsreporte/src/java/co/com/designer/services/OpcionesKioskosFacadeREST.java</file>
             <file>file:/D:/Kiosco/wsreporte/src/java/co/com/designer/services/ReportesFacadeREST.java</file>
             <file>file:/D:/Kiosco/wsreporte/src/java/co/com/designer/services/ApplicationConfig.java</file>
             <file>file:/D:/Kiosco/wsreporte/src/java/co/com/designer/services/EmpleadosFacadeREST.java</file>

@@ -80,15 +80,15 @@ public class EmpleadosFacadeREST {
         System.out.println("parametros: empleado: "+empleado+" nit: "+nit+ " cadena "+cadena);
         List s = null;
         try {
-        String documento = getDocumentoPorSeudonimo(empleado, nit);
-        setearPerfil();
+        String documento = getDocumentoPorSeudonimo(empleado, nit, cadena);
+        setearPerfil(cadena);
         String sqlQuery="  select \n"
                     + "          e.codigoempleado usuario,  \n"
                     + "          p.nombre ||' '|| p.primerapellido ||' '|| p.segundoapellido nombres, \n"
                     + "          p.primerapellido apellido1, \n"
                     + "          p.segundoapellido apellido2,  \n"
                     + "          decode(p.sexo,'M', 'MASCULINO', 'F', 'FEMENINO', '') sexo,  \n"
-                    + "          to_char(p.FECHANACIMIENTO, 'yyyy-mm-dd') fechaNacimiento, \n"
+                    + "          to_char(p.FECHANACIMIENTO, 'dd-MM-yyyy') fechaNacimiento, \n"
                     + "          (select nombre from ciudades where secuencia=p.CIUDADNACIMIENTO) ciudadNacimiento, \n"
                     + "          p.GRUPOSANGUINEO grupoSanguineo, \n"
                     + "          p.FACTORRH factorRH, \n"
@@ -117,7 +117,8 @@ public class EmpleadosFacadeREST {
                     + "          empleadocurrent_pkg.entidadeps(e.secuencia) entidadeps, \n"
                     + "          empleadocurrent_pkg.entidadarp(e.secuencia)  entidadarp,\n"
                     + "          empleadocurrent_pkg.entidadcesantias(e.secuencia, sysdate) entidadcesantias,"
-                    + "          empleadocurrent_pkg.Afiliacion(e.secuencia , te.codigo, sysdate, sysdate) cajaCompensación          \n"
+                    + "          empleadocurrent_pkg.Afiliacion(e.secuencia , te.codigo, sysdate, sysdate) cajaCompensacion,          \n"
+                    + "          to_char(empleadocurrent_pkg.FechaIngreso(e.secuencia), 'dd-MM-yyyy') fechaContratacion   \n"
                     + "          from  \n"
                     + "          empleados e, conexioneskioskos ck, empresas em, personas p, telefonos t, tipostelefonos tt, VigenciasAfiliaciones V , tiposentidades te \n"
                     + "          where \n"
@@ -132,7 +133,7 @@ public class EmpleadosFacadeREST {
                     + "          and te.codigo = 14\n"
                     + "          and p.numerodocumento= ? \n"
                     + "          and em.nit=?";
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, documento);
             query.setParameter(2, nit);
 
@@ -150,29 +151,36 @@ public class EmpleadosFacadeREST {
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response getDatosFamiliaEmpleado(@PathParam("empleado") String empleado, @PathParam("nit") String nit, @QueryParam("cadena") String cadena) {
         System.out.println("getDatosFamiliaEmpleado()");
-        System.out.println("parametros: empleado: "+empleado+" nit: "+nit+ " cadena "+cadena);
+        System.out.println("parametros: empleado: " + empleado + " nit: " + nit + " cadena " + cadena);
         List s = null;
         try {
-        String documento = getDocumentoPorSeudonimo(empleado, nit);
-        setearPerfil();
-        String sqlQuery="select fam.nombre ||' '|| fam.primerapellido ||' '|| fam.segundoapellido nombreFamiliar, t.tipo Parentezco,\n" +
-"            tt.numerotelefono telefonos  \n" +
-"            from empleados e, empresas em, personas p, familiares f, tiposfamiliares t, personas fam, telefonos tt   \n" +
-"            where   \n" +
-"            p.secuencia = e.persona    \n" +
-"            and e.empresa = em.secuencia    \n" +
-"            and f.persona = p.secuencia      \n" +
-"            and f.personafamiliar=fam.secuencia   \n" +
-"            and t.secuencia = f.tipofamiliar \n" +
-"            and fam.secuencia = tt.persona\n" +
-"            and tt.fechavigencia = (select max(ttt.fechavigencia)\n" +
-"                                   from telefonos ttt\n" +
-"                                   where ttt.persona = tt.persona)" +
-"           and p.numerodocumento= ? \n" +
-"           and em.nit=?";
+            String secEmpl = getSecuenciaEmplPorSeudonimo(empleado, nit);
+            setearPerfil();
+            String sqlQuery = "select \n"
+                    + "fam.nombre ||' '|| fam.primerapellido ||' '|| fam.segundoapellido nombreFamiliar, t.tipo Parentesco,\n"
+                    + "decode(ltel.secuencia, null, ' ',\n"
+                    + "ltel.tipotelefono||' - '||\n"
+                    + "--to_char(ltel.fechavigencia,'DD/MM/YYYY')||' '||\n"
+                    + "ltel.numerotelefono) telefono\n"
+                    + "from empleados e, empresas em, personas p, familiares f, tiposfamiliares t, personas fam , \n"
+                    + "(select tel.secuencia, tel.persona, tel.fechavigencia, tel.numerotelefono, ttel.nombre tipotelefono\n"
+                    + "from telefonos tel, tipostelefonos ttel\n"
+                    + "where ttel.secuencia = tel.tipotelefono\n"
+                    + "and tel.fechavigencia = (select max(teli.fechavigencia) \n"
+                    + "    from telefonos teli\n"
+                    + "    where teli.persona = tel.persona\n"
+                    + "    and teli.tipotelefono = tel.tipotelefono) ) ltel\n"
+                    + "where   \n"
+                    + "p.secuencia = e.persona    \n"
+                    + "and e.empresa = em.secuencia    \n"
+                    + "and f.persona = p.secuencia      \n"
+                    + "and f.personafamiliar=fam.secuencia  \n"
+                    + "and t.secuencia = f.tipofamiliar \n"
+                    + "and fam.secuencia = ltel.persona(+) \n"
+                    + "and e.secuencia = ? "
+                    + "order by fam.nombre, fam.primerapellido, fam.segundoapellido, ltel.tipotelefono";
             Query query = getEntityManager().createNativeQuery(sqlQuery);
-            query.setParameter(1, documento);
-            query.setParameter(2, nit);
+            query.setParameter(1, secEmpl);
 
             s = query.getResultList();
             s.forEach(System.out::println);
@@ -266,13 +274,14 @@ public class EmpleadosFacadeREST {
         return documento;
    }
     
-    public String getDocumentoPorSeudonimo(String seudonimo, String nitEmpresa) {
+    public String getDocumentoPorSeudonimo(String seudonimo, String nitEmpresa, String cadena) {
+       System.out.println("getDocumentoPorSeudonimo()");
        String documento=null;
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P, CONEXIONESKIOSKOS CK WHERE CK.PERSONA=P.SECUENCIA AND CK.SEUDONIMO=? AND CK.NITEMPRESA=?";
             System.out.println("Query: "+sqlQuery);
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
 
             query.setParameter(1, seudonimo);
             query.setParameter(2, nitEmpresa);
@@ -282,8 +291,8 @@ public class EmpleadosFacadeREST {
             System.out.println("Error: getDocumentoPorSeudonimo: "+e.getMessage());
         }
         return documento;
-   }
-    
+   }   
+      
     public String getSecuenciaEmplPorSeudonimo(String seudonimo, String nitEmpresa) {
        String secuencia=null;
         try {
@@ -699,8 +708,8 @@ public class EmpleadosFacadeREST {
         boolean enviado = true;
         try { 
             EnvioCorreo e= new EnvioCorreo();
-            if (e.enviarCorreoNovedadInfoRRHH("Módulo Kiosco: Reporte de corrección de información de "+nombreEmpl+" "+fecha,
-                    mensaje, nitEmpresa)) {
+            if (e.enviarCorreoInformativo("Módulo Kiosco: Reporte de corrección de información de "+nombreEmpl+" "+fecha,
+                    "Estimado personal de Nómina y RRHH:", mensaje, nitEmpresa)) {
                 enviado = true;
             } else {
                 enviado= false;

@@ -64,6 +64,18 @@ public class ReportesFacadeREST {
             System.out.println("setearPerfil() Error: " + ex);
         }
     }
+    
+    protected void setearPerfil(String cadenaPersistencia) {
+        try {
+            System.out.println("setearPerfil(cadena)");
+            String rol = "ROLKIOSKO";
+            String sqlQuery = "SET ROLE " + rol + " IDENTIFIED BY RLKSK ";
+            Query query = getEntityManager(cadenaPersistencia).createNativeQuery(sqlQuery);
+            query.executeUpdate();
+        } catch (Exception ex) {
+            System.out.println("Error setearPerfil(cadenaPersistencia): " + ex);
+        }
+    }     
 
     @GET
     @Path("generaReporte/{reporte}/{id}/{enviocorreo}/{correo}")
@@ -75,7 +87,7 @@ public class ReportesFacadeREST {
             @QueryParam("cadena") String cadena, @QueryParam("usuario") String seudonimo) {
         System.out.println("generaReporte() codigo: "+codigoReporte+" nit: "+nit);
         //this.getEntityManager(cadena);
-        setearPerfil();
+        setearPerfil(cadena);
         System.out.println("Parametros para generar reporte: [ reporte: "+reporte+ ", secuenciaEmpleado: "+id+
                 ", descripcionReporte: "+descripcionReporte+ ", codigo: "+codigoReporte+" ]");
         Map parametros = new HashMap();
@@ -87,9 +99,11 @@ public class ReportesFacadeREST {
         System.out.println("nombreReporte:" + nombreReporte);
 //        String rutaGenerado = iniciarReporte.ejecutarReporte(reporte, "C:\\DesignerRHN10\\Basico10\\reportesKiosko\\", "C:\\DesignerRHN10\\Reportes\\ArchivosPlanosKiosko\\", nombreReporte, "PDF", parametros, getEntityManager());
         //String rutaGenerado = iniciarReporte.ejecutarReporte(reporte, "C:\\DesignerRHN12\\Basico12\\ReportesKiosko\\", "C:\\DesignerRHN12\\Reportes\\ArchivosPlanosRHNPKKiosko\\", nombreReporte, "PDF", parametros, getEntityManager());
-        String rutaGenerado = iniciarReporte.ejecutarReporte(reporte, getPathReportes(), getPathArchivosPlanos(), nombreReporte, "PDF", parametros, getEntityManager());
+        String rutaGenerado = iniciarReporte.ejecutarReporte(reporte, getPathReportes(cadena), getPathArchivosPlanos(cadena), nombreReporte, "PDF", parametros, getEntityManager(cadena));
         File file = new File(rutaGenerado);
         System.out.println("Ruta generado: "+rutaGenerado);
+        String servidorSmtp = getConfigServidorSMTP(nit, cadena);
+        String puerto = getConfigCorreo(nit, "PUERTO", cadena);
         EnvioCorreo c= new EnvioCorreo();
         try {
             // setearPerfil();
@@ -98,7 +112,7 @@ public class ReportesFacadeREST {
             String query1="select count(*) from kioconfigmodulos where codigoopcion=? and nitempresa=?";
             // Query query = getEntityManager(cadena).createNativeQuery(query1);
             System.out.println("Query: "+query1);
-            Query query = getEntityManager().createNativeQuery(query1);
+            Query query = getEntityManager(cadena).createNativeQuery(query1);
             query.setParameter(1, codigoReporte);
             query.setParameter(2, nit);
             retorno = (BigDecimal) query.getSingleResult();
@@ -117,7 +131,7 @@ public class ReportesFacadeREST {
                 String sqlQuery = "select email from kioconfigmodulos where codigoopcion=? and nitempresa=?";
                 //Query query2 = getEntityManager(cadena).createNativeQuery(sqlQuery);
                 System.out.println("Query2: "+sqlQuery);
-                Query query2 = getEntityManager().createNativeQuery(sqlQuery);
+                Query query2 = getEntityManager(cadena).createNativeQuery(sqlQuery);
                 query2.setParameter(1, codigoReporte);
                 query2.setParameter(2, nit);
                 List lista = query2.getResultList();
@@ -129,8 +143,8 @@ public class ReportesFacadeREST {
                     System.out.println("correo auditoria: "+correoenviar);
                     //c.pruebaEnvio2("smtp.gmail.com","587","pruebaskiosco534@gmail.com","Nomina01", "S", correoenviar,
                   System.out.println("codigoopcion: "+codigoReporte);
-                  c.pruebaEnvio2(getConfigCorreoServidorSMTP(nit),getConfigCorreo(nit, "PUERTO"),
-                          getConfigCorreo(nit, "REMITENTE"), getConfigCorreo(nit, "CLAVE"), getConfigCorreo(nit, "AUTENTICADO"), correoenviar,
+                  c.pruebaEnvio2(servidorSmtp, puerto,
+                          getConfigCorreo(nit, "REMITENTE", cadena), getConfigCorreo(nit, "CLAVE", cadena), getConfigCorreo(nit, "AUTENTICADO", cadena), correoenviar,
                   rutaGenerado, nombreReporte,
                   "Auditoria: Reporte Kiosco - " + descripcionReporte, 
                   mensaje, getPathFoto()); 
@@ -149,7 +163,7 @@ public class ReportesFacadeREST {
             ConexionesKioskosFacadeREST ck = new ConexionesKioskosFacadeREST();
             // Enviar correo
             
-             c.pruebaEnvio2(getConfigCorreoServidorSMTP(nit),getConfigCorreo(nit, "PUERTO"),getConfigCorreo(nit, "REMITENTE"),getConfigCorreo(nit, "CLAVE"), getConfigCorreo(nit, "AUTENTICADO"), correo,
+             c.pruebaEnvio2(servidorSmtp, puerto,getConfigCorreo(nit, "REMITENTE", cadena),getConfigCorreo(nit, "CLAVE", cadena), getConfigCorreo(nit, "AUTENTICADO", cadena), correo,
             /*c.pruebaEnvio2("smtp.gmail.com", "587" ,"pruebaskiosco534@gmail.com",
                     "Nomina01", 
                     "S", correo,*/
@@ -225,14 +239,14 @@ public class ReportesFacadeREST {
         return rutaFoto;
     }
     
-    public String getPathReportes() {
+    public String getPathReportes(String cadena) {
         System.out.println("getPathReportes()");
         String rutaFoto="E:\\DesignerRHN10\\Basico10\\Reportes\\kiosko\\";
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "SELECT PATHREPORTES FROM GENERALESKIOSKO WHERE ROWNUM<=1";
             System.out.println("Query: "+sqlQuery);
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             rutaFoto =  query.getSingleResult().toString();
             System.out.println("rutaReportes: "+rutaFoto);
         } catch (Exception e) {
@@ -241,14 +255,14 @@ public class ReportesFacadeREST {
         return rutaFoto;
     }
     
-    public String getPathArchivosPlanos() {
+    public String getPathArchivosPlanos(String cadena) {
         System.out.println("getPathArchivosPlanos()");
         String rutaFoto="E:\\DesignerRHN10\\Reportes\\ArchivosPlanosRHNDSLkio\\";
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "SELECT UBICAREPORTES FROM GENERALESKIOSKO WHERE ROWNUM<=1";
             System.out.println("Query: "+sqlQuery);
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             rutaFoto =  query.getSingleResult().toString();
             System.out.println("rutaUbicaReportes: "+rutaFoto);
         } catch (Exception e) {
@@ -257,14 +271,14 @@ public class ReportesFacadeREST {
         return rutaFoto;
     }
     
-    public String getConfigCorreo(String nit, String valor) {
+    public String getConfigCorreo(String nit, String valor, String cadena) {
         System.out.println("getPathArchivosPlanos()");
         String servidorsmtp="smtp.designer.com.co";
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "SELECT "+valor+" FROM CONFICORREOKIOSKO WHERE EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?)";
             System.out.println("Query: "+sqlQuery);
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nit);
             servidorsmtp =  query.getSingleResult().toString();
             System.out.println(valor+": "+servidorsmtp);
@@ -274,14 +288,14 @@ public class ReportesFacadeREST {
         return servidorsmtp;
     }    
     
-    public String getConfigCorreoServidorSMTP(String nit) {
+    public String getConfigServidorSMTP(String nit, String cadena) {
         System.out.println("getConfigCorreoServidorSMTP()");
         String servidorsmtp="smtp.designer.com.co";
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "SELECT SERVIDORSMTP FROM CONFICORREOKIOSKO WHERE EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?)";
             System.out.println("Query: "+sqlQuery);
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nit);
             servidorsmtp =  query.getSingleResult().toString();
             System.out.println("Servidor smtp: "+servidorsmtp);

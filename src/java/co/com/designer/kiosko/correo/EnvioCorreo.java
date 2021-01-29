@@ -226,7 +226,7 @@ public class EnvioCorreo {
             BodyPart messageBodyPart = new MimeBodyPart();
             String htmlText
                     = "<div\n"
-                    + "        style=\"padding:10%;color:white;background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url(https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/imgcorreoreporte.jpg/);min-height:100%;background-size:cover\">\n"
+                    + "        style=\"padding:10%;color:white;background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url(https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/imgcorreoreporte.jpg/);min-height:100%;background-size:cover\" !important;>\n"
                     + "        <table style=\"max-width:90%;padding:10%;margin:0 auto;border-collapse:collapse\">\n"
                     + "            <tbody>\n"
                     + "                <tr >\n"
@@ -612,7 +612,7 @@ public class EnvioCorreo {
             BodyPart messageBodyPart = new MimeBodyPart();
             String htmlText
                     = "<div\n"
-                    + "        style=\"padding:10%;color:white;background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url(https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/imgcorreoreporte.jpg/);min-height:100%;background-size:cover\">\n"
+                    + "        style=\"padding:10%;color:white;background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url(https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/imgcorreoreporte.jpg/);min-height:100%;background-size:cover\" !important;>\n"
                     + "        <table style=\"max-width:90%;padding:10%;margin:0 auto;border-collapse:collapse\">\n"
                     + "            <tbody>\n"
                     + "                <tr >\n"
@@ -636,7 +636,7 @@ public class EnvioCorreo {
                     + "                            <h4 style=\"color:#ffffff !important; margin:2px;text-align:center\">\n" + mensaje
                     + "                                </h4>\n"
                     + "                            <h4 style=\"color:#ffffff !important; text-align:center;margin-top:10px\">\n"
-                    + "                                Este reporte se ha generado automáticamente desde Kiosco Nómina Designer.</h4>\n"
+                    + "                                Este correo se ha enviado automáticamente desde Kiosco Nómina Designer.</h4>\n"
                     + "                            <h4>\n"
                     + "                            </h4>\n"
                     /*  + "                            <h4 style=\"color:#ffffff;text-align:center;margin-top:10px\"> Revisa los archivos\n"
@@ -772,9 +772,9 @@ public class EnvioCorreo {
         return emailSoporte;
     }     
     
-    /*Correo novedad de corrección de información que se envia a RRHH */
-    public boolean enviarCorreoNovedadInfoRRHH(
-            String asunto, String mensaje, String nit) {
+    /*Correo novedad de corrección de información que se envia a RRHH o Auditoria Módulo Vacaciones(No se incluye botón de Ir a Kiosco) */
+    public boolean enviarCorreoInformativo(
+            String asunto, String saludo, String mensaje, String nit) {
         String servidorsmtp = getConfigCorreoServidorSMTP(nit);
         String puerto = getConfigCorreo(nit, "PUERTO");
         String autenticado = getConfigCorreo(nit, "AUTENTICADO");
@@ -810,7 +810,7 @@ public class EnvioCorreo {
             BodyPart messageBodyPart = new MimeBodyPart();
             String htmlText
                     = "<div\n"
-                    + "        style=\"padding:10%;color:white;background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url(https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/imgcorreoreporte.jpg/);min-height:100%;background-size:cover\">\n"
+                   + "        style=\"padding:10%;color:white;background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url(https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/imgcorreoreporte.jpg/);min-height:100%;background-size:cover\" !important;>\n"
                     + "        <table style=\"max-width:90%;padding:10%;margin:0 auto;border-collapse:collapse\">\n"
                     + "            <tbody>\n"
                     + "                <tr >\n"
@@ -829,7 +829,7 @@ public class EnvioCorreo {
                     + "                <tr style=\"padding-bottom:2%\">\n"
                     + "                    <td>\n"
                     + "                        <div style=\"margin:2% 4% 4% auto;text-align:justify;font-family:sans-serif\">\n"
-                    + "                            <h2 style=\"color:#ffffff !important; margin:0 0 5px;text-align:center\">Estimado personal de Nómina y RRHH:</h2>\n"
+                    + "                            <h2 style=\"color:#ffffff !important; margin:0 0 5px;text-align:center\">"+saludo+"</h2>\n"
                     + "                            <br><br>\n"
                     + "                            <h4 style=\"color:#ffffff !important; margin:2px;text-align:center;\">\n" + mensaje
                     + "                                </h4>\n"
