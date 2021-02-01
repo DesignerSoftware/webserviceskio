@@ -452,7 +452,7 @@ public class EnvioCorreo {
             String htmlText
                     = "<center>"
                     + "<img src=\'cid:image\'>"
-                    + "<H1>¡Bienvenido " + nombreUsuario + "!</H1>"
+                    + "<H1>¡Bienvenido(a) " + nombreUsuario + "!</H1>"
                     + "\n"
                     + "<p style='font-size: 20px'>Puedes confirmar tu cuenta a través del siguiente enlace:</p>"
                     + "\n"

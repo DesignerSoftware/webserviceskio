@@ -170,18 +170,21 @@ public class ReportesFacadeREST {
                   rutaGenerado, nombreReporte,
                   "Reporte Kiosco - " + descripcionReporte, "", getPathFoto());
             }
+            
+            ResponseBuilder response = Response.ok((Object) file);
+            Calendar fechaActual = Calendar.getInstance();
+            String nomF = String.valueOf(fechaActual.get(Calendar.YEAR)) + String.valueOf(fechaActual.get(Calendar.MONTH) + 1) + String.valueOf(fechaActual.get(Calendar.DAY_OF_MONTH))
+                    + String.valueOf(fechaActual.get(Calendar.HOUR_OF_DAY)) + String.valueOf(fechaActual.get(Calendar.MINUTE)) + String.valueOf(fechaActual.get(Calendar.SECOND))
+                    + String.valueOf(fechaActual.get(Calendar.MILLISECOND));
+            response.header("Content-Disposition", "attachment; filename=" + nomF + ".pdf");
+            return response.build();
+        
         } catch (Exception e) {
             System.out.println("Error: "+e.getMessage());
         } finally {
-            this.getEntityManager().close();
+            //this.getEntityManager().close();
         }
-        ResponseBuilder response = Response.ok((Object) file);
-        Calendar fechaActual = Calendar.getInstance();
-        String nomF = String.valueOf(fechaActual.get(Calendar.YEAR))+String.valueOf(fechaActual.get(Calendar.MONTH)+1)+String.valueOf(fechaActual.get(Calendar.DAY_OF_MONTH))
-                +String.valueOf(fechaActual.get(Calendar.HOUR_OF_DAY))+String.valueOf(fechaActual.get(Calendar.MINUTE))+String.valueOf(fechaActual.get(Calendar.SECOND))
-                +String.valueOf(fechaActual.get(Calendar.MILLISECOND));
-        response.header("Content-Disposition", "attachment; filename="+nomF+".pdf");
-        return response.build();
+        return Response.status(Response.Status.NOT_FOUND).build();
     }
     
     

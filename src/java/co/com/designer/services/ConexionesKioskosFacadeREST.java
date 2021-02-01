@@ -200,7 +200,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     public Response updateFechasConexionesKioskos(@QueryParam("usuario") String usuario, @QueryParam("nitEmpresa") String nitEmpresa, @QueryParam("fechadesde") String fechadesde,
             @QueryParam("fechahasta") String fechahasta, @QueryParam("enviocorreo") boolean enviocorreo, @QueryParam("dirigidoa") String dirigidoa, @QueryParam("cadena") String cadena) {
         int conteo = 0;
-        System.out.println("Parametros: seudonimo: " + usuario + ", fechadesde: " + fechadesde + ", fechahasta: " + fechahasta+", dirigidoa: "+dirigidoa);
+        System.out.println("updateFechasConexionesKioskos() Parametros: seudonimo: " + usuario + ", fechadesde: " + fechadesde + ", fechahasta: " + fechahasta+", dirigidoa: "+dirigidoa +", cadena: "+cadena);
         try {
             setearPerfil(cadena);
             String sqlQuery = "UPDATE CONEXIONESKIOSKOS "
@@ -234,16 +234,16 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @POST
     @Path("/updateClave")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateFechasConexionesKioskos(@QueryParam("usuario") String usuario, @QueryParam("nitEmpresa") String nitEmpresa, @QueryParam("clave") String clave) {
+    public Response updateClaveConexionesKioskos(@QueryParam("usuario") String usuario, @QueryParam("nitEmpresa") String nitEmpresa, @QueryParam("clave") String clave, @QueryParam("cadena") String cadena) {
         int conteo = 0;
-        System.out.println("Parametros: seudonimo: " + usuario + ", nitEmpresa: " + nitEmpresa + ", clave: " + clave);
+        System.out.println("updateClaveConexionesKioskos() Parametros: seudonimo: " + usuario + ", nitEmpresa: " + nitEmpresa + ", clave: " + clave);
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "UPDATE CONEXIONESKIOSKOS "
                     + " SET PWD=GENERALES_PKG.ENCRYPT(?)"
                     + " WHERE SEUDONIMO=? "
                     + " AND NITEMPRESA=?";
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, clave);
             query.setParameter(2, usuario);
             query.setParameter(3, nitEmpresa);
@@ -487,17 +487,18 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     public Response inactivaTokensTipo(
             @QueryParam("tipo") String tipo, 
             @QueryParam("seudonimo") String seudonimo, 
-            @QueryParam("nit") String nit) {
+            @QueryParam("nit") String nit,
+            @QueryParam("cadena") String cadena) {
         boolean resultado = false;
         int conteo = 0;
         BigDecimal retorno = null;
         JSONObject resp = new JSONObject();
         String mensaje = "";
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "UPDATE CONEXIONESTOKEN SET ACTIVO='N' WHERE TIPO=? "
                     + "AND CONEXIONKIOSKO=(SELECT SECUENCIA FROM CONEXIONESKIOSKOS WHERE SEUDONIMO=? AND NITEMPRESA=?)";
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, tipo);
             query.setParameter(2, seudonimo);
             query.setParameter(3, nit);
@@ -1075,6 +1076,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             Calendar fechaExpiracion = Calendar.getInstance();
             fechaExpiracion.setTime(new java.util.Date()); 
             fechaExpiracion.add(Calendar.DAY_OF_YEAR, 30);  // 30 dias a partir de la fecha*/
+            String documento = getDocumentoPorSeudonimo(usuario, nit, cadena);
             String jwt=Jwts.builder()
                     .signWith(SignatureAlgorithm.HS256, passwordEncript.getBytes("UTF-8"))
                     .setSubject(usuario)
@@ -1083,7 +1085,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                     .setExpiration(fechaExpiracion.getTime())
                     .setIssuer("https://www.designer.com.co") //200721
                     .claim("empresa", nit)
-                    .claim("documento", getDocumentoPorSeudonimo(usuario, nit, cadena))
+                    .claim("documento", documento )
                     .compact();
                     System.out.println("Token generado: "+jwt);
     
@@ -1133,7 +1135,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
    
    
     public String getDocumentoPorSeudonimo(String seudonimo, String nitEmpresa, String cadena) {
-       System.out.println("getDocumentoPorSeudonimo()");
+       System.out.println("getDocumentoPorSeudonimo() seudonimo: "+seudonimo+", nitEmpresa: "+nitEmpresa+", cadena: "+cadena);
        String documento=null;
         try {
             setearPerfil(cadena);
@@ -1183,7 +1185,8 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @GET
     @Path("/restKiosco/validarJWTActivarCuenta") // verificar nombre
     @Produces(MediaType.APPLICATION_JSON)
-    public Response validarJWT(@QueryParam("jwt") String jwt){
+    public Response validarJWT(@QueryParam("jwt") String jwt, @QueryParam("cadena") String cadena){
+        System.out.println("validarJWT() jwt: "+jwt+", cadena: "+cadena);
         boolean validoToken = false;
         String mensaje="";
         String usuario="";
@@ -1191,8 +1194,8 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         String documento="";
         JsonObject json;
         try {
-            setearPerfil();
-            if (validarTokenExistente(jwt)) {
+            setearPerfil(cadena);
+            if (validarTokenExistente(jwt, cadena)) {
                 if (getEstadoToken(jwt).equals("S")){
                      System.out.println("Token existe en bd");
                 
@@ -1306,13 +1309,13 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     
     
     // validar si existe token
-    public boolean validarTokenExistente(String token){
+    public boolean validarTokenExistente(String token, String cadena){
         System.out.println("validarTokenExistente()");
         boolean resultado=false;
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery="select count(*) as count from conexionestoken where token=? ";
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, token);
             BigDecimal retorno = (BigDecimal) query.getSingleResult();
             Integer instancia = retorno.intValueExact();
