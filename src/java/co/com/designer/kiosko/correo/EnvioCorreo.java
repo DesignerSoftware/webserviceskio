@@ -480,7 +480,7 @@ public class EnvioCorreo {
             message.setContent(multipart);
 // Send the actual HTML message, as big as you like
             Transport.send(message);
-            System.out.println("Mail sent successfully!!!");
+            System.out.println("Mail sent successfully!!! "+destinatario);
             envioCorreo = true;
         } catch (MessagingException e) {
             envioCorreo = false;
@@ -711,7 +711,7 @@ public class EnvioCorreo {
             message.setContent(multipart);
 // Send the actual HTML message, as big as you like
             Transport.send(message);
-            System.out.println("Mail sent successfully!!!");
+            System.out.println("Mail sent successfully!!! "+destinatario);
             envioCorreo = true;
         } catch (MessagingException e) {
             envioCorreo = false;

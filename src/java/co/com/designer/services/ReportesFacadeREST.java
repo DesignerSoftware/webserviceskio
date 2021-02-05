@@ -78,9 +78,9 @@ public class ReportesFacadeREST {
     }     
 
     @GET
-    @Path("generaReporte/{reporte}/{id}/{enviocorreo}/{correo}")
+    @Path("generaReporte/{reporte}/{enviocorreo}/{correo}")
     @Produces("application/pdf")
-    public Response generaReporte(@PathParam("reporte") String reporte, @PathParam("id") BigDecimal id, 
+    public Response generaReporte(@PathParam("reporte") String reporte, //@PathParam("id") BigDecimal id, 
             @PathParam("enviocorreo") boolean envioCorreo, @PathParam("correo") String correo, 
             @QueryParam("descripcionReporte") String descripcionReporte, 
             @QueryParam("codigoReporte") String codigoReporte, @QueryParam("nit") String nit,
@@ -88,14 +88,16 @@ public class ReportesFacadeREST {
         System.out.println("generaReporte() codigo: "+codigoReporte+" nit: "+nit);
         //this.getEntityManager(cadena);
         setearPerfil(cadena);
-        System.out.println("Parametros para generar reporte: [ reporte: "+reporte+ ", secuenciaEmpleado: "+id+
-                ", descripcionReporte: "+descripcionReporte+ ", codigo: "+codigoReporte+" ]");
+        BigDecimal secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nit, cadena);
+        System.out.println("Parametros para generar reporte: [ reporte: "+reporte+ ", secuenciaEmpleado: "+secEmpl+", envioCorreo: "+envioCorreo+", correo: "+correo+
+                ", descripcionReporte: "+descripcionReporte+ ", codigo: "+codigoReporte+", cadena: "+cadena+", seudonimo: "+ seudonimo +"]");
         Map parametros = new HashMap();
-        parametros.put("secuenciaempleado", id);
+        parametros.put("secuenciaempleado", secEmpl);
 //        String rutaGenerado = iniciarReporte.ejecutarReporte("kioCertificacionStrabag", "C:\\DesignerRHN\\Basico\\Reportes\\", "C:\\DesignerRHN\\Reportes\\ArchivosPlanos\\", "rep_2003122037.pdf", "PDF", parametros, getEntityManager());
         //String rutaGenerado = iniciarReporte.ejecutarReporte(reporte, "C:\\DesignerRHN\\Basico\\Reportes\\", "C:\\DesignerRHN\\Reportes\\ArchivosPlanos\\", "rep_2003122037.pdf", "PDF", parametros, getEntityManager());
         long tiempo=System.currentTimeMillis();
-        String nombreReporte = reporte+"_"+id+"_"+tiempo+".pdf";
+        //String nombreReporte = reporte+"_"+id+"_"+tiempo+".pdf";
+        String nombreReporte = reporte+"_"+secEmpl+"_"+tiempo+".pdf";
         System.out.println("nombreReporte:" + nombreReporte);
 //        String rutaGenerado = iniciarReporte.ejecutarReporte(reporte, "C:\\DesignerRHN10\\Basico10\\reportesKiosko\\", "C:\\DesignerRHN10\\Reportes\\ArchivosPlanosKiosko\\", nombreReporte, "PDF", parametros, getEntityManager());
         //String rutaGenerado = iniciarReporte.ejecutarReporte(reporte, "C:\\DesignerRHN12\\Basico12\\ReportesKiosko\\", "C:\\DesignerRHN12\\Reportes\\ArchivosPlanosRHNPKKiosko\\", nombreReporte, "PDF", parametros, getEntityManager());
@@ -104,9 +106,12 @@ public class ReportesFacadeREST {
         System.out.println("Ruta generado: "+rutaGenerado);
         String servidorSmtp = getConfigServidorSMTP(nit, cadena);
         String puerto = getConfigCorreo(nit, "PUERTO", cadena);
+        String remitente=getConfigCorreo(nit, "REMITENTE", cadena);
+        String clave=getConfigCorreo(nit, "CLAVE", cadena);
+        String autenticado=getConfigCorreo(nit, "AUTENTICADO", cadena);        
         EnvioCorreo c= new EnvioCorreo();
         try {
-            // setearPerfil();
+            setearPerfil(cadena);
             // valida si el reporte tiene auditoria
             BigDecimal retorno = null;
             String query1="select count(*) from kioconfigmodulos where codigoopcion=? and nitempresa=?";
@@ -144,7 +149,7 @@ public class ReportesFacadeREST {
                     //c.pruebaEnvio2("smtp.gmail.com","587","pruebaskiosco534@gmail.com","Nomina01", "S", correoenviar,
                   System.out.println("codigoopcion: "+codigoReporte);
                   c.pruebaEnvio2(servidorSmtp, puerto,
-                          getConfigCorreo(nit, "REMITENTE", cadena), getConfigCorreo(nit, "CLAVE", cadena), getConfigCorreo(nit, "AUTENTICADO", cadena), correoenviar,
+                          remitente, clave, autenticado, correoenviar,
                   rutaGenerado, nombreReporte,
                   "Auditoria: Reporte Kiosco - " + descripcionReporte, 
                   mensaje, getPathFoto()); 
@@ -163,7 +168,7 @@ public class ReportesFacadeREST {
             ConexionesKioskosFacadeREST ck = new ConexionesKioskosFacadeREST();
             // Enviar correo
             
-             c.pruebaEnvio2(servidorSmtp, puerto,getConfigCorreo(nit, "REMITENTE", cadena),getConfigCorreo(nit, "CLAVE", cadena), getConfigCorreo(nit, "AUTENTICADO", cadena), correo,
+             c.pruebaEnvio2(servidorSmtp, puerto, remitente, clave, autenticado, correo,
             /*c.pruebaEnvio2("smtp.gmail.com", "587" ,"pruebaskiosco534@gmail.com",
                     "Nomina01", 
                     "S", correo,*/
@@ -180,7 +185,7 @@ public class ReportesFacadeREST {
             return response.build();
         
         } catch (Exception e) {
-            System.out.println("Error: "+e.getMessage());
+            System.out.println("Error: "+this.getClass().getName()+":"+e.getMessage());
         } finally {
             //this.getEntityManager().close();
         }
@@ -329,6 +334,25 @@ public class ReportesFacadeREST {
             System.out.println("Error: getNombrePersonaXSeudonimo: "+e.getMessage());
         }
         return nombre;
-    }     
+    }
+    
+    public BigDecimal getSecuenciaEmplPorSeudonimo(String seudonimo, String nitEmpresa, String cadena) {
+        System.out.println("Parametros getSecuenciaEmplPorSeudonimo(): seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
+        BigDecimal secuencia = null;
+        try {
+            setearPerfil(cadena);
+            String sqlQuery = "SELECT E.SECUENCIA SECUENCIAEMPLEADO FROM EMPLEADOS E, CONEXIONESKIOSKOS CK WHERE CK.EMPLEADO=E.SECUENCIA AND CK.SEUDONIMO=? AND CK.NITEMPRESA=?";
+            System.out.println("Query: " + sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+
+            query.setParameter(1, seudonimo);
+            query.setParameter(2, nitEmpresa);
+            secuencia = (BigDecimal) query.getSingleResult();
+            System.out.println("secuencia: " + secuencia);
+        } catch (Exception e) {
+            System.out.println("Error: getSecuenciaEmplPorSeudonimo: " + e.getMessage());
+        }
+        return secuencia;
+    } 
 
 }

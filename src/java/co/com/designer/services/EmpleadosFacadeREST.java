@@ -1,6 +1,7 @@
 package co.com.designer.services;
 
 import co.com.designer.kiosko.correo.EnvioCorreo;
+import co.com.designer.kiosko.entidades.ConexionesKioskos;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
@@ -154,7 +155,7 @@ public class EmpleadosFacadeREST {
         System.out.println("parametros: empleado: " + empleado + " nit: " + nit + " cadena " + cadena);
         List s = null;
         try {
-            String secEmpl = getSecuenciaEmplPorSeudonimo(empleado, nit);
+            String secEmpl = getSecuenciaEmplPorSeudonimo(empleado, nit, cadena);
             setearPerfil();
             String sqlQuery = "select \n"
                     + "fam.nombre ||' '|| fam.primerapellido ||' '|| fam.segundoapellido nombreFamiliar, t.tipo Parentesco,\n"
@@ -200,7 +201,7 @@ public class EmpleadosFacadeREST {
         System.out.println("parametros: nit: "+nit+ " jefe "+jefe+" estado: "+estado+ " cadena "+cadena);
         List s = null;
         try {
-        String secuenciaJefe = getSecuenciaEmplPorSeudonimo(jefe, nit );
+        String secuenciaJefe = getSecuenciaEmplPorSeudonimo(jefe, nit, cadena );
         String secuenciaEmpresa = getSecuenciaPorNitEmpresa(nit);
         setearPerfil();
         String sqlQuery="   SELECT \n" +
@@ -252,16 +253,17 @@ public class EmpleadosFacadeREST {
         }
     }
     
-    public String getDocumentoCorreoODocumento(String usuario) {
+    public String getDocumentoCorreoODocumento(String usuario, String cadena) {
+       System.out.println("Parametros getDocumentoCorreoODocumento() usuario: "+usuario+", cadena: "+cadena);
        String documento=null;
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P WHERE P.EMAIL=?";
             if (this.validarCodigoUsuario(usuario)) {
                  sqlQuery+=" OR P.NUMERODOCUMENTO=?"; // si el valor es numerico validar por numero de documento
             }
             System.out.println("Query: "+sqlQuery);
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
 
             query.setParameter(1, usuario);
             if (this.validarCodigoUsuario(usuario)) {
@@ -269,7 +271,28 @@ public class EmpleadosFacadeREST {
             }
             documento =  query.getSingleResult().toString();
         } catch (Exception e) {
-            System.out.println("Error: getDocumentoCorreoODocumento: "+e.getMessage());
+            System.out.println("Error: "+ConexionesKioskosFacadeREST.class.getName()+" getDocumentoCorreoODocumento: "+e.getMessage());
+            try {
+                String sqlQuery2 = "SELECT P.NUMERODOCUMENTO DOCUMENTO "
+                        + "FROM PERSONAS P, EMPLEADOS E "
+                        + "WHERE "
+                        + "P.SECUENCIA=E.PERSONA "
+                        + "AND (P.EMAIL=?";
+                if (this.validarCodigoUsuario(usuario)) {
+                    sqlQuery2 += " OR E.CODIGOEMPLEADO=?"; // si el valor es numerico validar por codigoempleado
+                }
+                sqlQuery2+=")";
+                System.out.println("Query2: " + sqlQuery2);
+                Query query2 = getEntityManager(cadena).createNativeQuery(sqlQuery2);
+                query2.setParameter(1, usuario);
+                if (this.validarCodigoUsuario(usuario)) {
+                    query2.setParameter(2, usuario);
+                }
+                documento =  query2.getSingleResult().toString();
+                System.out.println("Validación documentoPorEmpleado: "+documento);
+            } catch (Exception ex) {
+                System.out.println("Error 2: " + ConexionesKioskos.class.getName() + " getDocumentoCorreoODocumento(): ");
+            }
         }
         return documento;
    }
@@ -293,13 +316,14 @@ public class EmpleadosFacadeREST {
         return documento;
    }   
       
-    public String getSecuenciaEmplPorSeudonimo(String seudonimo, String nitEmpresa) {
+    public String getSecuenciaEmplPorSeudonimo(String seudonimo, String nitEmpresa, String cadena) {
+        System.out.println("Parametros getSecuenciaEmplPorSeudonimo(): seudonimo: "+seudonimo+", nitEmpresa: "+nitEmpresa+", cadena: "+cadena);
        String secuencia=null;
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "SELECT E.SECUENCIA SECUENCIAEMPLEADO FROM EMPLEADOS E, CONEXIONESKIOSKOS CK WHERE CK.EMPLEADO=E.SECUENCIA AND CK.SEUDONIMO=? AND CK.NITEMPRESA=?";
             System.out.println("Query: "+sqlQuery);
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
 
             query.setParameter(1, seudonimo);
             query.setParameter(2, nitEmpresa);
@@ -359,7 +383,7 @@ public class EmpleadosFacadeREST {
         return res.toString();
     }
     
-   public BigDecimal consultarCodigoJornada(String seudonimo, String nitEmpresa, String fechaDisfrute) throws Exception {
+   public BigDecimal consultarCodigoJornada(String seudonimo, String nitEmpresa, String fechaDisfrute, String cadena) throws Exception {
         System.out.println(this.getClass().getName() + "." + "consultarCodigoJornada" + "()");
         String consulta = "select nvl(j.codigo, 1) "
                 + "from vigenciasjornadas v, jornadaslaborales j "
@@ -371,7 +395,7 @@ public class EmpleadosFacadeREST {
                 + "and vi.fechavigencia <= to_date( ? , 'dd/mm/yyyy') ) ";
         Query query = null;
         BigDecimal codigoJornada;
-        String secEmpleado=getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa);
+        String secEmpleado=getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
         /*SimpleDateFormat formatoFecha = new SimpleDateFormat("ddMMyyyy");
         String strFechaDisfrute = formatoFecha.format(fechaDisfrute);*/
         System.out.println("secuencia: " + secEmpleado);
@@ -398,24 +422,24 @@ public class EmpleadosFacadeREST {
     }    
    
    
-    private boolean validaFechaPago(String seudonimo, String nitEmpresa, String fechainicialdisfrute) throws Exception {
+    private boolean validaFechaPago(String seudonimo, String nitEmpresa, String fechainicialdisfrute, String cadena) throws Exception {
             Calendar cl = Calendar.getInstance();
-            cl.setTime(getFechaUltimoPago(seudonimo, nitEmpresa));
+            cl.setTime(getFechaUltimoPago(seudonimo, nitEmpresa, cadena));
             return getDate(fechainicialdisfrute).after(cl.getTime());
     }   
    
-    public Date getFechaUltimoPago(String seudonimo, String nitempresa) throws Exception {
+    public Date getFechaUltimoPago(String seudonimo, String nitempresa, String cadena) throws Exception {
         BigDecimal res = null;
         try {
-        setearPerfil();
-        String secEmpleado=getSecuenciaEmplPorSeudonimo(seudonimo, nitempresa);
+        setearPerfil(cadena);
+        String secEmpleado=getSecuenciaEmplPorSeudonimo(seudonimo, nitempresa, cadena);
         String consulta = "SELECT GREATEST("
                 + "CORTESPROCESOS_PKG.CAPTURARCORTEPROCESO(?, 1), "
                 + "NVL( CORTESPROCESOS_PKG.CAPTURARCORTEPROCESO(?, 80), CORTESPROCESOS_PKG.CAPTURARCORTEPROCESO(?, 1)"
                 + ")) "
                 + "FROM DUAL ";
         Date fechaUltimoPago = null;
-            Query query = getEntityManager().createNativeQuery(consulta);
+            Query query = getEntityManager(cadena).createNativeQuery(consulta);
             query.setParameter(1, secEmpleado);
             query.setParameter(2, secEmpleado);
             query.setParameter(3, secEmpleado);
@@ -564,9 +588,10 @@ public class EmpleadosFacadeREST {
              String seudonimo,
              String nitempresa, 
              String fechaIniVaca, 
-             String fechaFinVaca) throws PersistenceException, NullPointerException, Exception {
+             String fechaFinVaca,
+             String cadena) throws PersistenceException, NullPointerException, Exception {
         System.out.println(this.getClass().getName() + "." + "consultaTraslapamientos" + "()");
-        String secEmpleado = getSecuenciaEmplPorSeudonimo(seudonimo, nitempresa);
+        String secEmpleado = getSecuenciaEmplPorSeudonimo(seudonimo, nitempresa, cadena);
         String consulta = "SELECT "
                 + "KIOVACACIONES_PKG.VERIFICARTRASLAPAMIENTO(?, ? , ? ) "
                 + "FROM DUAL ";
@@ -601,8 +626,9 @@ public class EmpleadosFacadeREST {
     public BigDecimal verificaExistenciaSolicitud(
             String seudonimo, 
             String nitempresa,
-            String fechaIniVaca) throws Exception {
-        String secEmpleado = getSecuenciaEmplPorSeudonimo(seudonimo, nitempresa);
+            String fechaIniVaca,
+            String cadena) throws Exception {
+        String secEmpleado = getSecuenciaEmplPorSeudonimo(seudonimo, nitempresa, cadena);
         System.out.println(this.getClass().getName() + ".verificaExistenciaSolicitud()");
         System.out.println("verificaExistenciaSolicitud-secEmpleado: " + secEmpleado);
         System.out.println("verificaExistenciaSolicitud-fechaIniVaca: " + fechaIniVaca);
@@ -616,7 +642,7 @@ public class EmpleadosFacadeREST {
         BigDecimal conteo = null;
         try {
             try {
-                query = getEntityManager().createNativeQuery(consulta);
+                query = getEntityManager(cadena).createNativeQuery(consulta);
                 query.setParameter(1, secEmpleado);
                // query.setParameter(2, txtFecha);
                 query.setParameter(2, fechaIniVaca);
@@ -643,12 +669,13 @@ public class EmpleadosFacadeREST {
     @GET
     @Path("/validaFechaInicioVacaciones")
     @Produces(MediaType.APPLICATION_JSON)
-    public String validaFechaInicioSoliciVacaciones(@QueryParam("seudonimo") String seudonimo, @QueryParam("nitempresa") String nitEmpresa, @QueryParam("fechainicio") String fechainicialdisfrute) {
+    public String validaFechaInicioSoliciVacaciones(@QueryParam("seudonimo") String seudonimo, @QueryParam("nitempresa") String nitEmpresa, 
+            @QueryParam("fechainicio") String fechainicialdisfrute, @QueryParam("cadena") String cadena) {
         String mensaje = "";
         boolean valido = true;
         try { 
-            BigDecimal codigoJornada = consultarCodigoJornada(seudonimo, nitEmpresa, fechainicialdisfrute);
-            if (!validaFechaPago(seudonimo, nitEmpresa, fechainicialdisfrute)) {
+            BigDecimal codigoJornada = consultarCodigoJornada(seudonimo, nitEmpresa, fechainicialdisfrute, cadena);
+            if (!validaFechaPago(seudonimo, nitEmpresa, fechainicialdisfrute, cadena)) {
                 mensaje+= "La fecha seleccionada es inferior a la última fecha de pago.";
                 valido = false;
             } else if (verificarFestivo(fechainicialdisfrute)){
@@ -696,8 +723,8 @@ public class EmpleadosFacadeREST {
     @Path("/enviaReporteInfoRRHH")
     @Produces(MediaType.APPLICATION_JSON)
     public boolean enviaReporteInfoRRHH(@QueryParam("seudonimo") String seudonimo, @QueryParam("nitempresa") String nitEmpresa, 
-            @QueryParam("observacion") String observacionNovedad, @QueryParam("urlKiosco") String urlKiosco, @QueryParam("grupo") String grupo) {
-        String secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa);
+            @QueryParam("observacion") String observacionNovedad, @QueryParam("urlKiosco") String urlKiosco, @QueryParam("grupo") String grupo, @QueryParam("cadena") String cadena) {
+        String secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
         String nombreEmpl = getApellidoNombreXsecEmpl(secEmpl);
         String fecha = new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date());
         String mensaje = "Nos permitimos informar que "+nombreEmpl+" ha reportado la siguiente "

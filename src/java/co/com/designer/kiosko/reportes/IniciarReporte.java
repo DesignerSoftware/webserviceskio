@@ -65,6 +65,7 @@ public class IniciarReporte {
                 exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(outFileName));
                 exporter.exportReport();
             }
+            System.out.println("outFileName: "+outFileName);
             return outFileName;
         } catch (JRException e) {
             System.out.println("Error: IniciarReporte.ejecutarReporte: " + e);
