@@ -1,7 +1,9 @@
 package co.com.designer.services;
 
+import co.com.designer.kiosko.entidades.ConexionesKioskos;
 import co.com.designer.kiosko.entidades.OpcionesKioskosApp;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.List;
 import javax.ejb.Stateless;
@@ -138,9 +140,9 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
         }*/
         List lista2=null;
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "SELECT * FROM OPCIONESKIOSKOSAPP OKA, EMPRESAS EM WHERE OKA.EMPRESA=EM.SECUENCIA AND OKA.CLASE='MENU' AND EM.NIT=? ORDER BY OKA.CODIGO ASC";
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
             //objArray.put(query.getResultList());
             lista = (List) (OpcionesKioskosApp) query.getResultList();
@@ -172,21 +174,22 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
                 
             }*/
         } catch (Exception e) {
-            System.out.println("Error getOpcioneskioskosApp(): " + e);
+            System.out.println("Error "+this.getClass().getName()+"getOpcioneskioskosApp(): " + e);
         } 
         return lista;
     }
     
     
-    public List getOpciones(String nitEmpresa, String secuencia) { // retorna true si el usuario esta activo
+    public List getOpciones(String nitEmpresa, String secuencia, String cadena) { // retorna true si el usuario esta activo
+        System.out.println("Parametros getOpciones(): nitEmpresa: "+nitEmpresa+", secuencia: "+secuencia+", cadena: "+cadena);
         List lista = null;
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "SELECT OKA.CODIGO, OKA.DESCRIPCION "
                     + "FROM OPCIONESKIOSKOSAPP OKA, "
                     + "EMPRESAS EM WHERE OKA.EMPRESA=EM.SECUENCIA AND OKA.CLASE='MENU' AND EM.NIT=? "
                     + "AND OKA.SECUENCIA=? ORDER BY OKA.CODIGO ASC";
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
             query.setParameter(2, secuencia);
             //objArray.put(query.getResultList());
@@ -197,7 +200,7 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
               System.out.println(it.next().toString());
             }
         } catch (Exception e) {
-            System.out.println("Error getOpciones(): " + e);
+            System.out.println("Error "+this.getClass().getName()+"getOpciones(): " + e);
         } 
         return lista;
     }    
@@ -364,12 +367,13 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
             documento =  query.getSingleResult().toString();
             System.out.println("documento: "+documento);
         } catch (Exception e) {
-            System.out.println("Error: getDocumentoPorSeudonimo: "+e.getMessage());
+            System.out.println("Error: "+this.getClass().getName()+".getDocumentoPorSeudonimo: "+e.getMessage());
         }
         return documento;
    }
 
-    public String determinarRol(String documento, String nit, String cadena) {
+    public String determinarRol(String seudonimo, String nit, String cadena) {
+        String documento = getDocumentoCorreoODocumento(seudonimo, cadena);
            String rol="";
         try {            
             if (esPersona(documento, cadena)) {
@@ -434,6 +438,61 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
         return retorno;
     }
     
+    public String getDocumentoCorreoODocumento(String usuario, String cadena) {
+       System.out.println("Parametros getDocumentoCorreoODocumento() usuario: "+usuario+", cadena: "+cadena);
+       String documento=null;
+        try {
+            setearPerfil(cadena);
+            String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P WHERE P.EMAIL=?";
+            if (this.validarCodigoUsuario(usuario)) {
+                 sqlQuery+=" OR P.NUMERODOCUMENTO=?"; // si el valor es numerico validar por numero de documento
+            }
+            System.out.println("Query: "+sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+
+            query.setParameter(1, usuario);
+            if (this.validarCodigoUsuario(usuario)) {
+               query.setParameter(2, usuario);
+            }
+            documento =  query.getSingleResult().toString();
+        } catch (Exception e) {
+            System.out.println("Error: "+ConexionesKioskosFacadeREST.class.getName()+" getDocumentoCorreoODocumento: "+e.getMessage());
+            try {
+                String sqlQuery2 = "SELECT P.NUMERODOCUMENTO DOCUMENTO "
+                        + "FROM PERSONAS P, EMPLEADOS E "
+                        + "WHERE "
+                        + "P.SECUENCIA=E.PERSONA "
+                        + "AND (P.EMAIL=?";
+                if (this.validarCodigoUsuario(usuario)) {
+                    sqlQuery2 += " OR E.CODIGOEMPLEADO=?"; // si el valor es numerico validar por codigoempleado
+                }
+                sqlQuery2+=")";
+                System.out.println("Query2: " + sqlQuery2);
+                Query query2 = getEntityManager(cadena).createNativeQuery(sqlQuery2);
+                query2.setParameter(1, usuario);
+                if (this.validarCodigoUsuario(usuario)) {
+                    query2.setParameter(2, usuario);
+                }
+                documento =  query2.getSingleResult().toString();
+                System.out.println("Validación documentoPorEmpleado: "+documento);
+            } catch (Exception ex) {
+                System.out.println("Error 2: " + ConexionesKioskos.class.getName() + " getDocumentoCorreoODocumento(): ");
+            }
+        }
+        return documento;
+   }  
+    
+    public boolean validarCodigoUsuario(String usuario) {
+        boolean resultado = false;
+        BigInteger numUsuario;
+        try {
+            numUsuario = new BigInteger(usuario);
+            resultado = true;
+        } catch (NumberFormatException nfe) {
+            resultado = false;
+        }
+        return resultado;
+    }    
     
     public boolean consultarEmpleadoXPersoEmpre(String numeroDocumento, String nit, String cadena) throws Exception {
         setearPerfil(cadena);

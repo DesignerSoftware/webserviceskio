@@ -271,7 +271,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         List s = null;
         System.out.println("Parametros getParametros(): seudonimo: " + usuario + ", nitEmpresa: " + nitEmpresa+", cadena: "+cadena);
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "SELECT TO_CHAR(FECHADESDE, 'yyyy-mm-dd'), TO_CHAR(FECHAHASTA, 'yyyy-mm-dd'), ENVIOCORREO, nvl(DIRIGIDOA, ' ') FROM CONEXIONESKIOSKOS "
                     + " WHERE SEUDONIMO=? "
                     + " AND NITEMPRESA=?";
@@ -284,7 +284,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             s.forEach(System.out::println);
             return Response.status(Response.Status.OK).entity(s).build();
         } catch (Exception ex) {
-            System.out.println("Error: " + ex);
+            System.out.println("Error: "+this.getClass().getName()+".getParametros" + ex);
             conteo = 0;
             return Response.status(Response.Status.OK).entity(s).build();
         }
@@ -294,7 +294,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     //@GET
     //@Path("/correo")
     //@Produces(MediaType.APPLICATION_JSON)
-    public String getCorreo(@QueryParam("usuario") String usuario, @QueryParam("nitEmpresa") String nitEmpresa) {
+    /*public String getCorreo(@QueryParam("usuario") String usuario, @QueryParam("nitEmpresa") String nitEmpresa) {
         String correo = "";
         System.out.println("Parametros: seudonimo: " + usuario + ", nitEmpresa: " + nitEmpresa);
         try {
@@ -311,7 +311,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             System.out.println("Error: " + ex.getMessage());
             return correo;
         }
-    }
+    }*/
 
     @POST
     @Path("/creaUsuario")
@@ -660,12 +660,14 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSolicitudXEstado(@QueryParam("documento") String documento,
             @QueryParam("empresa") String empresa,
-            @QueryParam("estado") String estado) {
+            @QueryParam("estado") String estado,
+            @QueryParam("cadena") String cadena) {
         int conteo = 0;
         List s = null;
-        System.out.println("Parametros: empleado: " + documento + ", empresa: " + empresa + " estado: " + estado);
+        System.out.println("Parametros getSolicitudXEstado(): seudonimo: " + documento + ", empresa: " + empresa + ", estado: " + estado+", cadena: "+cadena);
         try {
-            setearPerfil();
+            String secEmpl = getSecuenciaEmplPorSeudonimo(documento, empresa, cadena);
+            setearPerfil(cadena);
             String sqlQuery = "select to_char(ks.fechageneracion, 'dd/mm/yyyy') fechacreacion, \n"
                     + "to_char(kn.fechainicialdisfrute, 'dd/mm/yyyy') fechainicio, kn.dias dias, \n"
                     + "to_char(e.fechaprocesamiento,'dd/mm/yyyy') fechaprocesamiento, e.estado,\n"
@@ -683,20 +685,16 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                     + "e.kiosolicivaca = ks.secuencia \n"
                     + "and ks.KIONOVEDADSOLICI = kn.secuencia \n"
                     + "and kn.vacacion=v.RFVACACION\n"
-                    + "and ks.empleado = (select ei.secuencia from empleados ei, personas pei, empresas em where ei.persona=pei.secuencia \n"
-                    + "                  and ei.empresa=em.secuencia and em.nit=? \n"
-                    + "                  and pei.numerodocumento=?)\n"
+                    + "and ks.empleado = ? \n"
                     + "and e.estado = ? \n"
                     + "and e.secuencia = (select max(ei.secuencia)\n"
                     + "from KioEstadosSolici ei, kiosolicivacas ksi \n"
                     + "where ei.kioSoliciVaca = ksi.secuencia \n"
                     + "and ksi.secuencia=ks.secuencia) \n"
                     + "order by e.fechaProcesamiento DESC";
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
-            query.setParameter(1, empresa);
-            query.setParameter(2, documento);
-            query.setParameter(3, estado);
-
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, secEmpl);
+            query.setParameter(2, estado);
             s = query.getResultList();
             s.forEach(System.out::println);
 
@@ -709,12 +707,30 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         }
           return Response.status(Response.Status.OK).entity(s).build();
         } catch (Exception ex) {
-            System.out.println("Error: " + ex);
+            System.out.println("Error: "+this.getClass().getName()+".getSolicitudXEstado(): " + ex);
             conteo = 0;
             return Response.status(Response.Status.OK).entity("").build();
         }
     }
-    
+ 
+    public String getSecuenciaEmplPorSeudonimo(String seudonimo, String nitEmpresa, String cadena) {
+        System.out.println("Parametros getSecuenciaEmplPorSeudonimo(): seudonimo: "+seudonimo+", nitEmpresa: "+nitEmpresa+", cadena: "+cadena);
+       String secuencia=null;
+        try {
+            setearPerfil(cadena);
+            String sqlQuery = "SELECT E.SECUENCIA SECUENCIAEMPLEADO FROM EMPLEADOS E, CONEXIONESKIOSKOS CK WHERE CK.EMPLEADO=E.SECUENCIA AND CK.SEUDONIMO=? AND CK.NITEMPRESA=?";
+            System.out.println("Query: "+sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+
+            query.setParameter(1, seudonimo);
+            query.setParameter(2, nitEmpresa);
+            secuencia =  query.getSingleResult().toString();
+            System.out.println("secuencia: "+secuencia);
+        } catch (Exception e) {
+            System.out.println("Error: "+this.getClass().getName()+".getSecuenciaEmplPorSeudonimo: "+e.getMessage());
+        }
+        return secuencia;
+   }       
     
     @GET
     @Path("/solicitudesXEmpleadoJefe")
@@ -725,7 +741,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         List s = null;
         System.out.println("Webservice: solicitudesXEmpleadoJefe Parametros: empleado: " + documentoJefe + ", empresa: " + empresa);
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "  SELECT \n" +
             "  t1.CODIGOEMPLEADO, P.PRIMERAPELLIDO||' '||P.SEGUNDOAPELLIDO||' '||P.NOMBRE NOMBRECOMPLETO,\n" +
             "  to_char(t2.FECHAGENERACION, 'DD/MM/YYYY HH:mm:ss') solicitud, \n" +
@@ -753,7 +769,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             "  ) \n" +
             "  ORDER BY t0.FECHAPROCESAMIENTO DESC";
             //Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, empresa);
             query.setParameter(2, documentoJefe);
             s = query.getResultList();
@@ -1170,7 +1186,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
    
    
     public String getDocumentoPorSeudonimo(String seudonimo, String nitEmpresa, String cadena) {
-       System.out.println("getDocumentoPorSeudonimo() seudonimo: "+seudonimo+", nitEmpresa: "+nitEmpresa+", cadena: "+cadena);
+       System.out.println("Parametros getDocumentoPorSeudonimo() seudonimo: "+seudonimo+", nitEmpresa: "+nitEmpresa+", cadena: "+cadena);
        String documento=null;
         try {
             setearPerfil(cadena);
@@ -1183,7 +1199,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             documento =  query.getSingleResult().toString();
             System.out.println("documento: "+documento);
         } catch (Exception e) {
-            System.out.println("Error: getDocumentoPorSeudonimo: "+e.getMessage());
+            System.out.println("Error: "+this.getClass().getName()+".getDocumentoPorSeudonimo: "+e.getMessage());
         }
         return documento;
    }
@@ -1193,7 +1209,8 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         int resCon = 0;
         boolean resultado = false;
         try {
-            System.out.println("Parametros registraToken(): usuario: "+usuario+", token: "+token+", tipo: "+tipo+", fechaCreacion: "+fechacreacion+", fechaExpira: "+fechaexpira+", cadena: "+cadena);
+            System.out.println("Parametros registraToken(): usuario: "+usuario+", token: "+token+", "
+                    + "\n tipo: "+tipo+", fechaCreacion: "+fechacreacion+", fechaExpira: "+fechaexpira+", cadena: "+cadena);
             setearPerfil(cadena);
             String sql= "INSERT INTO CONEXIONESTOKEN (CONEXIONKIOSKO, TOKEN, FECHACREACION, FECHAEXPIRACION, TIPO) VALUES "
                     + "((SELECT SECUENCIA FROM CONEXIONESKIOSKOS WHERE SEUDONIMO =? AND NITEMPRESA=?),"
@@ -1211,7 +1228,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             resultado = resCon>0;
             System.out.println("Resultado registra token: "+resultado);
         } catch (Exception ex) {
-            System.out.println("Error registraToken: "+ex.getMessage());
+            System.out.println("Error "+this.getClass().getName()+".registraToken: "+ex.getMessage());
         }
         return resultado;
     }
@@ -1377,7 +1394,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             resultado = instancia > 0;
             System.out.println("Resultado validarTokenExistente: "+resultado);
         } catch (Exception e) {
-            System.out.println("Error: "+ConexionesKioskos.class.getName()+".validarTokenExistente() "+e.getMessage());
+            System.out.println("Error: "+this.getClass().getName()+".validarTokenExistente() "+e.getMessage());
             resultado=false;
         } 
         return resultado;
@@ -1394,7 +1411,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             query.setParameter(1, token);
             estado = query.getSingleResult().toString();           
         } catch (Exception e) {
-            System.out.println("Error getEstadoToken(): " + e);
+            System.out.println("Error "+this.getClass().getName()+".getEstadoToken(): " + e);
         } 
         return estado;
     }
@@ -1403,6 +1420,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @Path("/restKiosco/documentoconexioneskioskos")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDocumentoConexioneskioskos(@QueryParam("seudonimo") String usuario, @QueryParam("nit") String nit, @QueryParam("cadena") String cadena){
+        System.out.println("Parametros getDocumentoConexioneskioskos(): seudonimo: "+usuario+", nit: "+nit+", cadena: "+cadena);
         String r=getDocumentoPorSeudonimo(usuario, nit, cadena);
         String[] parametros={usuario, nit};
             return Response.ok(
@@ -1414,6 +1432,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @Path("/restKiosco/logoEmpresa/{nit}")
     @Produces(MediaType.TEXT_PLAIN)
     public Response getLogoEmpresa(@PathParam("nit") String nit, @QueryParam("cadena") String cadena){
+        System.out.println("Parametros getLogoEmpresa(): nit: "+nit+", cadena: "+cadena);
         String r= getLogoEmpresaS(nit, cadena);
         return Response.ok(r, MediaType.TEXT_PLAIN)
         .build();
@@ -1432,7 +1451,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             logo = query.getSingleResult().toString();
             logoE.put("LOGO", logo.substring(0, logo.length()-4));
         } catch (Exception e) {
-            System.out.println("Error getLogoEmpresa(): " + e);
+            System.out.println("Error "+this.getClass().getName()+".getLogoEmpresa(): " + e);
         }
         return logoE.toString();
     }
@@ -1441,6 +1460,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @Path("/restKiosco/correoconexioneskioskos/{usuario}/{nit}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getCorreoConexioneskioskoS(@PathParam("usuario") String usuario, @PathParam("nit") String nit, @QueryParam("cadena") String cadena){
+        System.out.println("Parametros getCorreoConexioneskioskoS(): usuario: "+usuario+", nit: "+nit+", cadena: "+cadena);
         String r= getCorreoConexioneskioskos(usuario, nit, cadena);
         String[] parametros={usuario, nit};
             return Response.ok(
@@ -1450,7 +1470,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     }
     
     public String getCorreoConexioneskioskos(String seudonimo, String empresa, String cadena) {
-        System.out.println("Parametros getCorreoConexioneskioskos(): seudonimo: "+seudonimo+" nit empresa: "+empresa+", cadena: "+cadena);
+        System.out.println("Parametros getCorreoConexioneskioskos(): seudonimo: "+seudonimo+", empresa: "+empresa+", cadena: "+cadena);
         String correo = null;
         String sqlQuery;
         try {
@@ -1520,7 +1540,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             EnvioCorreo e= new EnvioCorreo();
             //envioCorreo = e.enviarNuevaClave("smtp.gmail.com", "465", "S", "pruebaskiosco534@gmail.com", "Nomina01", getCorreoConexioneskioskos(usuario, nit), getNombrePersona(usuario), nuevaClave, "");
             envioCorreo = e.enviarNuevaClave("smtp.designer.com.co", "587", "S", "kioskodesigner@designer.com.co", 
-                    "Nomina01", getCorreoConexioneskioskos(usuario, nit, cadena), getNombrePersona(usuario, cadena), nuevaClave, "");
+                    "Nomina01", getCorreoConexioneskioskos(usuario, nit, cadena), getNombrePersona(usuario, cadena), nuevaClave, "", cadena);
         } else {
             System.out.println("Error al actualizar la contraseña");
         }
@@ -1664,7 +1684,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                System.out.println("Token registrado");
                // estadoEnvioCorreo = p.enviarEnlaceValidacionCuenta("smtp.gmail.com", "465", "S", "pruebaskiosco534@gmail.com", "Nomina01", getCorreoConexioneskioskos(usuario, nit), getNombrePersona(usuario), jwt, urlKiosco);
                estadoEnvioCorreo = p.enviarEnlaceValidacionCuenta("smtp.designer.com.co", "587", "S", "kioskodesigner@designer.com.co", "Nomina01", 
-                       getCorreoConexioneskioskos(usuario, nit, cadena), getNombrePersona(usuario, cadena), jwt, urlKiosco);
+                       getCorreoConexioneskioskos(usuario, nit, cadena), getNombrePersona(usuario, cadena), jwt, urlKiosco, cadena);
             }
                         
             JsonObject json=Json.createObjectBuilder()

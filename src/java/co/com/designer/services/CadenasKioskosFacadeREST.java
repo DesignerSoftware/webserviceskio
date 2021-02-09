@@ -60,13 +60,12 @@ public class CadenasKioskosFacadeREST {
             String sqlQuery = "SELECT CODIGO, DESCRIPCION, NITEMPRESA, GRUPO, CADENA, EMPLNOMINA, ESQUEMA FROM CADENASKIOSKOSAPP WHERE GRUPO=?";
             Query query = getEntityManager().createNativeQuery(sqlQuery);
             query.setParameter(1, grupo);
-
             s = query.getResultList();
             System.out.println("1" + s.get(0));
             s.forEach(System.out::println);
             return Response.status(Response.Status.OK).entity(s).build();
         } catch (Exception ex) {
-            System.out.println("Error: " + ex);
+            System.out.println("Error: "+this.getClass().getName()+" getCadenas():" + ex);
             return Response.status(Response.Status.OK).entity(s).build();
         }
     }

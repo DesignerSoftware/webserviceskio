@@ -59,6 +59,18 @@ public class EnvioCorreo {
         }
     }
     
+    protected void setearPerfil(String cadena) {
+        try {
+            System.out.println("setearPerfil(cadena)");
+            String rol = "ROLKIOSKO";
+            String sqlQuery = "SET ROLE " + rol + " IDENTIFIED BY RLKSK ";
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.executeUpdate();
+        } catch (Exception ex) {
+            System.out.println("Error setearPerfil(String cadena): " + ex);
+        }
+    }     
+    
     public void pruebaEnvio2No(String servidorsmtp, String puerto, String remitente, String clave,
             String autenticado, String destinatario, String rutaReporte,
             String nombreReporte, String asunto, String mensaje){
@@ -169,7 +181,7 @@ public class EnvioCorreo {
     
    public void pruebaEnvio2(String servidorsmtp, String puerto, String remitente, String clave,
             String autenticado, String destinatario, String rutaReporte,
-            String nombreReporte, String asunto, String mensaje, String rutaImagenes){
+            String nombreReporte, String asunto, String mensaje, String rutaImagenes, String grupo, String urlKiosco){
 
        //String servidorsmtp="smtp.designer.com.co"; 
        /*String servidorsmtp="smtp.gmail.com"; 
@@ -232,8 +244,8 @@ public class EnvioCorreo {
                     + "                <tr >\n"
                     + "                    <td style=\"text-align:center;padding:0\">\n"
                     + "                        <div style=\"text-align:center\">\n"
-                    + "                            <a href=\"https://www.designer.com.co:8179/#/login/GrupoEmpresarial2\" target=\"_blank\"\n"
-                    + "                                data-saferedirecturl=\"https://www.designer.com.co:8179/#/login/GrupoEmpresarial2\">\n"
+                    + "                            <a href="+urlKiosco+" target=\"_blank\"\n"
+                    + "                                data-saferedirecturl="+urlKiosco+">\n"
                     + "\n"
                     + "                                <img width=\"80px\" style=\"display:block;margin:auto auto 0px auto\"\n"
                     + "                                    src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/kioscologopro.png\">\n"
@@ -257,8 +269,8 @@ public class EnvioCorreo {
                     + "                                adjuntos.<br></h4>\n"
                     + "                            <div style=\"width:100%;text-align:center\">\n"
                     + "                                <a style=\"text-decoration:none;border-radius:5px;padding:11px 23px;margin-bottom:4%;color:white;background-color:#3498db\"\n"
-                    + "                                    href=\"https://www.designer.com.co:8179/#/login/GrupoEmpresarial2\" target=\"_blank\"\n"
-                    + "                                    data-saferedirecturl=\"https://www.designer.com.co:8179/#/login/GrupoEmpresarial2\">Ir\n"
+                    + "                                    href="+urlKiosco+" target=\"_blank\"\n"
+                    + "                                    data-saferedirecturl="+urlKiosco+">Ir\n"
                     + "                                    a Kiosco</a>\n"
                     + "                                <br>                                                                \n"
                     + "                                <br>                                                                \n"
@@ -341,7 +353,7 @@ public class EnvioCorreo {
     }    
     
     public boolean enviarNuevaClave(String servidorsmtp, String puerto, String autenticado, String remitente, String clave, String destinatario, String nombreUsuario,
-            String nuevaClave, String urlKiosco) {
+            String nuevaClave, String urlKiosco, String cadena) {
         boolean envioCorreo = false;
         Properties props = new Properties();
         props.put("mail.smtp.host", servidorsmtp);
@@ -384,7 +396,7 @@ public class EnvioCorreo {
 // second part (the image)
             messageBodyPart = new MimeBodyPart();
             //DataSource fds = new FileDataSource("C:\\DesignerRHN12\\Basico12\\fotos_empleados\\headerlogocorreoKiosko.png");
-            String rutaImagenes = getPathFoto();
+            String rutaImagenes = getPathFoto(cadena);
             DataSource fds = new FileDataSource(rutaImagenes + "headerlogocorreoKiosko.png");
             messageBodyPart.setDataHandler(new DataHandler(fds));
             messageBodyPart.setHeader("Content-ID", "<image>");
@@ -404,13 +416,13 @@ public class EnvioCorreo {
     }
     
     
-    public String getPathFoto() {
+    public String getPathFoto(String cadena) {
         String rutaFoto="";
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "SELECT PATHFOTO FROM GENERALESKIOSKO WHERE ROWNUM<=1";
             System.out.println("Query: "+sqlQuery);
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             rutaFoto =  query.getSingleResult().toString();
             System.out.println("rutaFotos: "+rutaFoto);
         } catch (Exception e) {
@@ -421,7 +433,7 @@ public class EnvioCorreo {
     
     
     public boolean enviarEnlaceValidacionCuenta(String servidorsmtp, String puerto, String autenticado, String remitente, String clave, String destinatario, String nombreUsuario,
-            String jwt, String urlKiosco) {
+            String jwt, String urlKiosco, String cadena) {
         boolean envioCorreo = false;
         Properties props = new Properties();
         props.put("mail.smtp.host", servidorsmtp);
@@ -470,7 +482,7 @@ public class EnvioCorreo {
 // second part (the image)
             messageBodyPart = new MimeBodyPart();
 // DataSource fds = new FileDataSource("C:\\DesignerRHN10\\Basico10\\fotos_empleados\\headerlogocorreoKiosko.png");
-            String rutaImagenes = getPathFoto();
+            String rutaImagenes = getPathFoto(cadena);
             DataSource fds = new FileDataSource(rutaImagenes + "headerlogocorreoKiosko.png");
             messageBodyPart.setDataHandler(new DataHandler(fds));
             messageBodyPart.setHeader("Content-ID", "<image>");
@@ -582,8 +594,9 @@ public class EnvioCorreo {
         String asunto, String mensaje, String urlKiosco, String nit) {*/
     public boolean enviarCorreoVacaciones(String servidorsmtp, String puerto, String autenticado,
             String starttls, String remitente, String clave, String destinatario,
-            String asunto, String mensaje, String urlKiosco, String nit) {
-
+            String asunto, String mensaje, String urlKiosco, String nit, String cadena) {
+        System.out.println("Parametros enviarCorreoVacaciones(): servidorsmto: "+servidorsmtp+", puerto: "+puerto+", autenticado: "+autenticado+", starttls: "+starttls+""
+                + "\n remitente: "+remitente+", clave: "+clave+", destinatario: "+destinatario+", asunto: "+asunto+", nit: "+nit+", cadena: "+cadena);
         boolean envioCorreo = false;
         Properties props = new Properties();
         props.put("mail.smtp.host", servidorsmtp);
@@ -618,8 +631,8 @@ public class EnvioCorreo {
                     + "                <tr >\n"
                     + "                    <td style=\"text-align:center;padding:0\">\n"
                     + "                        <div style=\"text-align:center\">\n"
-                    + "                            <a href=\"https://www.designer.com.co:8179/#/login/GrupoEmpresarial2\" target=\"_blank\"\n"
-                    + "                                data-saferedirecturl=\"https://www.designer.com.co:8179/#/login/GrupoEmpresarial2\">\n"
+                    + "                            <a href='"+urlKiosco+"' target=\"_blank\"\n"
+                    + "                                data-saferedirecturl="+urlKiosco+">\n"
                     + "\n"
                     + "                                <img width=\"80px\" style=\"display:block;margin:auto auto 0px auto\"\n"
                     + "                                    src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/kioscologopro.png\">\n"
@@ -643,8 +656,8 @@ public class EnvioCorreo {
                     + "                                adjuntos.<br></h4>\n"*/
                     + "                            <div style=\"width:100%;text-align:center\">\n"
                     + "                                <a style=\"text-decoration:none;border-radius:5px;padding:11px 23px;margin-bottom:4%;color:white;background-color:#3498db\"\n"
-                    + "                                    href=\"https://www.designer.com.co:8179/#/login/GrupoEmpresarial2\" target=\"_blank\"\n"
-                    + "                                    data-saferedirecturl=\"https://www.designer.com.co:8179/#/login/GrupoEmpresarial2\">Ir\n"
+                    + "                                    href="+urlKiosco+" target=\"_blank\"\n"
+                    + "                                    data-saferedirecturl="+urlKiosco+">Ir\n"
                     + "                                    a Kiosco</a>\n"
                     + "                                <br>                                                                \n"
                     + "                                <br>                                                                \n"
@@ -701,7 +714,7 @@ public class EnvioCorreo {
 // second part (the image)
             messageBodyPart = new MimeBodyPart();
             //DataSource fds = new FileDataSource("C:\\DesignerRHN12\\Basico12\\fotos_empleados\\headerlogocorreoKiosko.png");
-            String rutaImagenes = getPathFoto();
+            String rutaImagenes = getPathFoto(cadena);
             DataSource fds = new FileDataSource(rutaImagenes + "headerlogocorreoKiosko.png");
             messageBodyPart.setDataHandler(new DataHandler(fds));
             messageBodyPart.setHeader("Content-ID", "<image>");
@@ -720,31 +733,31 @@ public class EnvioCorreo {
         return envioCorreo;
     }
       
-    public String getConfigCorreo(String nit, String valor) {
+    public String getConfigCorreo(String nit, String valor, String cadena) {
         System.out.println("getPathArchivosPlanos()");
         String servidorsmtp="smtp.designer.com.co";
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "SELECT "+valor+" FROM CONFICORREOKIOSKO WHERE EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?)";
             System.out.println("Query: "+sqlQuery);
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nit);
             servidorsmtp =  query.getSingleResult().toString();
             System.out.println(valor+": "+servidorsmtp);
         } catch (Exception e) {
-            System.out.println("Error: "+e.getMessage());
+            System.out.println("Error: "+this.getClass().getName()+".getConfigCorreo(): " +e.getMessage());
         }
         return servidorsmtp;
     }    
     
-    public String getConfigCorreoServidorSMTP(String nit) {
+    public String getConfigCorreoServidorSMTP(String nit, String cadena) {
         System.out.println("getConfigCorreoServidorSMTP()");
         String servidorsmtp="smtp.designer.com.co";
         try {
             setearPerfil();
             String sqlQuery = "SELECT SERVIDORSMTP FROM CONFICORREOKIOSKO WHERE EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?)";
             System.out.println("Query: "+sqlQuery);
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nit);
             servidorsmtp =  query.getSingleResult().toString();
             System.out.println("Servidor smtp: "+servidorsmtp);
@@ -754,15 +767,15 @@ public class EnvioCorreo {
         return servidorsmtp;
     }
     
-    public String getCorreoSoporteKiosco(String nit) {
+    public String getCorreoSoporteKiosco(String nit, String cadena) {
         System.out.println("getConfigCorreoServidorSMTP()");
-        String emailSoporte="smtp.designer.com.co";
+        String emailSoporte="";
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "SELECT EMAILCONTACTO FROM KIOPERSONALIZACIONES WHERE "
                     + "EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?) AND ROWNUM<=1";
             System.out.println("Query: "+sqlQuery);
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nit);
             emailSoporte =  query.getSingleResult().toString();
             System.out.println("Email soporte: "+emailSoporte);
@@ -774,14 +787,14 @@ public class EnvioCorreo {
     
     /*Correo novedad de corrección de información que se envia a RRHH o Auditoria Módulo Vacaciones(No se incluye botón de Ir a Kiosco) */
     public boolean enviarCorreoInformativo(
-            String asunto, String saludo, String mensaje, String nit) {
-        String servidorsmtp = getConfigCorreoServidorSMTP(nit);
-        String puerto = getConfigCorreo(nit, "PUERTO");
-        String autenticado = getConfigCorreo(nit, "AUTENTICADO");
-        String starttls = getConfigCorreo(nit, "STARTTLS");
-        String remitente = getConfigCorreo(nit, "REMITENTE");
-        String clave = getConfigCorreo(nit, "CLAVE");
-        String destinatario = getCorreoSoporteKiosco(nit);
+            String asunto, String saludo, String mensaje, String nit, String urlKiosco, String cadena) {
+        String servidorsmtp = getConfigCorreoServidorSMTP(nit, cadena);
+        String puerto = getConfigCorreo(nit, "PUERTO", cadena);
+        String autenticado = getConfigCorreo(nit, "AUTENTICADO", cadena);
+        String starttls = getConfigCorreo(nit, "STARTTLS", cadena);
+        String remitente = getConfigCorreo(nit, "REMITENTE", cadena);
+        String clave = getConfigCorreo(nit, "CLAVE", cadena);
+        String destinatario = getCorreoSoporteKiosco(nit, cadena);
         boolean envioCorreo = false;
         Properties props = new Properties();
         props.put("mail.smtp.host", servidorsmtp);
@@ -816,8 +829,8 @@ public class EnvioCorreo {
                     + "                <tr >\n"
                     + "                    <td style=\"text-align:center;padding:0\">\n"
                     + "                        <div style=\"text-align:center\">\n"
-                    + "                            <a href=\"https://www.designer.com.co:8179/#/login/GrupoEmpresarial2\" target=\"_blank\"\n"
-                    + "                                data-saferedirecturl=\"https://www.designer.com.co:8179/#/login/GrupoEmpresarial2\">\n"
+                    + "                            <a href='"+urlKiosco+"' target=\"_blank\"\n"
+                    + "                                >\n"
                     + "\n"
                     + "                                <img width=\"80px\" style=\"display:block;margin:auto auto 0px auto\"\n"
                     + "                                    src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/kioscologopro.png\">\n"
@@ -896,7 +909,7 @@ public class EnvioCorreo {
 // second part (the image)
             messageBodyPart = new MimeBodyPart();
             //DataSource fds = new FileDataSource("C:\\DesignerRHN12\\Basico12\\fotos_empleados\\headerlogocorreoKiosko.png");
-            String rutaImagenes = getPathFoto();
+            String rutaImagenes = getPathFoto(cadena);
             DataSource fds = new FileDataSource(rutaImagenes + "headerlogocorreoKiosko.png");
             messageBodyPart.setDataHandler(new DataHandler(fds));
             messageBodyPart.setHeader("Content-ID", "<image>");
@@ -906,7 +919,7 @@ public class EnvioCorreo {
             message.setContent(multipart);
 // Send the actual HTML message, as big as you like
             Transport.send(message);
-            System.out.println("Mail sent successfully!!!");
+            System.out.println("Mail sent successfully!!! "+destinatario);
             envioCorreo = true;
         } catch (MessagingException e) {
             envioCorreo = false;

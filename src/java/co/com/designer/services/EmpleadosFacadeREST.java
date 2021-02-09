@@ -142,7 +142,7 @@ public class EmpleadosFacadeREST {
             s.forEach(System.out::println);
             return Response.status(Response.Status.OK).entity(s).build();
         } catch (Exception ex) {
-            System.out.println("Error getDatosEmpleadoNit: " + ex);
+            System.out.println("Error "+this.getClass().getName()+"getDatosEmpleadoNit: " + ex);
             return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
         }
     }
@@ -151,12 +151,11 @@ public class EmpleadosFacadeREST {
     @Path("/datosFamiliaEmpleado/{empleado}/{nit}")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response getDatosFamiliaEmpleado(@PathParam("empleado") String empleado, @PathParam("nit") String nit, @QueryParam("cadena") String cadena) {
-        System.out.println("getDatosFamiliaEmpleado()");
-        System.out.println("parametros: empleado: " + empleado + " nit: " + nit + " cadena " + cadena);
+        System.out.println("parametros getDatosFamiliaEmpleado(): empleado: " + empleado + " nit: " + nit + " cadena: " + cadena);
         List s = null;
         try {
             String secEmpl = getSecuenciaEmplPorSeudonimo(empleado, nit, cadena);
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "select \n"
                     + "fam.nombre ||' '|| fam.primerapellido ||' '|| fam.segundoapellido nombreFamiliar, t.tipo Parentesco,\n"
                     + "decode(ltel.secuencia, null, ' ',\n"
@@ -180,14 +179,14 @@ public class EmpleadosFacadeREST {
                     + "and fam.secuencia = ltel.persona(+) \n"
                     + "and e.secuencia = ? "
                     + "order by fam.nombre, fam.primerapellido, fam.segundoapellido, ltel.tipotelefono";
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpl);
 
             s = query.getResultList();
             s.forEach(System.out::println);
             return Response.status(Response.Status.OK).entity(s).build();
         } catch (Exception ex) {
-            System.out.println("Error getDatosFamiliaEmpleado: " + ex);
+            System.out.println("Error "+this.getClass().getName()+".getDatosFamiliaEmpleado: " + ex);
             return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
         }
     }
@@ -197,13 +196,12 @@ public class EmpleadosFacadeREST {
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response getSoliciSinProcesarJefe(@PathParam("nit") String nit,@PathParam("jefe") String jefe, 
         @PathParam("estado") String estado, @QueryParam("cadena") String cadena) {
-        System.out.println("getSoliciSinProcesarJefe()");
-        System.out.println("parametros: nit: "+nit+ " jefe "+jefe+" estado: "+estado+ " cadena "+cadena);
+        System.out.println("parametros getSoliciSinProcesarJefe(): nit: "+nit+ " jefe "+jefe+" estado: "+estado+ " cadena "+cadena);
         List s = null;
         try {
         String secuenciaJefe = getSecuenciaEmplPorSeudonimo(jefe, nit, cadena );
-        String secuenciaEmpresa = getSecuenciaPorNitEmpresa(nit);
-        setearPerfil();
+        String secuenciaEmpresa = getSecuenciaPorNitEmpresa(nit, cadena);
+        setearPerfil(cadena);
         String sqlQuery="   SELECT \n" +
         " t1.codigoempleado documento, REPLACE(TRIM(P.PRIMERAPELLIDO||' '||P.SEGUNDOAPELLIDO||' '||P.NOMBRE), '  ', ' ') NOMBRE,\n" +
         " t0.SECUENCIA, \n" +
@@ -239,7 +237,7 @@ public class EmpleadosFacadeREST {
         " AND KNS.VACACION=v.RFVACACION\n" +
         " AND t2.EMPLEADOJEFE=JEFE.SECUENCIA\n" +        
         " ORDER BY t0.FECHAPROCESAMIENTO DESC\n" ;
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secuenciaEmpresa);
             query.setParameter(2, estado);
             query.setParameter(3, secuenciaJefe);
@@ -248,7 +246,7 @@ public class EmpleadosFacadeREST {
             s.forEach(System.out::println);
             return Response.status(Response.Status.OK).entity(s).build();
         } catch (Exception ex) {
-            System.out.println("Error getSoliciSinProcesarJefe: " + ex);
+            System.out.println("Error "+this.getClass().getName()+".getSoliciSinProcesarJefe: " + ex);
             return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
         }
     }
@@ -311,7 +309,7 @@ public class EmpleadosFacadeREST {
             documento =  query.getSingleResult().toString();
             System.out.println("documento: "+documento);
         } catch (Exception e) {
-            System.out.println("Error: getDocumentoPorSeudonimo: "+e.getMessage());
+            System.out.println("Error: "+this.getClass().getName()+".getDocumentoPorSeudonimo: "+e.getMessage());
         }
         return documento;
    }   
@@ -330,23 +328,23 @@ public class EmpleadosFacadeREST {
             secuencia =  query.getSingleResult().toString();
             System.out.println("secuencia: "+secuencia);
         } catch (Exception e) {
-            System.out.println("Error: getSecuenciaEmplPorSeudonimo: "+e.getMessage());
+            System.out.println("Error: "+this.getClass().getName()+".getSecuenciaEmplPorSeudonimo: "+e.getMessage());
         }
         return secuencia;
    }    
     
-    public String getSecuenciaPorNitEmpresa( String nitEmpresa) {
+    public String getSecuenciaPorNitEmpresa( String nitEmpresa, String cadena) {
        String secuencia=null;
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "SELECT EM.SECUENCIA SECUENCIAEMPRESA FROM EMPRESAS EM WHERE EM.NIT=?";
             System.out.println("Query: "+sqlQuery);
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
             secuencia =  query.getSingleResult().toString();
             System.out.println("secuencia: "+secuencia);
         } catch (Exception e) {
-            System.out.println("Error: getSecuenciaPorNitEmpresa: "+e.getMessage());
+            System.out.println("Error: "+this.getClass().getName()+".getSecuenciaPorNitEmpresa: "+e.getMessage());
         }
         return secuencia;
    }  
@@ -369,22 +367,23 @@ public class EmpleadosFacadeREST {
     @Path("{usuario}")
     @Produces(MediaType.TEXT_PLAIN)
     public String getSecuencia(@PathParam("usuario") String usuario, @QueryParam("cadena") String cadena) {
+        System.out.println("Parametros getSecuencia(): usuario: "+usuario+", cadena: "+cadena);
         BigDecimal res = null;
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "SELECT EMPLEADO FROM CONEXIONESKIOSKOS WHERE SEUDONIMO=?";
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, usuario);
             res = (BigDecimal) query.getSingleResult();
         } catch (Exception ex) {
-            System.out.println("Error getSecuencia() path /empleados: " + ex);
+            System.out.println("Error "+this.getClass().getName()+".getSecuencia() path /empleados: " + ex);
             res = BigDecimal.ZERO;
         }
         return res.toString();
     }
     
    public BigDecimal consultarCodigoJornada(String seudonimo, String nitEmpresa, String fechaDisfrute, String cadena) throws Exception {
-        System.out.println(this.getClass().getName() + "." + "consultarCodigoJornada" + "()");
+       System.out.println("Parametros consultarCodigoJornada()): seudonimo: "+seudonimo+", nitEmpresa: "+nitEmpresa+", fechaDisfrute: "+fechaDisfrute+", cadena: "+cadena);
         String consulta = "select nvl(j.codigo, 1) "
                 + "from vigenciasjornadas v, jornadaslaborales j "
                 + "where v.empleado = ? "
@@ -402,7 +401,8 @@ public class EmpleadosFacadeREST {
         //System.out.println("fecha en txt: " + strFechaDisfrute);
         System.out.println("fecha en txt: " + fechaDisfrute);
         try {
-            query = getEntityManager().createNativeQuery(consulta);
+            setearPerfil(cadena);
+            query = getEntityManager(cadena).createNativeQuery(consulta);
             query.setParameter(1, secEmpleado);
             //query.setParameter(2, strFechaDisfrute);
             query.setParameter(2, fechaDisfrute);
@@ -425,10 +425,11 @@ public class EmpleadosFacadeREST {
     private boolean validaFechaPago(String seudonimo, String nitEmpresa, String fechainicialdisfrute, String cadena) throws Exception {
             Calendar cl = Calendar.getInstance();
             cl.setTime(getFechaUltimoPago(seudonimo, nitEmpresa, cadena));
-            return getDate(fechainicialdisfrute).after(cl.getTime());
+            return getDate(fechainicialdisfrute, cadena).after(cl.getTime());
     }   
    
     public Date getFechaUltimoPago(String seudonimo, String nitempresa, String cadena) throws Exception {
+        System.out.println("Parametros getFechaUltimoPago(): seudonimo: "+seudonimo+", nitempresa: "+nitempresa+", cadena: "+cadena);
         BigDecimal res = null;
         try {
         setearPerfil(cadena);
@@ -452,7 +453,7 @@ public class EmpleadosFacadeREST {
             System.out.println("Nulo general");
             throw new Exception(npee.toString());
         } catch (Exception e) {
-            System.out.println("Error general. " + e);
+            System.out.println("Error "+this.getClass().getName()+".getFechaUltimoPago():  " + e);
             throw new Exception(e.toString());
         }
     }
@@ -488,7 +489,7 @@ public class EmpleadosFacadeREST {
         return retorno;
     }
     
-    public Date getDate(String fechaStr) throws PersistenceException, NullPointerException, Exception {
+    public Date getDate(String fechaStr, String cadena) throws PersistenceException, NullPointerException, Exception {
         System.out.println(this.getClass().getName() + "." + "getDate" + "()");
         String consulta = "SELECT "
                 + "TO_DATE(?, 'dd/mm/yyyy') "
@@ -496,7 +497,7 @@ public class EmpleadosFacadeREST {
         Query query = null;
         Date fechaRegreso = null;
         try {
-            query = getEntityManager().createNativeQuery(consulta);
+            query = getEntityManager(cadena).createNativeQuery(consulta);
             query.setParameter(1, fechaStr);
             fechaRegreso = (Date) (query.getSingleResult());
             return fechaRegreso;
@@ -504,7 +505,7 @@ public class EmpleadosFacadeREST {
             System.out.println("Error de persistencia en calculaFechaRegreso.");
             throw new Exception(pe.toString());
         } catch (NullPointerException npee) {
-            System.out.println("Nulo general en calculaFechaRegreso");
+            System.out.println("Nulo general en "+this.getClass().getName()+".calculaFechaRegreso");
             throw new Exception(npee.toString());
         } catch (Exception e) {
             System.out.println("Error general en calculaFechaRegreso. " + e);
@@ -512,8 +513,8 @@ public class EmpleadosFacadeREST {
         }
     }    
        
-    public boolean verificarDiaLaboral(String fechaDisfrute, BigDecimal codigoJornada) throws Exception {
-        System.out.println(this.getClass().getName() + "." + "verificarDiaLaboral" + "()");
+    public boolean verificarDiaLaboral(String fechaDisfrute, BigDecimal codigoJornada, String cadena) throws Exception {
+        System.out.println(this.getClass().getName() + "." + "verificarDiaLaboral(): fechaDisfrute: "+fechaDisfrute+", codigoJornada: "+codigoJornada+", cadena: "+cadena);
         System.out.println("fechaDisfrute: " + fechaDisfrute);
         System.out.println("codigoJornada: " + codigoJornada);
         String consulta = "select COUNT(*) "
@@ -527,12 +528,12 @@ public class EmpleadosFacadeREST {
         int diaSemana;
         String strFechaDisfrute = "";
         GregorianCalendar c = new GregorianCalendar();
-        c.setTime(getDate(fechaDisfrute));
+        c.setTime(getDate(fechaDisfrute, cadena));
         diaSemana = c.get(Calendar.DAY_OF_WEEK);
         strFechaDisfrute = nombreDia(diaSemana);
         System.out.println("strFechaDisfrute: " + strFechaDisfrute);
         try {
-            query = getEntityManager().createNativeQuery(consulta);
+            query = getEntityManager(cadena).createNativeQuery(consulta);
             query.setParameter(1, codigoJornada);
             query.setParameter(2, strFechaDisfrute);
             conteoDiaLaboral = new BigDecimal(query.getSingleResult().toString());
@@ -545,13 +546,13 @@ public class EmpleadosFacadeREST {
             System.out.println("Nulo general");
             throw new Exception(npee.toString());
         } catch (Exception e) {
-            System.out.println("Error general. " + e);
+            System.out.println("Error "+this.getClass().getName()+".verificarDiaLaboral(): " + e);
             throw new Exception(e.toString());
         }
     }
     
-    public boolean verificarFestivo(String fechaDisfrute) throws Exception {
-        System.out.println(this.getClass().getName() + "." + "verificarFestivo" + "()");
+    public boolean verificarFestivo(String fechaDisfrute, String cadena) throws Exception {
+        System.out.println(this.getClass().getName() + "." + "verificarFestivo(): fechaDisfrute: "+fechaDisfrute+", cadena: "+cadena);
         String consulta = "select COUNT(*) "
                 + "FROM FESTIVOS F, PAISES P "
                 + "WHERE P.SECUENCIA = F.PAIS "
@@ -563,7 +564,8 @@ public class EmpleadosFacadeREST {
         /*SimpleDateFormat formatoFecha = new SimpleDateFormat("ddMMyyyy");
         String strFechaDisfrute = formatoFecha.format(fechaDisfrute);*/
         try {
-            query = getEntityManager().createNativeQuery(consulta);
+            setearPerfil(cadena);
+            query = getEntityManager(cadena).createNativeQuery(consulta);
             query.setParameter(1, "COLOMBIA");
             //query.setParameter(2, strFechaDisfrute);
             query.setParameter(2, fechaDisfrute);
@@ -577,7 +579,7 @@ public class EmpleadosFacadeREST {
             System.out.println("Nulo general");
             throw new Exception(npee.toString());
         } catch (Exception e) {
-            System.out.println("Error general. " + e);
+            System.out.println("Error verificarFestivo(): fechaDisfrute: "+fechaDisfrute+", cadena: "+cadena + e);
             throw new Exception(e.toString());
         }
 //        return false;
@@ -598,7 +600,7 @@ public class EmpleadosFacadeREST {
         Query query = null;
         BigDecimal contTras = null;
         try {
-            query = getEntityManager().createNativeQuery(consulta);
+            query = getEntityManager(cadena).createNativeQuery(consulta);
             query.setParameter(1, secEmpleado);
             //query.setParameter(2, fechaIniVaca, TemporalType.DATE);
             //query.setParameter(3, fechaFinVaca, TemporalType.DATE);
@@ -614,7 +616,7 @@ public class EmpleadosFacadeREST {
             System.out.println("Nulo general en consultaTraslapamientos");
             throw new Exception(npee.toString());
         } catch (Exception e) {
-            System.out.println("Error general en consultaTraslapamientos. " + e);
+            System.out.println("Error general en "+this.getClass().getName()+"consultaTraslapamientos(). " + e);
             throw new Exception(e.toString());
         }
     }
@@ -628,8 +630,8 @@ public class EmpleadosFacadeREST {
             String nitempresa,
             String fechaIniVaca,
             String cadena) throws Exception {
+        System.out.println("Parametros verificaExistenciaSolicitud(): seudonimo: "+seudonimo+", nitempresa: "+nitempresa+", fechaIniVaca: "+fechaIniVaca+", cadena: "+cadena);
         String secEmpleado = getSecuenciaEmplPorSeudonimo(seudonimo, nitempresa, cadena);
-        System.out.println(this.getClass().getName() + ".verificaExistenciaSolicitud()");
         System.out.println("verificaExistenciaSolicitud-secEmpleado: " + secEmpleado);
         System.out.println("verificaExistenciaSolicitud-fechaIniVaca: " + fechaIniVaca);
         /*SimpleDateFormat formato = new SimpleDateFormat("ddMMyyyy");
@@ -678,10 +680,10 @@ public class EmpleadosFacadeREST {
             if (!validaFechaPago(seudonimo, nitEmpresa, fechainicialdisfrute, cadena)) {
                 mensaje+= "La fecha seleccionada es inferior a la última fecha de pago.";
                 valido = false;
-            } else if (verificarFestivo(fechainicialdisfrute)){
+            } else if (verificarFestivo(fechainicialdisfrute, cadena)){
                 mensaje+= "La fecha seleccionada es un día festivo.";
                 valido = false;
-            } else if (!verificarDiaLaboral(fechainicialdisfrute,codigoJornada)){
+            } else if (!verificarDiaLaboral(fechainicialdisfrute,codigoJornada, cadena)){
                 mensaje+= "La fecha seleccionada no es un día laboral.";
                 valido = false;
             }
@@ -700,21 +702,21 @@ public class EmpleadosFacadeREST {
         return obj.toString();
     }
     
-    public String getApellidoNombreXsecEmpl(String secEmpl) {
+    public String getApellidoNombreXsecEmpl(String secEmpl, String cadena) {
         System.out.println("getApellidoNombreXsecEmpl() secuenciaEmpl: "+secEmpl);
         String nombre = null;
-        setearPerfil();
+        setearPerfil(cadena);
         try {
             String sqlQuery = "SELECT UPPER(P.PRIMERAPELLIDO||' '||P.SEGUNDOAPELLIDO||' '||P.NOMBRE) NOMBRE "
                     + " FROM PERSONAS P, EMPLEADOS EMPL "
                     + " WHERE P.SECUENCIA=EMPL.PERSONA "
                     + " AND EMPL.SECUENCIA=?";
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpl);
             nombre = (String) query.getSingleResult();
             System.out.println("nombre: "+nombre);
         } catch (Exception e) {
-            System.out.println("Error getApellidoNombreXsecEmpl(): " + e);
+            System.out.println("Error "+this.getClass().getName()+".getApellidoNombreXsecEmpl(): " + e);
         }
         return nombre;
     }
@@ -725,18 +727,18 @@ public class EmpleadosFacadeREST {
     public boolean enviaReporteInfoRRHH(@QueryParam("seudonimo") String seudonimo, @QueryParam("nitempresa") String nitEmpresa, 
             @QueryParam("observacion") String observacionNovedad, @QueryParam("urlKiosco") String urlKiosco, @QueryParam("grupo") String grupo, @QueryParam("cadena") String cadena) {
         String secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
-        String nombreEmpl = getApellidoNombreXsecEmpl(secEmpl);
+        String nombreEmpl = getApellidoNombreXsecEmpl(secEmpl, cadena);
         String fecha = new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date());
         String mensaje = "Nos permitimos informar que "+nombreEmpl+" ha reportado la siguiente "
                 + "observación desde el módulo Kiosco para su validación: "
                 + "<br><br>"
                 + observacionNovedad;
-        System.out.println("enviaReporteInfoRRHH(): seudonimo "+seudonimo+", nit: "+nitEmpresa+", urlKiosco: "+urlKiosco+", grupo: "+grupo);
+        System.out.println("Parametros enviaReporteInfoRRHH(): seudonimo "+seudonimo+", nit: "+nitEmpresa+", urlKiosco: "+urlKiosco+", grupo: "+grupo+", cadena: "+cadena);
         boolean enviado = true;
         try { 
             EnvioCorreo e= new EnvioCorreo();
             if (e.enviarCorreoInformativo("Módulo Kiosco: Reporte de corrección de información de "+nombreEmpl+" "+fecha,
-                    "Estimado personal de Nómina y RRHH:", mensaje, nitEmpresa)) {
+                    "Estimado personal de Nómina y RRHH:", mensaje, nitEmpresa, urlKiosco+"#/login/"+grupo, cadena)) {
                 enviado = true;
             } else {
                 enviado= false;

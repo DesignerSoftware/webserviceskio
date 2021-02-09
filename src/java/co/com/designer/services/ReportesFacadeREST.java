@@ -84,13 +84,15 @@ public class ReportesFacadeREST {
             @PathParam("enviocorreo") boolean envioCorreo, @PathParam("correo") String correo, 
             @QueryParam("descripcionReporte") String descripcionReporte, 
             @QueryParam("codigoReporte") String codigoReporte, @QueryParam("nit") String nit,
-            @QueryParam("cadena") String cadena, @QueryParam("usuario") String seudonimo) {
+            @QueryParam("cadena") String cadena, @QueryParam("usuario") String seudonimo, @QueryParam("grupo") String grupo, @QueryParam("urlKiosco") String urlKiosco) {
         System.out.println("generaReporte() codigo: "+codigoReporte+" nit: "+nit);
         //this.getEntityManager(cadena);
         setearPerfil(cadena);
+        String urlKio = urlKiosco+"#/login/"+grupo;
         BigDecimal secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nit, cadena);
         System.out.println("Parametros para generar reporte: [ reporte: "+reporte+ ", secuenciaEmpleado: "+secEmpl+", envioCorreo: "+envioCorreo+", correo: "+correo+
-                ", descripcionReporte: "+descripcionReporte+ ", codigo: "+codigoReporte+", cadena: "+cadena+", seudonimo: "+ seudonimo +"]");
+                ", descripcionReporte: "+descripcionReporte+ ", codigo: "+codigoReporte+", cadena: "+cadena+", "
+                        + "\n seudonimo: "+ seudonimo +", grupo: "+grupo+", urlKiosco: "+urlKiosco+"]");
         Map parametros = new HashMap();
         parametros.put("secuenciaempleado", secEmpl);
 //        String rutaGenerado = iniciarReporte.ejecutarReporte("kioCertificacionStrabag", "C:\\DesignerRHN\\Basico\\Reportes\\", "C:\\DesignerRHN\\Reportes\\ArchivosPlanos\\", "rep_2003122037.pdf", "PDF", parametros, getEntityManager());
@@ -132,7 +134,7 @@ public class ReportesFacadeREST {
                         + fecha + " a las " + hora
                         + " se generó el reporte " + descripcionReporte
                         + " en el módulo de Kiosco Nómina Designer. "
-                        + "La persona que GENERÓ el reporte es: "+getNombrePersonaXSeudonimo(seudonimo, nit);
+                        + "La persona que GENERÓ el reporte es: "+getNombrePersonaXSeudonimo(seudonimo, nit, cadena);
                 String sqlQuery = "select email from kioconfigmodulos where codigoopcion=? and nitempresa=?";
                 //Query query2 = getEntityManager(cadena).createNativeQuery(sqlQuery);
                 System.out.println("Query2: "+sqlQuery);
@@ -152,7 +154,7 @@ public class ReportesFacadeREST {
                           remitente, clave, autenticado, correoenviar,
                   rutaGenerado, nombreReporte,
                   "Auditoria: Reporte Kiosco - " + descripcionReporte, 
-                  mensaje, getPathFoto()); 
+                  mensaje, getPathFoto(cadena), grupo, urlKio); 
                 }
                 
             } else {
@@ -173,7 +175,7 @@ public class ReportesFacadeREST {
                     "Nomina01", 
                     "S", correo,*/
                   rutaGenerado, nombreReporte,
-                  "Reporte Kiosco - " + descripcionReporte, "", getPathFoto());
+                  "Reporte Kiosco - " + descripcionReporte, "", getPathFoto(cadena), grupo, urlKio);
             }
             
             ResponseBuilder response = Response.ok((Object) file);
@@ -196,10 +198,10 @@ public class ReportesFacadeREST {
     @GET
     @Path("generaFoto1/{documento}")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getFile1(@PathParam("documento") String documento) {
+    public Response getFile1(@PathParam("documento") String documento, @QueryParam("cadena") String cadena) {
         System.out.println("getFile1() path: generaFoto1");
       //File file = new File("C:\\DesignerRHN12\\Basico12\\fotos_empleados\\"+documento+".jpg");
-      String rutaFoto=getPathFoto();
+      String rutaFoto=getPathFoto(cadena);
       File file = new File(rutaFoto+documento+".jpg");
         return Response.ok(file, MediaType.APPLICATION_OCTET_STREAM)
                 .header("Content-Disposition", "attachment; filename=\""+file.getName()+"\"")
@@ -221,24 +223,24 @@ public class ReportesFacadeREST {
     @GET
     @Path("generaFoto/{documento}")
     @Consumes("application/jpeg")
-    public Response recibeImagen(@PathParam("file") File file) {
+    public Response recibeImagen(@PathParam("file") File file, @QueryParam("cadena") String cadena) {
        System.out.println("recibeImagen() path: generaFoto");
        //file = new File("C:\\DesignerRHN12\\Basico12\\fotos_empleados\\"+file+".jpg");
-       String rutaFoto = getPathFoto();
+       String rutaFoto = getPathFoto(cadena);
        file = new File(rutaFoto+file+".jpg");
         return Response.ok(file/*, /*MediaType.APPLICATION_OCTET_STREAM*/)
                 .header("Content-Disposition", "attachment; filename=\""+file.getName()+"\"")
                 .build();            
     }
     
-    public String getPathFoto() {
+    public String getPathFoto(String cadena) {
         System.out.println("getPathFoto()");
         String rutaFoto="E:\\DesignerRHN10\\Basico10\\fotos_empleados\\";
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "SELECT PATHFOTO FROM GENERALESKIOSKO WHERE ROWNUM<=1";
             System.out.println("Query: "+sqlQuery);
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             rutaFoto =  query.getSingleResult().toString();
             System.out.println("rutaFotos: "+rutaFoto);
         } catch (Exception e) {
@@ -258,7 +260,7 @@ public class ReportesFacadeREST {
             rutaFoto =  query.getSingleResult().toString();
             System.out.println("rutaReportes: "+rutaFoto);
         } catch (Exception e) {
-            System.out.println("Error: getPathReportes: "+e.getMessage());
+            System.out.println("Error: "+this.getClass().getName()+".getPathReportes: "+e.getMessage());
         }
         return rutaFoto;
     }
@@ -274,13 +276,13 @@ public class ReportesFacadeREST {
             rutaFoto =  query.getSingleResult().toString();
             System.out.println("rutaUbicaReportes: "+rutaFoto);
         } catch (Exception e) {
-            System.out.println("Error: getPathArchivosPlanos: "+e.getMessage());
+            System.out.println("Error: "+this.getClass().getName()+".getPathArchivosPlanos: "+e.getMessage());
         }
         return rutaFoto;
     }
     
     public String getConfigCorreo(String nit, String valor, String cadena) {
-        System.out.println("getPathArchivosPlanos()");
+        System.out.println("getConfigCorreo()");
         String servidorsmtp="smtp.designer.com.co";
         try {
             setearPerfil(cadena);
@@ -291,7 +293,7 @@ public class ReportesFacadeREST {
             servidorsmtp =  query.getSingleResult().toString();
             System.out.println(valor+": "+servidorsmtp);
         } catch (Exception e) {
-            System.out.println("Error: "+e.getMessage());
+            System.out.println("Error: "+this.getClass().getName()+".getConfigCorreo"+e.getMessage());
         }
         return servidorsmtp;
     }    
@@ -308,16 +310,16 @@ public class ReportesFacadeREST {
             servidorsmtp =  query.getSingleResult().toString();
             System.out.println("Servidor smtp: "+servidorsmtp);
         } catch (Exception e) {
-            System.out.println("Error: getConfigCorreoServidorSMTP: "+e.getMessage());
+            System.out.println("Error: "+this.getClass().getName()+".getConfigCorreoServidorSMTP: "+e.getMessage());
         }
         return servidorsmtp;
     }  
 
-    public String getNombrePersonaXSeudonimo(String usuario, String nit) {
+    public String getNombrePersonaXSeudonimo(String usuario, String nit, String cadena) {
         System.out.println("getNombrePersonaXSeudonimo()");
         String nombre="";
         try {
-            setearPerfil();
+            setearPerfil(cadena);
             String sqlQuery = "SELECT P.PRIMERAPELLIDO||' '||P.SEGUNDOAPELLIDO||' '||P.NOMBRE NOMBRECOMPLETO "
                     + "FROM "
                     + "PERSONAS P, CONEXIONESKIOSKOS CK "
@@ -325,13 +327,13 @@ public class ReportesFacadeREST {
                     + "P.SECUENCIA=CK.PERSONA "
                     + "AND CK.SEUDONIMO=? AND CK.NITEMPRESA= ? ";
             System.out.println("Query: "+sqlQuery);
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, usuario);
             query.setParameter(2, nit);
             nombre =  query.getSingleResult().toString();
-            System.out.println("Nombre completo: "+nombre);
+            System.out.println("getNombrePersonaXSeudonimo: Nombre completo: "+nombre);
         } catch (Exception e) {
-            System.out.println("Error: getNombrePersonaXSeudonimo: "+e.getMessage());
+            System.out.println("Error: "+this.getClass().getName()+"getNombrePersonaXSeudonimo(): "+e.getMessage());
         }
         return nombre;
     }
@@ -348,9 +350,9 @@ public class ReportesFacadeREST {
             query.setParameter(1, seudonimo);
             query.setParameter(2, nitEmpresa);
             secuencia = (BigDecimal) query.getSingleResult();
-            System.out.println("secuencia: " + secuencia);
+            System.out.println("Resultado getSecuenciaEmplPorSeudonimo(): " + secuencia);
         } catch (Exception e) {
-            System.out.println("Error: getSecuenciaEmplPorSeudonimo: " + e.getMessage());
+            System.out.println("Error: "+this.getClass().getName()+".getSecuenciaEmplPorSeudonimo: " + e.getMessage());
         }
         return secuencia;
     } 
