@@ -132,26 +132,44 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
     @GET
     @Path("/consultarPeriodoMasAntiguo")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public List<VwVacaPendientesEmpleados> consultarPeriodoMasAntiguo(@QueryParam("seudonimo") String seudonimo, @QueryParam("nitempresa") String nitEmpresa, 
+    public List<VwVacaPendientesEmpleados> consultarPeriodoMasAntiguo(@QueryParam("seudonimo") String seudonimo, @QueryParam("nitempresa") String nitEmpresa,
             @QueryParam("cadena") String cadena) {
         setearPerfil(cadena);
         System.out.println(this.getClass().getName() + "." + "consultarPeriodoMasAntiguo" + "()");
         List<VwVacaPendientesEmpleados> retorno = null;
         String secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
-        String consulta = "select vw.* "
-                + " from VwVacaPendientesEmpleados vw "
-                + " where vw.empleado = ? "
-                + " and vw.inicialCausacion = ( select min( vwi.inicialCausacion ) "
-                + " from VwVacaPendientesEmpleados vwi "
-                + " where vwi.empleado = vw.empleado "
-                + " and KIOVACACIONES_PKG.DIASDISPOPER(vwi.rfVacacion) > 0 "
-                + "and vwi.inicialCausacion >=empleadocurrent_pkg.fechatipocontrato(vw.empleado, sysdate) ) ";
+        String consulta = "select vw.* \n"
+                + "from VwVacaPendientesEmpleados vw \n"
+                + "where vw.empleado = ? \n"
+                + "and vw.inicialCausacion = ( \n"
+                + "    select min( vwi.inicialcausacion ) \n"
+                + "    from ( \n"
+                + "    SELECT N.VACACION, SUM(N.DIAS) SUMADIAS \n"
+                + "    FROM KIONOVEDADESSOLICI N, KIOSOLICIVACAS S, KIOESTADOSSOLICI E \n"
+                + "    WHERE N.SECUENCIA = S.KIONOVEDADSOLICI \n"
+                + "    AND S.SECUENCIA = E.KIOSOLICIVACA \n"
+                + "    AND E.ESTADO IN ('GUARDADO', 'ENVIADO', 'AUTORIZADO', 'LIQUIDADO' ) \n"
+                + "    AND E.SECUENCIA = (SELECT MAX(EI.SECUENCIA) \n"
+                + "    FROM KIOESTADOSSOLICI EI \n"
+                + "    WHERE EI.KIOSOLICIVACA = E.KIOSOLICIVACA) \n"
+                + "    AND NOT EXISTS (SELECT 'x' \n"
+                + "      FROM SOLUCIONESNODOS SN, SOLUCIONESFORMULAS SF, DETALLESNOVEDADESSISTEMA DNS \n"
+                + "      WHERE SN.SECUENCIA = SF.solucionnodo \n"
+                + "      AND SF.novedad = DNS.novedad \n"
+                + "      AND DNS.novedadsistema=E.NOVEDADSISTEMA) \n"
+                + "      GROUP BY N.VACACION \n"
+                + "    ) t, VwVacaPendientesEmpleados VWI \n"
+                + "    where vwi.inicialCausacion >= empleadocurrent_pkg.fechatipocontrato(vwi.empleado, sysdate) \n"
+                + "    AND VWI.EMPLEADO = vw.empleado \n"
+                + "    AND (VWI.DIASPENDIENTES - NVL(T.SUMADIAS,0)) <> 0 \n"
+                + "    AND VWI.rfvacacion = t.VACACION(+) \n"
+                + ") ";
         try {
             Query query = getEntityManager(cadena).createNativeQuery(consulta, VwVacaPendientesEmpleados.class);
             query.setParameter(1, secEmpl);
             retorno = query.getResultList();
         } catch (Exception e) {
-            System.out.println("Error "+this.getClass().getName() + e);
+            System.out.println("Error " + this.getClass().getName() + e);
         }
         return retorno;
     }
@@ -159,32 +177,50 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
     @GET
     @Path("/consultarDiasPendientesPerMasAntiguo")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public BigDecimal consultarDiasPendientesPerMasAntiguo(@QueryParam("seudonimo") String seudonimo, 
+    public BigDecimal consultarDiasPendientesPerMasAntiguo(@QueryParam("seudonimo") String seudonimo,
             @QueryParam("nitempresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
         setearPerfil(cadena);
-        System.out.println(this.getClass().getName() + "." + "consultarPeriodoMasAntiguo(): seudonimo: "+seudonimo+", nitempresa: "+nitEmpresa+", cadena: "+cadena);
+        System.out.println(this.getClass().getName() + "." + "consultarPeriodoMasAntiguo(): seudonimo: " + seudonimo + ", nitempresa: " + nitEmpresa + ", cadena: " + cadena);
         BigDecimal retorno = new BigDecimal(BigInteger.ZERO);
         String secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
         // String consulta = "select vw.diasPendientes "
-        String consulta = "select KIOVACACIONES_PKG.DIASDISPOPER(vw.rfVacacion) diaspendientes "
-                + " from VwVacaPendientesEmpleados vw "
-                + " where vw.empleado = ? "
-                + " and vw.inicialCausacion = ( select min( vwi.inicialCausacion ) "
-                + " from VwVacaPendientesEmpleados vwi "
-                + " where vwi.empleado = vw.empleado "
-                + " and KIOVACACIONES_PKG.DIASDISPOPER(vwi.rfVacacion) > 0 "
-                + "and vwi.inicialCausacion >=empleadocurrent_pkg.fechatipocontrato(vw.empleado, sysdate) ) ";
+        String consulta = "select KIOVACACIONES_PKG.DIASDISPOPER(vw.rfVacacion) diaspendientes \n"
+                + "from VwVacaPendientesEmpleados vw \n"
+                + "where vw.empleado = ? \n"
+                + "and vw.inicialCausacion = ( \n"
+                + "    select min( vwi.inicialcausacion ) \n"
+                + "    from ( \n"
+                + "    SELECT N.VACACION, SUM(N.DIAS) SUMADIAS \n"
+                + "    FROM KIONOVEDADESSOLICI N, KIOSOLICIVACAS S, KIOESTADOSSOLICI E \n"
+                + "    WHERE N.SECUENCIA = S.KIONOVEDADSOLICI \n"
+                + "    AND S.SECUENCIA = E.KIOSOLICIVACA \n"
+                + "    AND E.ESTADO IN ('GUARDADO', 'ENVIADO', 'AUTORIZADO', 'LIQUIDADO' ) \n"
+                + "    AND E.SECUENCIA = (SELECT MAX(EI.SECUENCIA) \n"
+                + "    FROM KIOESTADOSSOLICI EI \n"
+                + "    WHERE EI.KIOSOLICIVACA = E.KIOSOLICIVACA) \n"
+                + "    AND NOT EXISTS (SELECT 'x' \n"
+                + "      FROM SOLUCIONESNODOS SN, SOLUCIONESFORMULAS SF, DETALLESNOVEDADESSISTEMA DNS \n"
+                + "      WHERE SN.SECUENCIA = SF.solucionnodo \n"
+                + "      AND SF.novedad = DNS.novedad \n"
+                + "      AND DNS.novedadsistema=E.NOVEDADSISTEMA) \n"
+                + "      GROUP BY N.VACACION \n"
+                + "    ) t, VwVacaPendientesEmpleados VWI \n"
+                + "    where vwi.inicialCausacion >= empleadocurrent_pkg.fechatipocontrato(vwi.empleado, sysdate) \n"
+                + "    AND VWI.EMPLEADO = vw.empleado \n"
+                + "    AND (VWI.DIASPENDIENTES - NVL(T.SUMADIAS,0)) <> 0 \n"
+                + "    AND VWI.rfvacacion = t.VACACION(+) \n"
+                + ") ";
         try {
             Query query = getEntityManager(cadena).createNativeQuery(consulta);
             query.setParameter(1, secEmpl);
             retorno = (BigDecimal) query.getSingleResult();
             System.out.println("Dias pendientes periodo más antiguo: " + retorno);
         } catch (Exception e) {
-            System.out.println("Error "+this.getClass().getName()+".consultarDiasPendientesPerMasAntiguo." + e);
+            System.out.println("Error " + this.getClass().getName() + ".consultarDiasPendientesPerMasAntiguo." + e);
         }
         return retorno;
     }
-    
+
     @GET
     @Path("/consultarDiasVacacionesProvisionados")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})

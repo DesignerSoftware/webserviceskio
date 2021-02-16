@@ -16,6 +16,7 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
+import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -113,7 +114,7 @@ public class ReportesFacadeREST {
         String autenticado=getConfigCorreo(nit, "AUTENTICADO", cadena);        
         EnvioCorreo c= new EnvioCorreo();
         try {
-            setearPerfil(cadena);
+           setearPerfil(cadena);
             // valida si el reporte tiene auditoria
             BigDecimal retorno = null;
             String query1="select count(*) from kioconfigmodulos where codigoopcion=? and nitempresa=?";
@@ -355,6 +356,62 @@ public class ReportesFacadeREST {
             System.out.println("Error: "+this.getClass().getName()+".getSecuenciaEmplPorSeudonimo: " + e.getMessage());
         }
         return secuencia;
-    } 
+    }
+    
+    @GET
+    @Path("/validarFechasCertingresos")
+    @Produces(MediaType.APPLICATION_JSON)
+    public boolean validarFechasCertificadoIngresosRetenciones(@QueryParam("fechadesde") String fechadesde, @QueryParam("fechahasta") String fechahasta, @QueryParam("cadena") String cadena) {
+        System.out.println(this.getClass().getName() + "." + "validarFechasCertificadoIngresosRetenciones(): fechadesde: " + fechadesde + ", fechahasta: " + fechahasta);
+        try {
+            Date fechaDesde = getDate(fechadesde, cadena);
+            Date fechaHasta = getDate(fechahasta, cadena);
+            SimpleDateFormat formatoDia, formatoMes, formatoAnio;
+            String dia, mes, anio;
+            formatoDia = new SimpleDateFormat("dd");
+            formatoMes = new SimpleDateFormat("MM");
+            formatoAnio = new SimpleDateFormat("yyyy");
+            dia = formatoDia.format(fechaDesde);
+            mes = formatoMes.format(fechaDesde);
+            anio = formatoAnio.format(fechaDesde);
+
+            if (dia.equals("01") && mes.equals("01")) {
+                dia = formatoDia.format(fechaHasta);
+                mes = formatoMes.format(fechaHasta);
+                if (dia.equals("31") && mes.equals("12") && anio.equals(formatoAnio.format(fechaHasta))) {
+                    return true;
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error: " + this.getClass().getName() + ".validarFechasCertificadoIngresosRetenciones: " + e.getMessage());
+        }
+        return false;
+    }
+    
+    public Date getDate(String fechaStr, String cadena) throws PersistenceException, NullPointerException, Exception {
+        System.out.println(this.getClass().getName() + "." + "getDate" + "()");
+        String consulta = "SELECT "
+                + "TO_DATE(?, 'yyyy-mm-dd') "
+                + "FROM DUAL ";
+        Query query = null;
+        Date fechaRegreso = null;
+        try {
+            query = getEntityManager(cadena).createNativeQuery(consulta);
+            query.setParameter(1, fechaStr);
+            fechaRegreso = (Date) (query.getSingleResult());
+            System.out.println("getDate(): " + fechaRegreso);
+            return fechaRegreso;
+        } catch (PersistenceException pe) {
+            System.out.println("Error de persistencia en getDate()");
+            throw new Exception(pe.toString());
+        } catch (NullPointerException npee) {
+            System.out.println("Nulo general en getDate()");
+            throw new Exception(npee.toString());
+        } catch (Exception e) {
+            System.out.println("Error general en getDate(). " + e);
+            throw new Exception(e.toString());
+        }
+    }
+    
 
 }
