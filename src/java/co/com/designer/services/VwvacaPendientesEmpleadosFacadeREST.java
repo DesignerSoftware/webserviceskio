@@ -1061,7 +1061,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                                     /*c.enviarCorreoVacaciones(servidorsmtp, puerto, autenticado, starttls, remitente, clave, correoenviar, 
                                             "Auditoria: Nueva Solicitud de vacaciones Kiosco. "+fechaCorreo, mensajeAuditoria, urlKio, nit);*/
                                     c.enviarCorreoInformativo("Auditoria: Nueva Solicitud de vacaciones Kiosco. "+fechaCorreo, 
-                                            "Estimado usuario: ", mensajeAuditoria, nit, urlKio, cadena);
+                                            "Estimado usuario: ", mensajeAuditoria, nit, urlKio, cadena, null);
                                 }
                             } else {
                                 System.out.println("No lleva auditoria Vacaciones");

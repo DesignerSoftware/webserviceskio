@@ -787,7 +787,7 @@ public class EnvioCorreo {
     
     /*Correo novedad de corrección de información que se envia a RRHH o Auditoria Módulo Vacaciones(No se incluye botón de Ir a Kiosco) */
     public boolean enviarCorreoInformativo(
-            String asunto, String saludo, String mensaje, String nit, String urlKiosco, String cadena) {
+            String asunto, String saludo, String mensaje, String nit, String urlKiosco, String cadena, String correoUsuario) {
         String servidorsmtp = getConfigCorreoServidorSMTP(nit, cadena);
         String puerto = getConfigCorreo(nit, "PUERTO", cadena);
         String autenticado = getConfigCorreo(nit, "AUTENTICADO", cadena);
@@ -815,6 +815,9 @@ public class EnvioCorreo {
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(remitente));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(destinatario));
+            if (correoUsuario != null) {
+                message.setRecipients(Message.RecipientType.CC, InternetAddress.parse(correoUsuario));
+            }
             message.setSubject(asunto);
 
 // This mail has 2 part, the BODY and the embedded image
@@ -927,7 +930,6 @@ public class EnvioCorreo {
         }
         return envioCorreo;
     }
-    
     
     public static void main(String[] args) {
         /*new EnvioCorreo().enviarCorreo("", "thalia.manrike@gmail.com", "Prueba 2", 

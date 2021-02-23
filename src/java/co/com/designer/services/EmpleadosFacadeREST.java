@@ -733,12 +733,13 @@ public class EmpleadosFacadeREST {
                 + "observación desde el módulo Kiosco para su validación: "
                 + "<br><br>"
                 + observacionNovedad;
+        String correoUsuario = getCorreoConexioneskioskos(seudonimo, nitEmpresa, cadena);
         System.out.println("Parametros enviaReporteInfoRRHH(): seudonimo "+seudonimo+", nit: "+nitEmpresa+", urlKiosco: "+urlKiosco+", grupo: "+grupo+", cadena: "+cadena);
         boolean enviado = true;
         try { 
             EnvioCorreo e= new EnvioCorreo();
             if (e.enviarCorreoInformativo("Módulo Kiosco: Reporte de corrección de información de "+nombreEmpl+" "+fecha,
-                    "Estimado personal de Nómina y RRHH:", mensaje, nitEmpresa, urlKiosco+"#/login/"+grupo, cadena)) {
+                    "Estimado personal de Nómina y RRHH:", mensaje, nitEmpresa, urlKiosco+"#/login/"+grupo, cadena, correoUsuario)) {
                 enviado = true;
             } else {
                 enviado= false;
@@ -748,6 +749,24 @@ public class EmpleadosFacadeREST {
             mensaje =  "Ha ocurrido un error, por favor intentalo de nuevo más tarde.";
         }
         return enviado;
-    }        
+    }
+    
+    public String getCorreoConexioneskioskos(String seudonimo, String empresa, String cadena) {
+        System.out.println("Parametros " + this.getClass().getName() + ".getCorreoConexioneskioskos(): seudonimo: " + seudonimo + ", empresa: " + empresa + ", cadena: " + cadena);
+        String correo = null;
+        String sqlQuery;
+        try {
+            setearPerfil(cadena);
+            sqlQuery = "SELECT P.EMAIL FROM PERSONAS P, conexioneskioskos ck WHERE p.secuencia=ck.persona and "
+                    + " ck.seudonimo=? and ck.nitempresa=?";
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, seudonimo);
+            query.setParameter(2, empresa);
+            correo = query.getSingleResult().toString();
+        } catch (Exception e) {
+            System.out.println("Error " + this.getClass().getName() + ".getCorreoConexioneskioskos(): " + e.getMessage());
+        }
+        return correo;
+    }
     
 }
