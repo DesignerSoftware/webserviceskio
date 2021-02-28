@@ -769,4 +769,74 @@ public class EmpleadosFacadeREST {
         return correo;
     }
     
+    @GET
+    @Path("/educacionesFormales")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response getEducacionesFormales(@QueryParam("usuario") String seudonimo, @QueryParam("empresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
+        System.out.println("parametros getEducacionesFormales(): usuario: "+seudonimo+" nitEmpresa: "+nitEmpresa+ " cadena "+cadena);
+        List s = null;
+        try {
+        String secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
+        setearPerfil(cadena);
+            String sqlQuery = "select "
+                    + "te.nombre, p.descripcion, i.descripcion institucion, to_char(vf.fechavigencia, 'dd/mm/yyyy') fechaVigencia, "
+                    + "to_char(vf.fechavencimiento, 'dd/mm/yyyy') fechaVencimiento, ad.descripcion adiest, vf.NUMEROTARJETA, vf.OBSERVACION, "
+                    + "to_char(FECHAEXPEDICIONTARJETA, 'dd/mm/yyyy') fechaExpedicionTarjeta, to_char(FECHAVENCIMIENTOTARJETA, 'dd/mm/yyyy') fechaVencimientoTarjeta "
+                    + "from "
+                    + "empleados e, personas per, vigenciasformales vf, tiposeducaciones te, profesiones p, instituciones i, adiestramientosf ad "
+                    + "where "
+                    + "vf.persona=per.secuencia "
+                    + "and e.persona=per.secuencia "
+                    + "and vf.tipoeducacion=te.secuencia "
+                    + "and vf.profesion = p.secuencia "
+                    + "and vf.institucion = i.secuencia "
+                    + "and ad.secuencia(+)=vf.adiestramientof "
+                    + "and vf.FECHAVIGENCIA>=empleadocurrent_pkg.FechaVigenciaTipoContrato(e.secuencia, sysdate) "
+                    + "and e.secuencia=? "
+                    + "order by vf.fechavigencia";
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, secEmpl);
+            s = query.getResultList();
+            s.forEach(System.out::println);
+            return Response.status(Response.Status.OK).entity(s).build();
+        } catch (Exception ex) {
+            System.out.println("Error "+this.getClass().getName()+"getEducacionesFormales(): " + ex);
+            return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
+        }
+    }
+
+    @GET
+    @Path("/educacionesNoFormales")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response getEducacionesNoFormales(@QueryParam("usuario") String seudonimo, @QueryParam("empresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
+        System.out.println("parametros getEducacionesNoFormales(): usuario: "+seudonimo+" nitEmpresa: "+nitEmpresa+ " cadena "+cadena);
+        List s = null;
+        try {
+        String secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
+        setearPerfil(cadena);
+            String sqlQuery = "select "
+                    + "c.nombre CURSO, vf.titulo, i.descripcion institucion, to_char(vf.fechavigencia, 'dd/mm/yyyy') fechavigencia, to_char(vf.fechavencimiento, 'dd/mm/yyyy') fechaVencimiento, "
+                    + "ad.DESCCRIPCION "
+                    + "adiest, vf.OBSERVACION\n"
+                    + "from "
+                    + "empleados e, personas per, vigenciasnoformales vf, cursos c, instituciones i, adiestramientosnf ad "
+                    + "where "
+                    + "vf.persona=per.secuencia "
+                    + "and e.persona=per.secuencia "
+                    + "and vf.curso = c.secuencia "
+                    + "and vf.institucion = i.secuencia(+) "
+                    + "and ad.secuencia(+)=vf.adiestramientonf "
+                    + "and e.secuencia=? "
+                    + "order by vf.fechavigencia";
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, secEmpl);
+            s = query.getResultList();
+            s.forEach(System.out::println);
+            return Response.status(Response.Status.OK).entity(s).build();
+        } catch (Exception ex) {
+            System.out.println("Error "+this.getClass().getName()+"getEducacionesNoFormales(): " + ex);
+            return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
+        }
+    }     
+    
 }

@@ -352,14 +352,15 @@ public class EnvioCorreo {
         }
     }    
     
-    public boolean enviarNuevaClave(String servidorsmtp, String puerto, String autenticado, String remitente, String clave, String destinatario, String nombreUsuario,
+    public boolean enviarNuevaClave(String servidorsmtp, String puerto, String autenticado, String starttls, String remitente, String clave, String destinatario, String nombreUsuario,
             String nuevaClave, String urlKiosco, String cadena) {
         boolean envioCorreo = false;
         Properties props = new Properties();
         props.put("mail.smtp.host", servidorsmtp);
         props.put("mail.smtp.socketFactory.port", puerto);
         props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-        props.put("mail.smtp.auth", autenticado == "S" ? "true" : "false");
+        props.put("mail.smtp.auth", autenticado.equals("S") ? "true" : "false");
+        props.put("mail.smtp.starttls.enable", starttls.equals("S") ? "true" : "false");
         props.put("mail.smtp.port", puerto);
         final String user;
         final String password = "***********";
@@ -432,14 +433,15 @@ public class EnvioCorreo {
     }   
     
     
-    public boolean enviarEnlaceValidacionCuenta(String servidorsmtp, String puerto, String autenticado, String remitente, String clave, String destinatario, String nombreUsuario,
+    public boolean enviarEnlaceValidacionCuenta(String servidorsmtp, String puerto, String autenticado, String starttls, String remitente, String clave, String destinatario, String nombreUsuario,
             String jwt, String urlKiosco, String cadena) {
         boolean envioCorreo = false;
         Properties props = new Properties();
         props.put("mail.smtp.host", servidorsmtp);
         props.put("mail.smtp.socketFactory.port", puerto);
         props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-        props.put("mail.smtp.auth", autenticado == "S" ? "true" : "false");
+        props.put("mail.smtp.auth", autenticado.equals("S") ? "true" : "false");
+        props.put("mail.smtp.starttls.enable", starttls.equals("S") ? "true" : "false");        
         props.put("mail.smtp.port", puerto);
         final String user;
         final String password = "***********";
