@@ -842,61 +842,69 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
         try {
             String secuenciaEmpleado = getSecuenciaEmplPorSeudonimo(empleado, nit, cadena);
             setearPerfil(cadena);
-            String sqlQuery = "select \n" +
-                      "tablaTotal.empleado, 'TOTAL' tipo, ROUND(NVL(sum(tablaTotal.dias), 0 ), 2)\n"
-                    + "from\n"
-                    + "(select e.secuencia empleado, sum(n.dias) dias\n"
-                    + "from\n"
-                    + "novedadessistema n, empleados e\n"
-                    + "where e.secuencia=n.empleado\n"
-                    + "and tipo='VACACION'\n"
-                    + "and subtipo in ('TIEMPO', 'DINERO')\n"
-                    + "group by e.secuencia\n"
-                    + "union\n"
-                    + "select e.secuencia empleado,\n"
-                    + "ROUND(sum(k.diasvacadisfrute+k.diasvacadinero), 2) dias\n"
-                    + "from kioacumvaca k, empleados e\n"
-                    + "where\n"
-                    + "e.secuencia=k.empleado(+)\n"
-                    + "group by e.secuencia) tablaTotal, empleados e where tablaTotal.empleado=e.secuencia\n"
-                    + "and e.secuencia=?\n"
-                    + "group by tablaTotal.empleado\n"
-                    + "union\n"
-                    + "(select tabla.empleado secuenciaEmpl, tabla.tipo tipo, NVL(sum(tabla.dias), 0) dias\n"
-                    + "from \n"
-                    + "(\n"
-                    + "(select e.secuencia empleado, NVL(sum(n.dias), 0) dias, 'DINERO' tipo\n"
-                    + "from\n"
-                    + "novedadessistema n, empleados e\n"
-                    + "where e.secuencia=n.empleado\n"
-                    + "and tipo='VACACION'\n"
-                    + "and subtipo='DINERO'\n"
-                    + "group by e.secuencia\n"
-                    + "union\n"
-                    + "select e.secuencia empleado,\n"
-                    + "NVL(sum(k.diasvacadinero), 0) dias, 'DINERO' tipo\n"
-                    + "from kioacumvaca k, empleados e\n"
-                    + "where\n"
-                    + "e.secuencia=k.empleado(+)\n"
-                    + "group by e.secuencia)\n"
-                    + "union\n"
-                    + "(select e.secuencia empleado, ROUND(NVL(sum(n.dias), 0), 2) dias, 'TIEMPO' tipo\n"
-                    + "from\n"
-                    + "novedadessistema n, empleados e\n"
-                    + "where e.secuencia=n.empleado\n"
-                    + "and tipo='VACACION'\n"
-                    + "and subtipo='TIEMPO'\n"
-                    + "group by e.secuencia\n"
-                    + "union\n"
-                    + "select e.secuencia empleado,\n"
-                    + "ROUND(NVL(sum(k.diasvacadisfrute), 0),2) dias, 'TIEMPO' tipo\n"
-                    + "from kioacumvaca k, empleados e\n"
-                    + "where\n"
-                    + "e.secuencia=k.empleado(+)\n"
-                    + "group by e.secuencia)\n"
-                    + ") tabla\n"
-                    + "where tabla.empleado=?\n"
-                    + "group by tabla.empleado, tabla.tipo)";
+            String sqlQuery = "select  \n" +
+"                      tablaTotal.empleado, 'TOTAL' tipo, ROUND(NVL(sum(tablaTotal.dias), 0 ), 2)\n" +
+"                     from\n" +
+"                     (select e.secuencia empleado, sum(n.dias) dias\n" +
+"                     from\n" +
+"                     novedadessistema n, empleados e\n" +
+"                     where e.secuencia=n.empleado\n" +
+"                     and tipo='VACACION'\n" +
+"                     and subtipo in ('TIEMPO', 'DINERO')\n" +
+"                     group by e.secuencia\n" +
+"                     union\n" +
+"                     select e.secuencia empleado,\n" +
+"                    sum(k.diasvacadisfrute)  dias\n" +
+"                     from kioacumvaca k, empleados e\n" +
+"                    where\n" +
+"                    e.secuencia=k.empleado(+)\n" +
+"                    group by e.secuencia\n" +
+"                                         union\n" +
+"                     select e.secuencia empleado,\n" +
+"                    sum(k.diasvacadinero)  dias\n" +
+"                     from kioacumvaca k, empleados e\n" +
+"                    where\n" +
+"                    e.secuencia=k.empleado(+)\n" +
+"                    group by e.secuencia\n" +
+"                    ) tablaTotal, empleados e where tablaTotal.empleado=e.secuencia\n" +
+"                     and e.secuencia=?\n" +
+"                     group by tablaTotal.empleado\n" +
+"                     union    \n" +
+"                     (select tabla.empleado secuenciaEmpl, tabla.tipo tipo, NVL(sum(tabla.dias), 0) dias\n" +
+"                     from \n" +
+"                     (\n" +
+"                     (select e.secuencia empleado, NVL(sum(n.dias), 0) dias, 'DINERO' tipo\n" +
+"                     from\n" +
+"                     novedadessistema n, empleados e\n" +
+"                     where e.secuencia=n.empleado\n" +
+"                     and tipo='VACACION'\n" +
+"                    and subtipo='DINERO'\n" +
+"                     group by e.secuencia\n" +
+"                     union\n" +
+"                     select e.secuencia empleado,\n" +
+"                     NVL(sum(k.diasvacadinero), 0) dias, 'DINERO' tipo\n" +
+"                     from kioacumvaca k, empleados e\n" +
+"                     where\n" +
+"                    e.secuencia=k.empleado(+)\n" +
+"                     group by e.secuencia)\n" +
+"                     union\n" +
+"                     (select e.secuencia empleado, ROUND(NVL(sum(n.dias), 0), 2) dias, 'TIEMPO' tipo\n" +
+"                     from\n" +
+"                    novedadessistema n, empleados e\n" +
+"                     where e.secuencia=n.empleado\n" +
+"                     and tipo='VACACION'\n" +
+"                     and subtipo='TIEMPO'\n" +
+"                     group by e.secuencia\n" +
+"                     union\n" +
+"                     select e.secuencia empleado,\n" +
+"                     ROUND(NVL(sum(k.diasvacadisfrute), 0),2) dias, 'TIEMPO' tipo\n" +
+"                     from kioacumvaca k, empleados e\n" +
+"                     where\n" +
+"                     e.secuencia=k.empleado(+)\n" +
+"                     group by e.secuencia)\n" +
+"                     ) tabla\n" +
+"                     where tabla.empleado=?\n" +
+"                     group by tabla.empleado, tabla.tipo)";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secuenciaEmpleado);
             query.setParameter(2, secuenciaEmpleado);

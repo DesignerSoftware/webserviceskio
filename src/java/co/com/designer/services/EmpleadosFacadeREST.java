@@ -78,62 +78,58 @@ public class EmpleadosFacadeREST {
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response getDatosEmpleadoNit(@PathParam("empleado") String empleado, @PathParam("nit") String nit, @QueryParam("cadena") String cadena) {
         System.out.println("getDatosEmpleadosNit()");
-        System.out.println("parametros: empleado: "+empleado+" nit: "+nit+ " cadena "+cadena);
+        System.out.println("parametros: empleado: " + empleado + " nit: " + nit + " cadena " + cadena);
         List s = null;
         try {
-        String documento = getDocumentoPorSeudonimo(empleado, nit, cadena);
-        setearPerfil(cadena);
-        String sqlQuery="  select \n"
-                    + "          e.codigoempleado usuario,  \n"
-                    + "          p.nombre ||' '|| p.primerapellido ||' '|| p.segundoapellido nombres, \n"
-                    + "          p.primerapellido apellido1, \n"
-                    + "          p.segundoapellido apellido2,  \n"
-                    + "          decode(p.sexo,'M', 'MASCULINO', 'F', 'FEMENINO', '') sexo,  \n"
-                    + "          to_char(p.FECHANACIMIENTO, 'dd-MM-yyyy') fechaNacimiento, \n"
-                    + "          (select nombre from ciudades where secuencia=p.CIUDADNACIMIENTO) ciudadNacimiento, \n"
-                    + "          p.GRUPOSANGUINEO grupoSanguineo, \n"
-                    + "          p.FACTORRH factorRH, \n"
-                    + "          (select nombrelargo from tiposdocumentos where secuencia=p.TIPODOCUMENTO) tipoDocu, \n"
-                    + "          p.NUMERODOCUMENTO documento,  \n"
-                    + "          (select nombre from ciudades where secuencia=p.CIUDADDOCUMENTO) lugarExpediDocu, \n"
-                    + "          p.EMAIL email, \n"
-                    + "          'DIRECCION' direccion,  \n"
-                    + "          ck.ULTIMACONEXION ultimaConexion,\n"
-                    + "          em.codigo codigoEmpresa, \n"
-                    + "          em.nit nitEmpresa,  \n"
-                    + "          em.nombre nombreEmpresa, \n"
-                    + "          empleadocurrent_pkg.descripciontipocontrato(e.secuencia, sysdate) contrato, \n"
-                    + "          trim(to_char(empleadocurrent_pkg.ValorBasicoCorte(e.secuencia, sysdate),'$999G999G999G999G999G999')) salario,   \n"
-                    + "          empleadocurrent_pkg.DescripcionCargoCorte(e.secuencia, sysdate) cargo,  \n"
-                    + // "          DIAS360(empleadocurrent_pkg.FechaVigenciaTipoContrato(e.secuencia, sysdate), sysdate) diasW,  \n" +
-                    "            empleadocurrent_pkg.FechaVigenciaTipoContrato(e.secuencia, sysdate) inicioContratoActual,\n"
-                    + // "         (select nombre from estructuras where secuencia=empleadocurrent_pkg.estructuracargocorte(e.secuencia, sysdate)) estructura, \n" +
-                    "            em.logo logoEmpresa, \n"
-                    + "          empleadocurrent_pkg.DireccionAlternativa(p.secuencia, sysdate) direccionPersona,  \n"
-                    + "          t.numerotelefono numeroTelefono, \n"
-                    + "          tt.nombre tipoTelefono,  \n"
-                    + "          empleadocurrent_pkg.CentrocostoNombre(e.secuencia) centroscostos,  \n"
-                    + "          empleadocurrent_pkg.EdadPersona(p.secuencia, sysdate) || ' AÑOS' edad,  \n"
-                    + "          empleadocurrent_pkg.entidadafp(e.secuencia) entidadfp,\n"
-                    + "          empleadocurrent_pkg.entidadeps(e.secuencia) entidadeps, \n"
-                    + "          empleadocurrent_pkg.entidadarp(e.secuencia)  entidadarp,\n"
-                    + "          empleadocurrent_pkg.entidadcesantias(e.secuencia, sysdate) entidadcesantias,"
-                    + "          empleadocurrent_pkg.Afiliacion(e.secuencia , te.codigo, sysdate, sysdate) cajaCompensacion,          \n"
-                    + "          to_char(empleadocurrent_pkg.FechaIngreso(e.secuencia), 'dd-MM-yyyy') fechaContratacion   \n"
-                    + "          from  \n"
-                    + "          empleados e, conexioneskioskos ck, empresas em, personas p, telefonos t, tipostelefonos tt, VigenciasAfiliaciones V , tiposentidades te \n"
-                    + "          where \n"
-                    + "          e.persona=p.secuencia  \n"
-                    + "          and e.empresa=em.secuencia  \n"
-                    + "          and e.persona = t.persona\n"
-                    + "          and t.fechavigencia = (select max(ti.fechavigencia) from telefonos ti where ti.persona = t.persona and ti.fechavigencia <= sysdate)  \n"
-                    + "          and t.tipotelefono = tt.secuencia  \n"
-                    + "          and ck.empleado=e.secuencia\n"
-                    + "          and e.secuencia = v.empleado\n"
-                    + "          and te.secuencia = v.tipoentidad\n"
-                    + "          and te.codigo = 14\n"
-                    + "          and p.numerodocumento= ? \n"
-                    + "          and em.nit=?";
+            String documento = getDocumentoPorSeudonimo(empleado, nit, cadena);
+            setearPerfil(cadena);
+            String sqlQuery = " select  \n"
+                    + "e.codigoempleado usuario,   \n"
+                    + "p.nombre ||' '|| p.primerapellido ||' '|| p.segundoapellido nombres,  \n"
+                    + "p.primerapellido apellido1,  \n"
+                    + "p.segundoapellido apellido2,   \n"
+                    + "decode(p.sexo,'M', 'MASCULINO', 'F', 'FEMENINO', '') sexo,   \n"
+                    + "to_char(p.FECHANACIMIENTO, 'dd-MM-yyyy') fechaNacimiento,  \n"
+                    + "(select nombre from ciudades where secuencia=p.CIUDADNACIMIENTO) ciudadNacimiento,  \n"
+                    + "p.GRUPOSANGUINEO grupoSanguineo,  \n"
+                    + "p.FACTORRH factorRH,  \n"
+                    + "(select nombrelargo from tiposdocumentos where secuencia=p.TIPODOCUMENTO) tipoDocu,  \n"
+                    + "p.NUMERODOCUMENTO documento,   \n"
+                    + "(select nombre from ciudades where secuencia=p.CIUDADDOCUMENTO) lugarExpediDocu,  \n"
+                    + "p.EMAIL email,  \n"
+                    + "'DIRECCION' direccion,   \n"
+                    + "ck.ULTIMACONEXION ultimaConexion,\n"
+                    + "em.codigo codigoEmpresa,  \n"
+                    + "em.nit nitEmpresa,   \n"
+                    + "em.nombre nombreEmpresa,  \n"
+                    + "empleadocurrent_pkg.descripciontipocontrato(e.secuencia, sysdate) contrato,  \n"
+                    + "trim(to_char(empleadocurrent_pkg.ValorBasicoCorte(e.secuencia, sysdate),'$999G999G999G999G999G999')) salario,    \n"
+                    + "empleadocurrent_pkg.DescripcionCargoCorte(e.secuencia, sysdate) cargo,  \n"
+                    //+ "         DIAS360(empleadocurrent_pkg.FechaVigenciaTipoContrato(e.secuencia, sysdate), sysdate) diasW,    +\n"
+                    + "empleadocurrent_pkg.FechaVigenciaTipoContrato(e.secuencia, sysdate) inicioContratoActual,\n"
+                    //+ "         (select nombre from estructuras where secuencia=empleadocurrent_pkg.estructuracargocorte(e.secuencia, sysdate)) estructura,   +\n"
+                    + "em.logo logoEmpresa,  \n"
+                    + "UPPER(empleadocurrent_pkg.DireccionAlternativa(p.secuencia, sysdate)) direccionPersona,   \n"
+                    + "empleadocurrent_pkg.CentrocostoNombre(e.secuencia) centroscostos,   \n"
+                    + "empleadocurrent_pkg.EdadPersona(p.secuencia, sysdate) || ' AÑOS' edad,   \n"
+                    + "empleadocurrent_pkg.entidadafp(e.secuencia) entidadfp,\n"
+                    + "empleadocurrent_pkg.entidadeps(e.secuencia) entidadeps,  \n"
+                    + "empleadocurrent_pkg.entidadarp(e.secuencia)  entidadarp,\n"
+                    + "empleadocurrent_pkg.entidadcesantias(e.secuencia, sysdate) entidadcesantias,\n"
+                    + "empleadocurrent_pkg.Afiliacion(e.secuencia , te.codigo, sysdate, sysdate) cajaCompensacion,           \n"
+                    + "to_char(empleadocurrent_pkg.fechaVigenciaTipoContrato(e.secuencia, sysdate), 'dd-MM-yyyy') fechaContratacion    \n"
+                    + "from   \n"
+                    + "empleados e, conexioneskioskos ck, empresas em, personas p,\n"
+                    + "VigenciasAfiliaciones V , tiposentidades te  \n"
+                    + "where  \n"
+                    + "e.persona=p.secuencia   \n"
+                    + "and e.empresa=em.secuencia    \n"
+                    + "and ck.empleado=e.secuencia \n"
+                    + "and e.secuencia(+) = v.empleado \n"
+                    + "and te.secuencia= v.tipoentidad (+)\n"
+                    + "and te.codigo = 14 \n"
+                    + "and p.numerodocumento= ?  \n"
+                    + "and em.nit=? ";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, documento);
             query.setParameter(2, nit);
@@ -190,6 +186,43 @@ public class EmpleadosFacadeREST {
             return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
         }
     }
+    
+    
+    @GET
+    @Path("/telefonosEmpleadoNit")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response getTelefonosEmpleado(@QueryParam("usuario") String seudonimo, @QueryParam("nit") String nit, @QueryParam("cadena") String cadena) {
+        System.out.println("parametros getTelefonosEmpleado(): empleado: "+seudonimo+" nit: "+nit+ " cadena "+cadena);
+        List s = null;
+        try {
+        String documento = getDocumentoPorSeudonimo(seudonimo, nit, cadena);
+        setearPerfil(cadena);
+            String sqlQuery = "select "
+                    + "t.numerotelefono numeroTelefono,  "
+                    + "tt.nombre tipoTelefono "
+                    + "from empleados e, conexioneskioskos ck, empresas em, personas p, telefonos t, tipostelefonos tt "
+                    + "where ck.empleado=e.secuencia "
+                    + "and e.persona=p.secuencia "
+                    + "and e.empresa=em.secuencia   "
+                    + "and e.persona = t.persona(+) "
+                    + "and t.fechavigencia = (select max(ti.fechavigencia) "
+                    + "                        from telefonos ti where ti.persona = t.persona and ti.fechavigencia <= sysdate "
+                    + ") "
+                    + "and t.tipotelefono = tt.secuencia(+) "
+                    + "and p.numerodocumento= ? "
+                    + "and em.nit= ? ";
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, documento);
+            query.setParameter(2, nit);
+
+            s = query.getResultList();
+            s.forEach(System.out::println);
+            return Response.status(Response.Status.OK).entity(s).build();
+        } catch (Exception ex) {
+            System.out.println("Error "+this.getClass().getName()+".getTelefonosEmpleado(): " + ex);
+            return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
+        }
+    }    
     
     @GET
     @Path("/soliciSinProcesarJefe/{nit}/{jefe}/{estado}")
@@ -789,9 +822,9 @@ public class EmpleadosFacadeREST {
                     + "and e.persona=per.secuencia "
                     + "and vf.tipoeducacion=te.secuencia "
                     + "and vf.profesion = p.secuencia "
-                    + "and vf.institucion = i.secuencia "
+                    + "and vf.institucion = i.secuencia(+) "
                     + "and ad.secuencia(+)=vf.adiestramientof "
-                    + "and vf.FECHAVIGENCIA>=empleadocurrent_pkg.FechaVigenciaTipoContrato(e.secuencia, sysdate) "
+              //      + "and vf.FECHAVIGENCIA>=empleadocurrent_pkg.FechaVigenciaTipoContrato(e.secuencia, sysdate) "
                     + "and e.secuencia=? "
                     + "order by vf.fechavigencia";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
