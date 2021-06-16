@@ -114,6 +114,50 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
            //return Response.ok(getOpcioneskioskosApp("900937674", "1033696091"), MediaType.APPLICATION_JSON).build();
     }
     
+    
+    /**
+     * Devuelve opciones de clase 'MENU'
+     * @param seudonimo, nitempresa, cadena
+     * @return List de opcioneskioskosapp con el filtro por clase 'MENU'
+     */    
+    @GET
+    @Path("/opcionesMenu")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public List opcionesKiosko(@QueryParam("seudonimo") String seudonimo, @QueryParam("nitempresa") String nitempresa, @QueryParam("cadena") String cadena) {
+        setearPerfil(cadena);
+        String sqlQuery = "SELECT ok "
+                + " FROM OpcionesKioskosApp ok "
+                + " WHERE "
+                + " ok.empresa.nit=:nitempresa "
+                + " and ok.clase = 'MENU'";
+
+        String roles = determinarRol(seudonimo, nitempresa, cadena);
+        System.out.println("Roles: " + roles);
+        if (!roles.contains("NOMINA")) {
+            sqlQuery += " and ok.kiorol.nombre not in ('NOMINA') ";
+        }
+        if (!roles.contains("EMPLEADO")) {
+            sqlQuery += " and ok.kiorol.nombre not in ('EMPLEADO') ";
+        }
+        if (!roles.contains("JEFE")) {
+            sqlQuery += " and ok.kiorol.nombre not in ('JEFE') ";
+        }
+        if (!roles.contains("AUTORIZADOR")) {
+            sqlQuery += " and ok.kiorol.nombre not in ('AUTORIZADOR') ";
+        }
+        sqlQuery += " order by ok.codigo asc";
+
+        Query query = getEntityManager(cadena).createQuery(sqlQuery);
+        query.setParameter("nitempresa", Long.parseLong(nitempresa));
+        List<OpcionesKioskosApp> lista = query.getResultList();
+        /*list for (int i = 0; i < lista.size(); i++) {
+                    System.out.println("Recorre 2 "+lista.get(1));
+                }*/
+        return lista;
+        //return super.findAll();
+        //return Response.ok(getOpcioneskioskosApp("900937674", "1033696091"), MediaType.APPLICATION_JSON).build();
+    } 
+    
     @GET
     @Path("/pruebaopciones")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})    
@@ -526,14 +570,16 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
         return empleado;
     }
     
-    public boolean esJefe(String secEmpleado, String secEmpresa, String cadena) {
-        System.out.println("esJefe("+secEmpleado+", "+cadena+")");
+    
+    /**
+    * Método que devuelve el número de ítems (números aleatorios) existentes en la serie
+    * @return El número de ítems (números aleatorios) de que consta la serie
+    */   
+    public boolean esJefe(String secEmpleado, String nitEmpresa, String cadena) {
         boolean retorno = false;
         try {
-            System.out.println(this.getClass().getName() + ".esJefe()");
             setearPerfil(cadena);
-            System.out.println("Parametro empleado: " + secEmpleado);
-            System.out.println("Parametro empresa: " + secEmpresa);
+            System.out.println("Parametros esJefe(): secEmpleado: " + secEmpleado+", nitEmpresa: "+nitEmpresa+", cadena: "+cadena);
             String sqlQuery = "select count(*) count \n"
                     + "from vigenciascargos vc, vigenciastipostrabajadores vtt, "
                     + "tipostrabajadores tt, estructuras es, organigramas o, empresas em \n"
@@ -544,9 +590,10 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
                     + "and vc.empleado = vtt.empleado \n"
                     + "and vtt.tipotrabajador = tt.secuencia \n"
                     + "and tt.tipo IN ('ACTIVO', 'PENSIONADO') \n"
-                    + "and em.secuencia = (select secuencia from empresas where nit=?)"
-                    + "and vc.empleadojefe = (select ei.secuencia from empleados ei, personas pei where ei.persona=pei.secuencia "
+                    + "and em.secuencia = (select secuencia from empresas where nit=?) "
+                    + "and vc.empleadojefe in (select ei.secuencia from empleados ei, personas pei, empresas emi where ei.persona=pei.secuencia "
                     + "                         and pei.numerodocumento=? "
+                    + "                         and ei.empresa=emi.secuencia and emi.nit=? "
                     + "                         and empleadocurrent_pkg.tipotrabajadorcorte(ei.secuencia, sysdate)='ACTIVO' ) \n"
                     + "and vtt.fechavigencia = (select max(vtti.fechavigencia) \n"
                     + "                        from vigenciastipostrabajadores vtti \n"
@@ -557,14 +604,15 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
                     + "                        where vci.empleado = vc.empleado \n"
                     + "                        and vci.fechavigencia <= sysdate) ";
                 Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
-                query.setParameter(1, secEmpresa);
+                query.setParameter(1, nitEmpresa);
                 query.setParameter(2, secEmpleado);
+                query.setParameter(3, nitEmpresa);
             BigDecimal conteo = BigDecimal.ZERO;
             conteo = (BigDecimal) query.getSingleResult();
                 System.out.println("Conteo de persona: " + conteo);
                 retorno =  conteo.compareTo(BigDecimal.ZERO) > 0;
             } catch (Exception e) {
-                System.out.println("Error esJefe " + e.getMessage());
+                System.out.println("Error "+this.getClass().getName() + ".esJefe():" + e.getMessage());
                 return false;
             } 
         return retorno;

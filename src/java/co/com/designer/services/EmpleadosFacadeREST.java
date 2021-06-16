@@ -60,29 +60,32 @@ public class EmpleadosFacadeREST {
             System.out.println("Error setearPerfil: " + ex);
         }
     }
-
-    protected void setearPerfil(String cadena) {
+    
+    protected void setearPerfil(String esquema, String cadenaPersistencia) {
         try {
-            System.out.println("setearPerfil(cadena)");
             String rol = "ROLKIOSKO";
+            if (esquema != null && !esquema.isEmpty()) {
+                rol = rol + esquema.toUpperCase();
+            }
+            System.out.println("setearPerfil(esquema, cadena)");
             String sqlQuery = "SET ROLE " + rol + " IDENTIFIED BY RLKSK ";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadenaPersistencia).createNativeQuery(sqlQuery);
             query.executeUpdate();
         } catch (Exception ex) {
-            System.out.println("Error setearPerfil(String cadena): " + ex);
+            System.out.println("Error setearPerfil(cadenaPersistencia): " + ex);
         }
     }     
     
     @GET
     @Path("/datosEmpleadoNit/{empleado}/{nit}")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public Response getDatosEmpleadoNit(@PathParam("empleado") String empleado, @PathParam("nit") String nit, @QueryParam("cadena") String cadena) {
-        System.out.println("getDatosEmpleadosNit()");
-        System.out.println("parametros: empleado: " + empleado + " nit: " + nit + " cadena " + cadena);
+    public Response getDatosEmpleadoNit(@PathParam("empleado") String empleado, @PathParam("nit") String nitEmpresa, @QueryParam("cadena") String cadena) {
+        System.out.println("parametros getDatosEmpleadosNit():  empleado: " + empleado + " nit: " + nitEmpresa + " cadena " + cadena);
         List s = null;
         try {
-            String documento = getDocumentoPorSeudonimo(empleado, nit, cadena);
-            setearPerfil(cadena);
+            String documento = getDocumentoPorSeudonimo(empleado, nitEmpresa, cadena);
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
             String sqlQuery = " select  \n"
                     + "e.codigoempleado usuario,   \n"
                     + "p.nombre ||' '|| p.primerapellido ||' '|| p.segundoapellido nombres,  \n"
@@ -132,7 +135,7 @@ public class EmpleadosFacadeREST {
                     + "and em.nit=? ";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, documento);
-            query.setParameter(2, nit);
+            query.setParameter(2, nitEmpresa);
 
             s = query.getResultList();
             s.forEach(System.out::println);
@@ -146,12 +149,13 @@ public class EmpleadosFacadeREST {
     @GET
     @Path("/datosFamiliaEmpleado/{empleado}/{nit}")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public Response getDatosFamiliaEmpleado(@PathParam("empleado") String empleado, @PathParam("nit") String nit, @QueryParam("cadena") String cadena) {
-        System.out.println("parametros getDatosFamiliaEmpleado(): empleado: " + empleado + " nit: " + nit + " cadena: " + cadena);
+    public Response getDatosFamiliaEmpleado(@PathParam("empleado") String empleado, @PathParam("nit") String nitEmpresa, @QueryParam("cadena") String cadena) {
+        System.out.println("parametros getDatosFamiliaEmpleado(): empleado: " + empleado + " nit: " + nitEmpresa + " cadena: " + cadena);
         List s = null;
         try {
-            String secEmpl = getSecuenciaEmplPorSeudonimo(empleado, nit, cadena);
-            setearPerfil(cadena);
+            String secEmpl = getSecuenciaEmplPorSeudonimo(empleado, nitEmpresa, cadena);
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
             String sqlQuery = "select \n"
                     + "fam.nombre ||' '|| fam.primerapellido ||' '|| fam.segundoapellido nombreFamiliar, t.tipo Parentesco,\n"
                     + "decode(ltel.secuencia, null, ' ',\n"
@@ -191,12 +195,13 @@ public class EmpleadosFacadeREST {
     @GET
     @Path("/telefonosEmpleadoNit")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public Response getTelefonosEmpleado(@QueryParam("usuario") String seudonimo, @QueryParam("nit") String nit, @QueryParam("cadena") String cadena) {
-        System.out.println("parametros getTelefonosEmpleado(): empleado: "+seudonimo+" nit: "+nit+ " cadena "+cadena);
+    public Response getTelefonosEmpleado(@QueryParam("usuario") String seudonimo, @QueryParam("nit") String nitEmpresa, @QueryParam("cadena") String cadena) {
+        System.out.println("parametros getTelefonosEmpleado(): empleado: "+seudonimo+" nit: "+nitEmpresa+ " cadena "+cadena);
         List s = null;
         try {
-        String documento = getDocumentoPorSeudonimo(seudonimo, nit, cadena);
-        setearPerfil(cadena);
+        String documento = getDocumentoPorSeudonimo(seudonimo, nitEmpresa, cadena);
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
             String sqlQuery = "select "
                     + "t.numerotelefono numeroTelefono,  "
                     + "tt.nombre tipoTelefono "
@@ -213,7 +218,7 @@ public class EmpleadosFacadeREST {
                     + "and em.nit= ? ";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, documento);
-            query.setParameter(2, nit);
+            query.setParameter(2, nitEmpresa);
 
             s = query.getResultList();
             s.forEach(System.out::println);
@@ -224,17 +229,65 @@ public class EmpleadosFacadeREST {
         }
     }    
     
+    
+    /**
+     * Devuelve Lista de experiencias laborales
+     * @param secuenciaEmpleado, nitEmpresa, cadena
+     * @return Lista de experiencias laborales
+     */    
+    @GET
+    @Path("/datosExperienciaLab")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response getDatosExperienciaLab(@QueryParam("empleado") String empleado, @QueryParam("nit") String nitEmpresa, @QueryParam("cadena") String cadena) {
+        System.out.println("parametros getDatosExperienciaLab(): empleado: " + empleado + " nit: " + nitEmpresa + " cadena: " + cadena);
+        List exLab = null;
+        try {
+            String secEmpl = getDocumentoPorSeudonimo(empleado, nitEmpresa, cadena);
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
+            String sqlQuery = "select \n" +
+                              "p.numerodocumento,\n" +
+                              "ex.empresa empresa,\n" +
+                              "to_char(ex.fechadesde,'DD/MM/YYYY'),\n" +
+                              "to_char(ex.fechahasta,'DD/MM/YYYY'),\n" +
+                              "ex.jefeinmediato,\n" +
+                              "ex.telefono,\n" +
+                              "ex.cargo,\n" +
+                              "ex.alcance,\n" +
+                              "mo.nombre motivo,\n" +
+                              "sec.descripcion sectorec\n" +
+                              "from hvexperienciaslaborales ex,hvhojasdevida hv, personas p, motivosretiros mo, \n" +
+                              "sectoreseconomicos sec, empleados e \n" +
+                              "where ex.hojadevida = hv.secuencia \n" +
+                              "and e.codigoempleado = p.numerodocumento \n" +
+                              "and hv.persona = p.secuencia \n" +
+                              "and ex.motivoretiro = mo.secuencia(+) \n" +
+                              "and ex.sectoreconomico = sec.secuencia(+) \n" +
+                              "and p.numerodocumento = ? ";
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, secEmpl);
+
+            exLab = query.getResultList();
+            exLab.forEach(System.out::println);
+            return Response.status(Response.Status.OK).entity(exLab).build();
+        } catch (Exception ex) {
+            System.out.println("Error "+this.getClass().getName()+".getDatosExperienciaLab: " + ex);
+            return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
+        }
+    }    
+    
     @GET
     @Path("/soliciSinProcesarJefe/{nit}/{jefe}/{estado}")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public Response getSoliciSinProcesarJefe(@PathParam("nit") String nit,@PathParam("jefe") String jefe, 
+    public Response getSoliciSinProcesarJefe(@PathParam("nit") String nitEmpresa, @PathParam("jefe") String jefe, 
         @PathParam("estado") String estado, @QueryParam("cadena") String cadena) {
-        System.out.println("parametros getSoliciSinProcesarJefe(): nit: "+nit+ " jefe "+jefe+" estado: "+estado+ " cadena "+cadena);
+        System.out.println("parametros getSoliciSinProcesarJefe(): nit: "+nitEmpresa+ " jefe "+jefe+" estado: "+estado+ " cadena "+cadena);
         List s = null;
         try {
-        String secuenciaJefe = getSecuenciaEmplPorSeudonimo(jefe, nit, cadena );
-        String secuenciaEmpresa = getSecuenciaPorNitEmpresa(nit, cadena);
-        setearPerfil(cadena);
+        String secuenciaJefe = getSecuenciaEmplPorSeudonimo(jefe, nitEmpresa, cadena );
+        String secuenciaEmpresa = getSecuenciaPorNitEmpresa(nitEmpresa, cadena);
+        String esquema = getEsquema(nitEmpresa, cadena);
+        setearPerfil(esquema, cadena);
         String sqlQuery="   SELECT \n" +
         " t1.codigoempleado documento, REPLACE(TRIM(P.PRIMERAPELLIDO||' '||P.SEGUNDOAPELLIDO||' '||P.NOMBRE), '  ', ' ') NOMBRE,\n" +
         " t0.SECUENCIA, \n" +
@@ -284,11 +337,12 @@ public class EmpleadosFacadeREST {
         }
     }
     
-    public String getDocumentoCorreoODocumento(String usuario, String cadena) {
+    public String getDocumentoCorreoODocumento(String usuario, String nitEmpresa, String cadena) {
        System.out.println("Parametros getDocumentoCorreoODocumento() usuario: "+usuario+", cadena: "+cadena);
        String documento=null;
         try {
-            setearPerfil(cadena);
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P WHERE P.EMAIL=?";
             if (this.validarCodigoUsuario(usuario)) {
                  sqlQuery+=" OR P.NUMERODOCUMENTO=?"; // si el valor es numerico validar por numero de documento
@@ -332,7 +386,8 @@ public class EmpleadosFacadeREST {
        System.out.println("getDocumentoPorSeudonimo()");
        String documento=null;
         try {
-            setearPerfil(cadena);
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P, CONEXIONESKIOSKOS CK WHERE CK.PERSONA=P.SECUENCIA AND CK.SEUDONIMO=? AND CK.NITEMPRESA=?";
             System.out.println("Query: "+sqlQuery);
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
@@ -351,7 +406,8 @@ public class EmpleadosFacadeREST {
         System.out.println("Parametros getSecuenciaEmplPorSeudonimo(): seudonimo: "+seudonimo+", nitEmpresa: "+nitEmpresa+", cadena: "+cadena);
        String secuencia=null;
         try {
-            setearPerfil(cadena);
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT E.SECUENCIA SECUENCIAEMPLEADO FROM EMPLEADOS E, CONEXIONESKIOSKOS CK WHERE CK.EMPLEADO=E.SECUENCIA AND CK.SEUDONIMO=? AND CK.NITEMPRESA=?";
             System.out.println("Query: "+sqlQuery);
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
@@ -369,7 +425,8 @@ public class EmpleadosFacadeREST {
     public String getSecuenciaPorNitEmpresa( String nitEmpresa, String cadena) {
        String secuencia=null;
         try {
-            setearPerfil(cadena);
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT EM.SECUENCIA SECUENCIAEMPRESA FROM EMPRESAS EM WHERE EM.NIT=?";
             System.out.println("Query: "+sqlQuery);
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
@@ -403,13 +460,14 @@ public class EmpleadosFacadeREST {
         System.out.println("Parametros getSecuencia(): usuario: "+usuario+", cadena: "+cadena);
         BigDecimal res = null;
         try {
-            setearPerfil(cadena);
+            //String esquema = getEsquema(nitEmpresa, cadena);
+            //setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT EMPLEADO FROM CONEXIONESKIOSKOS WHERE SEUDONIMO=?";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, usuario);
             res = (BigDecimal) query.getSingleResult();
         } catch (Exception ex) {
-            System.out.println("Error "+this.getClass().getName()+".getSecuencia() path /empleados: " + ex);
+            System.out.println("Error "+this.getClass().getName() + ex);
             res = BigDecimal.ZERO;
         }
         return res.toString();
@@ -434,7 +492,8 @@ public class EmpleadosFacadeREST {
         //System.out.println("fecha en txt: " + strFechaDisfrute);
         System.out.println("fecha en txt: " + fechaDisfrute);
         try {
-            setearPerfil(cadena);
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
             query = getEntityManager(cadena).createNativeQuery(consulta);
             query.setParameter(1, secEmpleado);
             //query.setParameter(2, strFechaDisfrute);
@@ -461,12 +520,13 @@ public class EmpleadosFacadeREST {
             return getDate(fechainicialdisfrute, cadena).after(cl.getTime());
     }   
    
-    public Date getFechaUltimoPago(String seudonimo, String nitempresa, String cadena) throws Exception {
-        System.out.println("Parametros getFechaUltimoPago(): seudonimo: "+seudonimo+", nitempresa: "+nitempresa+", cadena: "+cadena);
+    public Date getFechaUltimoPago(String seudonimo, String nitEmpresa, String cadena) throws Exception {
+        System.out.println("Parametros getFechaUltimoPago(): seudonimo: "+seudonimo+", nitempresa: "+nitEmpresa+", cadena: "+cadena);
         BigDecimal res = null;
         try {
-        setearPerfil(cadena);
-        String secEmpleado=getSecuenciaEmplPorSeudonimo(seudonimo, nitempresa, cadena);
+        String esquema = getEsquema(nitEmpresa, cadena);
+        setearPerfil(esquema, cadena);
+        String secEmpleado=getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
         String consulta = "SELECT GREATEST("
                 + "CORTESPROCESOS_PKG.CAPTURARCORTEPROCESO(?, 1), "
                 + "NVL( CORTESPROCESOS_PKG.CAPTURARCORTEPROCESO(?, 80), CORTESPROCESOS_PKG.CAPTURARCORTEPROCESO(?, 1)"
@@ -546,7 +606,7 @@ public class EmpleadosFacadeREST {
         }
     }    
        
-    public boolean verificarDiaLaboral(String fechaDisfrute, BigDecimal codigoJornada, String cadena) throws Exception {
+    public boolean verificarDiaLaboral(String fechaDisfrute, BigDecimal codigoJornada, String nitEmpresa, String cadena) throws Exception {
         System.out.println(this.getClass().getName() + "." + "verificarDiaLaboral(): fechaDisfrute: "+fechaDisfrute+", codigoJornada: "+codigoJornada+", cadena: "+cadena);
         System.out.println("fechaDisfrute: " + fechaDisfrute);
         System.out.println("codigoJornada: " + codigoJornada);
@@ -561,6 +621,8 @@ public class EmpleadosFacadeREST {
         int diaSemana;
         String strFechaDisfrute = "";
         GregorianCalendar c = new GregorianCalendar();
+        String esquema = getEsquema(nitEmpresa, cadena);
+        setearPerfil(esquema, cadena);
         c.setTime(getDate(fechaDisfrute, cadena));
         diaSemana = c.get(Calendar.DAY_OF_WEEK);
         strFechaDisfrute = nombreDia(diaSemana);
@@ -584,7 +646,7 @@ public class EmpleadosFacadeREST {
         }
     }
     
-    public boolean verificarFestivo(String fechaDisfrute, String cadena) throws Exception {
+    public boolean verificarFestivo(String fechaDisfrute, String nitEmpresa, String cadena) throws Exception {
         System.out.println(this.getClass().getName() + "." + "verificarFestivo(): fechaDisfrute: "+fechaDisfrute+", cadena: "+cadena);
         String consulta = "select COUNT(*) "
                 + "FROM FESTIVOS F, PAISES P "
@@ -597,7 +659,8 @@ public class EmpleadosFacadeREST {
         /*SimpleDateFormat formatoFecha = new SimpleDateFormat("ddMMyyyy");
         String strFechaDisfrute = formatoFecha.format(fechaDisfrute);*/
         try {
-            setearPerfil(cadena);
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
             query = getEntityManager(cadena).createNativeQuery(consulta);
             query.setParameter(1, "COLOMBIA");
             //query.setParameter(2, strFechaDisfrute);
@@ -621,18 +684,20 @@ public class EmpleadosFacadeREST {
 
     public BigDecimal consultaTraslapamientos(
              String seudonimo,
-             String nitempresa, 
+             String nitEmpresa, 
              String fechaIniVaca, 
              String fechaFinVaca,
              String cadena) throws PersistenceException, NullPointerException, Exception {
         System.out.println(this.getClass().getName() + "." + "consultaTraslapamientos" + "()");
-        String secEmpleado = getSecuenciaEmplPorSeudonimo(seudonimo, nitempresa, cadena);
+        String secEmpleado = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
         String consulta = "SELECT "
                 + "KIOVACACIONES_PKG.VERIFICARTRASLAPAMIENTO(?, ? , ? ) "
                 + "FROM DUAL ";
         Query query = null;
         BigDecimal contTras = null;
         try {
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
             query = getEntityManager(cadena).createNativeQuery(consulta);
             query.setParameter(1, secEmpleado);
             //query.setParameter(2, fechaIniVaca, TemporalType.DATE);
@@ -660,11 +725,11 @@ public class EmpleadosFacadeREST {
     */
     public BigDecimal verificaExistenciaSolicitud(
             String seudonimo, 
-            String nitempresa,
+            String nitEmpresa,
             String fechaIniVaca,
             String cadena) throws Exception {
-        System.out.println("Parametros verificaExistenciaSolicitud(): seudonimo: "+seudonimo+", nitempresa: "+nitempresa+", fechaIniVaca: "+fechaIniVaca+", cadena: "+cadena);
-        String secEmpleado = getSecuenciaEmplPorSeudonimo(seudonimo, nitempresa, cadena);
+        System.out.println("Parametros verificaExistenciaSolicitud(): seudonimo: "+seudonimo+", nitempresa: "+nitEmpresa+", fechaIniVaca: "+fechaIniVaca+", cadena: "+cadena);
+        String secEmpleado = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
         System.out.println("verificaExistenciaSolicitud-secEmpleado: " + secEmpleado);
         System.out.println("verificaExistenciaSolicitud-fechaIniVaca: " + fechaIniVaca);
         /*SimpleDateFormat formato = new SimpleDateFormat("ddMMyyyy");
@@ -677,6 +742,8 @@ public class EmpleadosFacadeREST {
         BigDecimal conteo = null;
         try {
             try {
+                String esquema = getEsquema(nitEmpresa, cadena);
+                setearPerfil(esquema, cadena);
                 query = getEntityManager(cadena).createNativeQuery(consulta);
                 query.setParameter(1, secEmpleado);
                // query.setParameter(2, txtFecha);
@@ -713,10 +780,10 @@ public class EmpleadosFacadeREST {
             if (!validaFechaPago(seudonimo, nitEmpresa, fechainicialdisfrute, cadena)) {
                 mensaje+= "La fecha seleccionada es inferior a la última fecha de pago.";
                 valido = false;
-            } else if (verificarFestivo(fechainicialdisfrute, cadena)){
+            } else if (verificarFestivo(fechainicialdisfrute, nitEmpresa, cadena)){
                 mensaje+= "La fecha seleccionada es un día festivo.";
                 valido = false;
-            } else if (!verificarDiaLaboral(fechainicialdisfrute,codigoJornada, cadena)){
+            } else if (!verificarDiaLaboral(fechainicialdisfrute,codigoJornada, nitEmpresa, cadena)){
                 mensaje+= "La fecha seleccionada no es un día laboral.";
                 valido = false;
             }
@@ -735,10 +802,11 @@ public class EmpleadosFacadeREST {
         return obj.toString();
     }
     
-    public String getApellidoNombreXsecEmpl(String secEmpl, String cadena) {
+    public String getApellidoNombreXsecEmpl(String secEmpl, String nitEmpresa, String cadena) {
         System.out.println("getApellidoNombreXsecEmpl() secuenciaEmpl: "+secEmpl);
         String nombre = null;
-        setearPerfil(cadena);
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
         try {
             String sqlQuery = "SELECT UPPER(P.PRIMERAPELLIDO||' '||P.SEGUNDOAPELLIDO||' '||P.NOMBRE) NOMBRE "
                     + " FROM PERSONAS P, EMPLEADOS EMPL "
@@ -758,9 +826,10 @@ public class EmpleadosFacadeREST {
     @Path("/enviaReporteInfoRRHH")
     @Produces(MediaType.APPLICATION_JSON)
     public boolean enviaReporteInfoRRHH(@QueryParam("seudonimo") String seudonimo, @QueryParam("nitempresa") String nitEmpresa, 
-            @QueryParam("observacion") String observacionNovedad, @QueryParam("urlKiosco") String urlKiosco, @QueryParam("grupo") String grupo, @QueryParam("cadena") String cadena) {
+            @QueryParam("observacion") String observacionNovedad, @QueryParam("asunto") String asunto, 
+            @QueryParam("urlKiosco") String urlKiosco, @QueryParam("grupo") String grupo, @QueryParam("cadena") String cadena) {
         String secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
-        String nombreEmpl = getApellidoNombreXsecEmpl(secEmpl, cadena);
+        String nombreEmpl = getApellidoNombreXsecEmpl(secEmpl, nitEmpresa, cadena);
         String fecha = new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date());
         String mensaje = "Nos permitimos informar que "+nombreEmpl+" ha reportado la siguiente "
                 + "observación desde el módulo Kiosco para su validación: "
@@ -769,9 +838,11 @@ public class EmpleadosFacadeREST {
         String correoUsuario = getCorreoConexioneskioskos(seudonimo, nitEmpresa, cadena);
         System.out.println("Parametros enviaReporteInfoRRHH(): seudonimo "+seudonimo+", nit: "+nitEmpresa+", urlKiosco: "+urlKiosco+", grupo: "+grupo+", cadena: "+cadena);
         boolean enviado = true;
+        asunto += " de "+nombreEmpl+" "+fecha;
         try { 
             EnvioCorreo e= new EnvioCorreo();
-            if (e.enviarCorreoInformativo("Módulo Kiosco: Reporte de corrección de información de "+nombreEmpl+" "+fecha,
+            //if (e.enviarCorreoInformativo("Módulo Kiosco: Reporte de corrección de información de "+nombreEmpl+" "+fecha,
+            if (e.enviarCorreoInformativo(asunto,
                     "Estimado personal de Nómina y RRHH:", mensaje, nitEmpresa, urlKiosco+"#/login/"+grupo, cadena, correoUsuario)) {
                 enviado = true;
             } else {
@@ -784,17 +855,18 @@ public class EmpleadosFacadeREST {
         return enviado;
     }
     
-    public String getCorreoConexioneskioskos(String seudonimo, String empresa, String cadena) {
-        System.out.println("Parametros " + this.getClass().getName() + ".getCorreoConexioneskioskos(): seudonimo: " + seudonimo + ", empresa: " + empresa + ", cadena: " + cadena);
+    public String getCorreoConexioneskioskos(String seudonimo, String nitEmpresa, String cadena) {
+        System.out.println("Parametros " + this.getClass().getName() + ".getCorreoConexioneskioskos(): seudonimo: " + seudonimo + ", empresa: " + nitEmpresa + ", cadena: " + cadena);
         String correo = null;
         String sqlQuery;
         try {
-            setearPerfil(cadena);
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
             sqlQuery = "SELECT P.EMAIL FROM PERSONAS P, conexioneskioskos ck WHERE p.secuencia=ck.persona and "
                     + " ck.seudonimo=? and ck.nitempresa=?";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, seudonimo);
-            query.setParameter(2, empresa);
+            query.setParameter(2, nitEmpresa);
             correo = query.getSingleResult().toString();
         } catch (Exception e) {
             System.out.println("Error " + this.getClass().getName() + ".getCorreoConexioneskioskos(): " + e.getMessage());
@@ -810,7 +882,8 @@ public class EmpleadosFacadeREST {
         List s = null;
         try {
         String secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
-        setearPerfil(cadena);
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
             String sqlQuery = "select "
                     + "te.nombre, p.descripcion, i.descripcion institucion, to_char(vf.fechavigencia, 'dd/mm/yyyy') fechaVigencia, "
                     + "to_char(vf.fechavencimiento, 'dd/mm/yyyy') fechaVencimiento, ad.descripcion adiest, vf.NUMEROTARJETA, vf.OBSERVACION, "
@@ -846,7 +919,8 @@ public class EmpleadosFacadeREST {
         List s = null;
         try {
         String secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
-        setearPerfil(cadena);
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
             String sqlQuery = "select "
                     + "c.nombre CURSO, vf.titulo, i.descripcion institucion, to_char(vf.fechavigencia, 'dd/mm/yyyy') fechavigencia, to_char(vf.fechavencimiento, 'dd/mm/yyyy') fechaVencimiento, "
                     + "ad.DESCCRIPCION "
@@ -871,5 +945,22 @@ public class EmpleadosFacadeREST {
             return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
         }
     }     
+    
+    public String getEsquema( String nitEmpresa, String cadena) {
+        System.out.println("Parametros getEsquema(): nitempresa: "+nitEmpresa+", cadena: "+cadena);
+        String esquema = null;
+        String sqlQuery;
+        try {
+            sqlQuery = "SELECT ESQUEMA FROM CADENASKIOSKOSAPP WHERE NITEMPRESA=? AND CADENA=?";
+            Query query = getEntityManager("wscadenaskioskosPU").createNativeQuery(sqlQuery);
+            query.setParameter(1, nitEmpresa);
+            query.setParameter(2, cadena);
+            esquema = query.getSingleResult().toString();
+            System.out.println("Esquema: "+esquema);
+        } catch (Exception e) {
+            System.out.println("Error "+this.getClass().getName()+".getEsquema(): " + e);
+        } 
+        return esquema;
+    }       
     
 }

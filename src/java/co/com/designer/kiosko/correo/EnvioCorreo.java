@@ -244,7 +244,7 @@ public class EnvioCorreo {
                     + "                <tr >\n"
                     + "                    <td style=\"text-align:center;padding:0\">\n"
                     + "                        <div style=\"text-align:center\">\n"
-                    + "                            <a href="+urlKiosco+" target=\"_blank\"\n"
+                    + "                            <a style='color: white !important;' href="+urlKiosco+" target=\"_blank\"\n"
                     + "                                data-saferedirecturl="+urlKiosco+">\n"
                     + "\n"
                     + "                                <img width=\"80px\" style=\"display:block;margin:auto auto 0px auto\"\n"
@@ -626,7 +626,16 @@ public class EnvioCorreo {
 // first part (the html)
             BodyPart messageBodyPart = new MimeBodyPart();
             String htmlText
-                    = "<div\n"
+                    = "<style>"
+                    + " a:link { color: white !important; } \n" +
+                      "a:visited { color: white !important; } \n" +
+                      "a:hover { background: yellow !important; } \n" +
+                      "a:active { color: white !important; } "
+                    + ".ii a[href] {\n" +
+                    "    color: #ccc !important;\n" +
+                    "} "
+                    + "</style>"
+                    + "<div\n"
                     + "        style=\"padding:10%;color:white;background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url(https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/imgcorreoreporte.jpg/);min-height:100%;background-size:cover\" !important;>\n"
                     + "        <table style=\"max-width:90%;padding:10%;margin:0 auto;border-collapse:collapse\">\n"
                     + "            <tbody>\n"

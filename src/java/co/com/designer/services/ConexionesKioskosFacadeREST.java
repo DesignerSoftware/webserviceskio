@@ -322,10 +322,10 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @POST
     @Path("/creaUsuario")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response crearUsuario(@QueryParam("seudonimo") String seudonimo, @QueryParam("usuario") String usuario,
+    public Response crearUsuario(@QueryParam("seudonimo") String seudonimo, @QueryParam("usuario") String documento,
             @QueryParam("clave") String clave, @QueryParam("nitEmpresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
-        System.out.println("Parametros crearUsuario(): seudonimo: "+seudonimo+", usuario: "+usuario+", clave: "+clave+", nitEmpresa: "+nitEmpresa+", cadena: "+cadena);
-        String res = "creaUsuario: seudonimo: " + seudonimo + " usuario:" + usuario + " clave: " + clave
+        System.out.println("Parametros crearUsuario(): seudonimo: "+seudonimo+", documento: "+documento+", clave: "+clave+", nitEmpresa: "+nitEmpresa+", cadena: "+cadena);
+        String res = "creaUsuario: seudonimo: " + seudonimo + " usuario:" + documento + " clave: " + clave
                 + " nitEmpresa: " + nitEmpresa;
         boolean resultado = false;
         int conteo = 0;
@@ -336,15 +336,16 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT COUNT(*) conteo "
-                    + "FROM CONEXIONESKIOSKOS ck, PERSONAS per, EMPLEADOS e, EMPRESAS em "
-                    + "WHERE ck.EMPLEADO = e.SECUENCIA "
-                    //                    + "WHERE ck.PERSONA = per.SECUENCIA "
-                    + "AND e.persona = per.secuencia "
+                    + "FROM CONEXIONESKIOSKOS ck, PERSONAS p, EMPLEADOS e, EMPRESAS em "
+                    // "WHERE ck.EMPLEADO = e.SECUENCIA "
+                    + "WHERE ck.PERSONA = p.SECUENCIA "
+                    + "AND e.persona = p.secuencia "
                     + "AND e.empresa = em.secuencia "
-                    + "AND e.codigoempleado = ? "
+                    // + "AND e.codigoempleado = ? "
+                    + "AND p.numerodocumento = ? "
                     + "AND em.nit = ? ";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, usuario);
+            query.setParameter(1, documento);
             query.setParameter(2, nitEmpresa);
             retorno = (BigDecimal) query.getSingleResult();
             if (retorno.compareTo(BigDecimal.ZERO) > 0) {
@@ -352,22 +353,23 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                 mensaje = "Ya existe el usuario";
                 System.out.println("resultado usuarioRegistrado: " + resultado + " Mensaje: " + mensaje);
             } else {
+                String secEmpl = getSecEmplPorDocumentoYEmpresa(documento, nitEmpresa, cadena);
                 String sqlQueryInsert = "INSERT INTO CONEXIONESKIOSKOS (SEUDONIMO, EMPLEADO, PERSONA, PWD, "
                         + "NITEMPRESA, ACTIVO) "
-                        + "VALUES (?, (SELECT SECUENCIA FROM EMPLEADOS WHERE CODIGOEMPLEADO=?), "
+                        + "VALUES (?, ?, "
                         + "(SELECT SECUENCIA FROM PERSONAS WHERE NUMERODOCUMENTO=?), "
                         + " GENERALES_PKG.ENCRYPT(?), ?, 'P')";
                 Query queryInsert = getEntityManager(cadena).createNativeQuery(sqlQueryInsert);
                 queryInsert.setParameter(1, seudonimo);
-                queryInsert.setParameter(2, usuario);
-                queryInsert.setParameter(3, usuario);
+                queryInsert.setParameter(2, secEmpl);
+                queryInsert.setParameter(3, documento);
                 queryInsert.setParameter(4, clave);
                 queryInsert.setParameter(5, nitEmpresa);
                 conteo = queryInsert.executeUpdate();
                 resultado = conteo > 0 ? true : false;
                 System.out.println("resultado registrar usuario " + resultado);
                 if (resultado == true) {
-                    mensaje = "Usuario " + usuario + " creado exitosamente!";
+                    mensaje = "Usuario " + documento + " creado exitosamente!";
 
                     // this.getJWTValidCuenta(usuario, clave, nitEmpresa); // si se deja aqui se demora más tiempo en responder
                 }
@@ -548,11 +550,11 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @GET
     @Path("/obtenerFoto/{imagen}")
     @Produces({"image/png", "image/jpg", "image/gif"})
-    public Response obtenerFoto(@PathParam("imagen") String imagen, @QueryParam("cadena") String cadena) {
-        System.out.println("Parametros obtenerFoto(): imagen: "+imagen+", cadena: "+cadena);
+    public Response obtenerFoto(@PathParam("imagen") String imagen, @QueryParam("cadena") String cadena, @QueryParam("usuario") String usuario, @QueryParam("empresa") String nitEmpresa) {
+        System.out.println("Parametros obtenerFoto(): imagen: "+imagen+", cadena: "+cadena+", nitEmpresa: "+nitEmpresa+", usuario: "+usuario);
         FileInputStream fis = null;
         File file = null;
-        String RUTAFOTO = getPathFoto("900787019", cadena);
+        String RUTAFOTO = getPathFoto(nitEmpresa, cadena);
         try {
             fis = new FileInputStream(new File(RUTAFOTO + imagen));
             file = new File(RUTAFOTO + imagen);
@@ -562,6 +564,8 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                 file = new File(RUTAFOTO + "sinFoto.jpg");
             } catch (FileNotFoundException ex1) {
                 Logger.getLogger(ConexionesKioskosFacadeREST.class.getName()).log(Level.SEVERE, "Foto no encontrada: " + imagen, ex1);
+                System.getProperty("user.dir");
+                System.out.println("Ruta del proyecto: "+this.getClass().getClassLoader().getResource("").getPath());;
             }
         } finally {
             try {
@@ -1489,12 +1493,12 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @GET
     @Path("/restKiosco/correoconexioneskioskos/{usuario}/{nit}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getCorreoConexioneskioskoS(@PathParam("usuario") String usuario, @PathParam("nit") String nit, @QueryParam("cadena") String cadena){
-        System.out.println("Parametros getCorreoConexioneskioskoS(): usuario: "+usuario+", nit: "+nit+", cadena: "+cadena);
-        String r= getCorreoConexioneskioskos(usuario, nit, cadena);
-        String[] parametros={usuario, nit};
+    public Response getCorreoConexioneskioskoS(@PathParam("usuario") String usuario, @PathParam("nit") String nitEmpresa, @QueryParam("cadena") String cadena){
+        System.out.println("Parametros getCorreoConexioneskioskoS(): usuario: "+usuario+", nit: "+nitEmpresa+", cadena: "+cadena);
+        String r= getCorreoConexioneskioskos(usuario, nitEmpresa, cadena);
+        String[] parametros={usuario, nitEmpresa};
             return Response.ok(
-                response("correoConexioneskioskos", "Usuario: "+usuario+", nit: "+nit, 
+                response("correoConexioneskioskos", "Usuario: "+usuario+", nit: "+nitEmpresa, 
                         String.valueOf(r)), MediaType.APPLICATION_JSON)
                 .build();
     }
@@ -1846,7 +1850,30 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             System.out.println("Error "+this.getClass().getName()+".getEsquema(): " + e);
         } 
         return esquema;
-    }    
+    }  
+    
+    public String getSecEmplPorDocumentoYEmpresa(String documento, String nitEmpresa, String cadena) {
+        System.out.println("Parametros getEmplPorDocumentoEmpresa(): documento: "+documento+", nitEmpresa: "+nitEmpresa+", cadena: "+cadena);
+       String secuencia=null;
+        try {
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
+            String sqlQuery = "SELECT E.SECUENCIA "
+                    + "FROM PERSONAS P, EMPLEADOS E, EMPRESAS EM "
+                    + "WHERE "
+                    + "E.PERSONA=P.SECUENCIA AND E.EMPRESA=EM.SECUENCIA AND P.NUMERODOCUMENTO=? AND EMPLEADOCURRENT_PKG.TIPOTRABAJADORCORTE(E.SECUENCIA, SYSDATE)='ACTIVO' ";
+            System.out.println("Query: "+sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+
+            query.setParameter(1, documento);
+            query.setParameter(2, nitEmpresa);
+            secuencia =  query.getSingleResult().toString();
+            System.out.println("secuencia: "+secuencia);
+        } catch (Exception e) {
+            System.out.println("Error: "+this.getClass().getName()+".getSecEmplPorDocumentoYEmpresa: "+e.getMessage());
+        }
+        return secuencia;
+   }
     
     /**
      * metodo privado para dar formato al JSON de respuesta

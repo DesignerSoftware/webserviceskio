@@ -131,7 +131,7 @@ public class ReportesFacadeREST {
                 Date fechaGeneracion = new Date();
                 String fecha = new SimpleDateFormat("dd/MM/yyyy").format(fechaGeneracion);
                 String hora = new SimpleDateFormat("HH:mm").format(fechaGeneracion);
-                       String mensaje=  "Nos permitimos informar que el "
+                String mensaje=  "Nos permitimos informar que el "
                         + fecha + " a las " + hora
                         + " se generó el reporte " + descripcionReporte
                         + " en el módulo de Kiosco Nómina Designer. "
@@ -166,17 +166,17 @@ public class ReportesFacadeREST {
             /*if (reporte.equals("Kio_CertificaQue") || reporte.equals("kiodesigner01") || reporte.equals("kiodesigner02")) {
                 setearPerfil();      
             }*/
-            if (envioCorreo == true){
-                System.out.println("Se debe enviar correo al empleado: "+correo);
-            ConexionesKioskosFacadeREST ck = new ConexionesKioskosFacadeREST();
-            // Enviar correo
-            
-             c.pruebaEnvio2(servidorSmtp, puerto, remitente, clave, autenticado, correo,
-            /*c.pruebaEnvio2("smtp.gmail.com", "587" ,"pruebaskiosco534@gmail.com",
+            if (envioCorreo == true) {
+                System.out.println("Se debe enviar correo al empleado: " + correo);
+                ConexionesKioskosFacadeREST ck = new ConexionesKioskosFacadeREST();
+                // Enviar correo
+
+                c.pruebaEnvio2(servidorSmtp, puerto, remitente, clave, autenticado, correo,
+                        /*c.pruebaEnvio2("smtp.gmail.com", "587" ,"pruebaskiosco534@gmail.com",
                     "Nomina01", 
                     "S", correo,*/
-                  rutaGenerado, nombreReporte,
-                  "Reporte Kiosco - " + descripcionReporte, "", getPathFoto(cadena), grupo, urlKio);
+                        rutaGenerado, nombreReporte,
+                        "Reporte Kiosco - " + descripcionReporte, "", getPathFoto(cadena), grupo, urlKio);
             }
             
             ResponseBuilder response = Response.ok((Object) file);
