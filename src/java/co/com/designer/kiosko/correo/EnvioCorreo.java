@@ -71,6 +71,21 @@ public class EnvioCorreo {
         }
     }     
     
+    protected void setearPerfil(String esquema, String cadenaPersistencia) {
+        try {
+            String rol = "ROLKIOSKO";
+            if (esquema != null && !esquema.isEmpty()) {
+                rol = rol + esquema.toUpperCase();
+            }
+            System.out.println("setearPerfil(esquema, cadena)");
+            String sqlQuery = "SET ROLE " + rol + " IDENTIFIED BY RLKSK ";
+            Query query = getEntityManager(cadenaPersistencia).createNativeQuery(sqlQuery);
+            query.executeUpdate();
+        } catch (Exception ex) {
+            System.out.println("Error setearPerfil(esquema, cadenaPersistencia): " + ex);
+        }
+    }      
+    
     public void pruebaEnvio2No(String servidorsmtp, String puerto, String remitente, String clave,
             String autenticado, String destinatario, String rutaReporte,
             String nombreReporte, String asunto, String mensaje){
@@ -352,8 +367,8 @@ public class EnvioCorreo {
         }
     }    
     
-    public boolean enviarNuevaClave(String servidorsmtp, String puerto, String autenticado, String starttls, String remitente, String clave, String destinatario, String nombreUsuario,
-            String nuevaClave, String urlKiosco, String cadena) {
+    public boolean enviarNuevaClave(String servidorsmtp, String puerto, String autenticado, String starttls, String remitente, String clave, String destinatario, 
+            String nombreUsuario, String nuevaClave, String urlKiosco, String rutaImagenes, String nitEmpresa, String cadena) {
         boolean envioCorreo = false;
         Properties props = new Properties();
         props.put("mail.smtp.host", servidorsmtp);
@@ -397,7 +412,7 @@ public class EnvioCorreo {
 // second part (the image)
             messageBodyPart = new MimeBodyPart();
             //DataSource fds = new FileDataSource("C:\\DesignerRHN12\\Basico12\\fotos_empleados\\headerlogocorreoKiosko.png");
-            String rutaImagenes = getPathFoto(cadena);
+            //String rutaImagenes = getPathFoto(nitEmpresa, cadena);
             DataSource fds = new FileDataSource(rutaImagenes + "headerlogocorreoKiosko.png");
             messageBodyPart.setDataHandler(new DataHandler(fds));
             messageBodyPart.setHeader("Content-ID", "<image>");
@@ -407,7 +422,7 @@ public class EnvioCorreo {
             message.setContent(multipart);
 // Send the actual HTML message, as big as you like
             Transport.send(message);
-            System.out.println("Mail sent successfully!!!");
+            System.out.println("Mail sent successfully!!! "+destinatario);
             envioCorreo = true;
         } catch (MessagingException e) {
             envioCorreo = false;
@@ -417,10 +432,11 @@ public class EnvioCorreo {
     }
     
     
-    public String getPathFoto(String cadena) {
+    public String getPathFoto(String nitEmpresa, String cadena) {
         String rutaFoto="";
         try {
-            setearPerfil(cadena);
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT PATHFOTO FROM GENERALESKIOSKO WHERE ROWNUM<=1";
             System.out.println("Query: "+sqlQuery);
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
@@ -434,7 +450,7 @@ public class EnvioCorreo {
     
     
     public boolean enviarEnlaceValidacionCuenta(String servidorsmtp, String puerto, String autenticado, String starttls, String remitente, String clave, String destinatario, String nombreUsuario,
-            String jwt, String urlKiosco, String cadena) {
+            String jwt, String urlKiosco, String nitEmpresa, String cadena) {
         boolean envioCorreo = false;
         Properties props = new Properties();
         props.put("mail.smtp.host", servidorsmtp);
@@ -484,7 +500,7 @@ public class EnvioCorreo {
 // second part (the image)
             messageBodyPart = new MimeBodyPart();
 // DataSource fds = new FileDataSource("C:\\DesignerRHN10\\Basico10\\fotos_empleados\\headerlogocorreoKiosko.png");
-            String rutaImagenes = getPathFoto(cadena);
+            String rutaImagenes = getPathFoto(nitEmpresa, cadena);
             DataSource fds = new FileDataSource(rutaImagenes + "headerlogocorreoKiosko.png");
             messageBodyPart.setDataHandler(new DataHandler(fds));
             messageBodyPart.setHeader("Content-ID", "<image>");
@@ -725,7 +741,7 @@ public class EnvioCorreo {
 // second part (the image)
             messageBodyPart = new MimeBodyPart();
             //DataSource fds = new FileDataSource("C:\\DesignerRHN12\\Basico12\\fotos_empleados\\headerlogocorreoKiosko.png");
-            String rutaImagenes = getPathFoto(cadena);
+            String rutaImagenes = getPathFoto(nit, cadena);
             DataSource fds = new FileDataSource(rutaImagenes + "headerlogocorreoKiosko.png");
             messageBodyPart.setDataHandler(new DataHandler(fds));
             messageBodyPart.setHeader("Content-ID", "<image>");
@@ -744,15 +760,16 @@ public class EnvioCorreo {
         return envioCorreo;
     }
       
-    public String getConfigCorreo(String nit, String valor, String cadena) {
+    public String getConfigCorreo(String nitEmpresa, String valor, String cadena) {
         System.out.println("getPathArchivosPlanos()");
         String servidorsmtp="smtp.designer.com.co";
         try {
-            setearPerfil(cadena);
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT "+valor+" FROM CONFICORREOKIOSKO WHERE EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?)";
             System.out.println("Query: "+sqlQuery);
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, nit);
+            query.setParameter(1, nitEmpresa);
             servidorsmtp =  query.getSingleResult().toString();
             System.out.println(valor+": "+servidorsmtp);
         } catch (Exception e) {
@@ -761,15 +778,16 @@ public class EnvioCorreo {
         return servidorsmtp;
     }    
     
-    public String getConfigCorreoServidorSMTP(String nit, String cadena) {
+    public String getConfigCorreoServidorSMTP(String nitEmpresa, String cadena) {
         System.out.println("getConfigCorreoServidorSMTP()");
         String servidorsmtp="smtp.designer.com.co";
         try {
-            setearPerfil();
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT SERVIDORSMTP FROM CONFICORREOKIOSKO WHERE EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?)";
             System.out.println("Query: "+sqlQuery);
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, nit);
+            query.setParameter(1, nitEmpresa);
             servidorsmtp =  query.getSingleResult().toString();
             System.out.println("Servidor smtp: "+servidorsmtp);
         } catch (Exception e) {
@@ -778,16 +796,17 @@ public class EnvioCorreo {
         return servidorsmtp;
     }
     
-    public String getCorreoSoporteKiosco(String nit, String cadena) {
+    public String getCorreoSoporteKiosco(String nitEmpresa, String cadena) {
         System.out.println("getConfigCorreoServidorSMTP()");
         String emailSoporte="";
         try {
-            setearPerfil(cadena);
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT EMAILCONTACTO FROM KIOPERSONALIZACIONES WHERE "
                     + "EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?) AND ROWNUM<=1";
             System.out.println("Query: "+sqlQuery);
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, nit);
+            query.setParameter(1, nitEmpresa);
             emailSoporte =  query.getSingleResult().toString();
             System.out.println("Email soporte: "+emailSoporte);
         } catch (Exception e) {
@@ -798,14 +817,16 @@ public class EnvioCorreo {
     
     /*Correo novedad de corrección de información que se envia a RRHH o Auditoria Módulo Vacaciones(No se incluye botón de Ir a Kiosco) */
     public boolean enviarCorreoInformativo(
-            String asunto, String saludo, String mensaje, String nit, String urlKiosco, String cadena, String correoUsuario) {
+            String asunto, String saludo, String mensaje, String nit, String urlKiosco, String cadena, String correoDestinatarioMain, String correoCC) {
+        System.out.println("enviarCorreoInformativo()");
         String servidorsmtp = getConfigCorreoServidorSMTP(nit, cadena);
         String puerto = getConfigCorreo(nit, "PUERTO", cadena);
         String autenticado = getConfigCorreo(nit, "AUTENTICADO", cadena);
         String starttls = getConfigCorreo(nit, "STARTTLS", cadena);
         String remitente = getConfigCorreo(nit, "REMITENTE", cadena);
         String clave = getConfigCorreo(nit, "CLAVE", cadena);
-        String destinatario = getCorreoSoporteKiosco(nit, cadena);
+        //String destinatario = getCorreoSoporteKiosco(nit, cadena);
+        System.out.println("Datos enviarCorreoInformativo: "+servidorsmtp+", puerto: "+puerto+", autenticado: "+autenticado+", starttls: "+starttls+", remitente: "+remitente+", clave: "+clave);
         boolean envioCorreo = false;
         Properties props = new Properties();
         props.put("mail.smtp.host", servidorsmtp);
@@ -825,9 +846,11 @@ public class EnvioCorreo {
         try {
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(remitente));
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(destinatario));
-            if (correoUsuario != null) {
-                message.setRecipients(Message.RecipientType.CC, InternetAddress.parse(correoUsuario));
+            //message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(destinatario));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(correoDestinatarioMain));
+           // if (correoUsuario != null) {
+            if (correoCC != null) {
+                message.setRecipients(Message.RecipientType.CC, InternetAddress.parse(correoCC));
             }
             message.setSubject(asunto);
 
@@ -923,7 +946,8 @@ public class EnvioCorreo {
 // second part (the image)
             messageBodyPart = new MimeBodyPart();
             //DataSource fds = new FileDataSource("C:\\DesignerRHN12\\Basico12\\fotos_empleados\\headerlogocorreoKiosko.png");
-            String rutaImagenes = getPathFoto(cadena);
+            String rutaImagenes = getPathFoto(nit, cadena);
+            System.out.println("RutaImagenes: "+rutaImagenes+"headerlogocorreoKiosko.png");
             DataSource fds = new FileDataSource(rutaImagenes + "headerlogocorreoKiosko.png");
             messageBodyPart.setDataHandler(new DataHandler(fds));
             messageBodyPart.setHeader("Content-ID", "<image>");
@@ -933,7 +957,10 @@ public class EnvioCorreo {
             message.setContent(multipart);
 // Send the actual HTML message, as big as you like
             Transport.send(message);
-            System.out.println("Mail sent successfully!!! "+destinatario);
+            System.out.println("Mail sent successfully!!! To:"+correoDestinatarioMain);
+            if (correoCC!=null) {
+                System.out.println("Mail sent successfully!!! Copia correo enviada a "+correoCC);
+            }
             envioCorreo = true;
         } catch (MessagingException e) {
             envioCorreo = false;
@@ -950,6 +977,21 @@ public class EnvioCorreo {
        //new EnvioCorreo().pruebaEnvio();
     }
     
-
+    public String getEsquema( String nitEmpresa, String cadena) {
+        System.out.println("Parametros getEsquema(): nitempresa: "+nitEmpresa+", cadena: "+cadena);
+        String esquema = null;
+        String sqlQuery;
+        try {
+            sqlQuery = "SELECT ESQUEMA FROM CADENASKIOSKOSAPP WHERE NITEMPRESA=? AND CADENA=?";
+            Query query = getEntityManager("wscadenaskioskosPU").createNativeQuery(sqlQuery);
+            query.setParameter(1, nitEmpresa);
+            query.setParameter(2, cadena);
+            esquema = query.getSingleResult().toString();
+            System.out.println("Esquema: "+esquema);
+        } catch (Exception e) {
+            System.out.println("Error "+this.getClass().getName()+".getEsquema(): " + e);
+        } 
+        return esquema;
+    } 
       
 }

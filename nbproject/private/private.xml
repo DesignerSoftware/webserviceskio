@@ -9,8 +9,9 @@
             <file>file:/D:/Kiosco/wsreporte/src/java/co/com/designer/kiosko/reportes/IniciarReporte.java</file>
             <file>file:/D:/Kiosco/wsreporte/src/java/co/com/designer/services/CadenasKioskosFacadeREST.java</file>
             <file>file:/D:/Kiosco/wsreporte/src/java/co/com/designer/services/OpcionesKioskosFacadeREST.java</file>
-            <file>file:/D:/Kiosco/wsreporte/src/conf/persistence.xml</file>
             <file>file:/D:/Kiosco/wsreporte/src/java/co/com/designer/services/ApplicationConfig.java</file>
+            <file>file:/D:/Kiosco/wsreporte/src/conf/persistence.xml</file>
+            <file>file:/D:/Kiosco/wsreporte/src/java/co/com/designer/kiosko/entidades/ConexionesKioskos.java</file>
             <file>file:/D:/Kiosco/wsreporte/src/java/co/com/designer/services/AbstractFacade.java</file>
             <file>file:/D:/Kiosco/wsreporte/src/java/co/com/designer/kiosko/correo/EnvioCorreo.java</file>
             <file>file:/D:/Kiosco/wsreporte/src/java/co/com/designer/services/VwvacaPendientesEmpleadosFacadeREST.java</file>

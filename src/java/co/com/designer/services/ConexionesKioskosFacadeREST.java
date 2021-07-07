@@ -101,12 +101,12 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             if (esquema != null && !esquema.isEmpty()) {
                 rol = rol + esquema.toUpperCase();
             }
-            System.out.println("setearPerfil(cadena)");
+            System.out.println("setearPerfil(esquema, cadena)");
             String sqlQuery = "SET ROLE " + rol + " IDENTIFIED BY RLKSK ";
             Query query = getEntityManager(cadenaPersistencia).createNativeQuery(sqlQuery);
             query.executeUpdate();
         } catch (Exception ex) {
-            System.out.println("Error setearPerfil(cadenaPersistencia): " + ex);
+            System.out.println("Error setearPerfil(cadenaPersistencia, esquema): " + ex);
         }
     }    
 
@@ -454,15 +454,15 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @Path("/inactivaToken")
     @Produces(MediaType.APPLICATION_JSON)
     public Response inactivaToken(
-            @QueryParam("jwt") String jwt, @QueryParam("cadena") String cadena) {
-        System.out.println("Parametros inactivaToken(): jwt: "+jwt+", cadena: "+cadena);
+            @QueryParam("jwt") String jwt, @QueryParam("nit") String nitEmpresa, @QueryParam("cadena") String cadena) {
+        System.out.println("Parametros inactivaToken(): jwt: "+jwt+", nitEmpresa: "+nitEmpresa+", cadena: "+cadena);
         boolean resultado = false;
         int conteo = 0;
         BigDecimal retorno = null;
         JSONObject resp = new JSONObject();
         String mensaje = "";
         try {
-            String esquema = getEsquema("900787019", cadena);
+            String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
             String sqlQuery = "UPDATE CONEXIONESTOKEN SET ACTIVO='N' WHERE TOKEN=?";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
@@ -504,6 +504,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             @QueryParam("seudonimo") String seudonimo, 
             @QueryParam("nit") String nitEmpresa,
             @QueryParam("cadena") String cadena) {
+        System.out.println("Parametros inactivaTokensTipo(): seudonimo: "+seudonimo+", nit: "+nitEmpresa+", tipo: "+tipo+", cadena: "+cadena);
         boolean resultado = false;
         int conteo = 0;
         BigDecimal retorno = null;
@@ -582,11 +583,11 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @GET
     @Path("/obtenerLogo/{imagen}")
     @Produces({"image/png", "image/jpg", "image/gif"})
-    public Response obtenerLogo(@PathParam("imagen") String imagen, @QueryParam("cadena") String cadena) {
-        System.out.println("Parametros obtenerLogo(): imagen: "+imagen+", cadena: "+cadena);
+    public Response obtenerLogo(@PathParam("imagen") String imagen, @QueryParam("nit") String nitEmpresa, @QueryParam("cadena") String cadena) {
+        System.out.println("Parametros obtenerLogo(): imagen: "+imagen+", nitEmpresa: "+nitEmpresa+", cadena: "+cadena);
         FileInputStream fis = null;
         File file = null;
-        String RUTAFOTO = getPathFoto("900787019", cadena);
+        String RUTAFOTO = getPathFoto(nitEmpresa, cadena);
         try {
             fis = new FileInputStream(new File(RUTAFOTO + imagen));
             file = new File(RUTAFOTO + imagen);
@@ -633,13 +634,14 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     public Response cargarFoto(
             @FormDataParam("fichero") InputStream fileInputStream,
             @FormDataParam("fichero") FormDataContentDisposition fileFormDataContentDisposition,
+            @QueryParam("nit") String nitEmpresa,
             @QueryParam("cadena") String cadena) {
         String fileName = null;
         String uploadFilePath = null;
 
         try {
             fileName = fileFormDataContentDisposition.getFileName();
-            uploadFilePath = writeToFileServer(fileInputStream, fileName, cadena);
+            uploadFilePath = writeToFileServer(fileInputStream, fileName, nitEmpresa, cadena);
         } catch (IOException ioe) {
             ioe.printStackTrace();
             System.out.println("Error: "+ioe.getMessage());
@@ -648,11 +650,11 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         return Response.ok("Fichero subido a " + uploadFilePath).build();
     }
 
-    private String writeToFileServer(InputStream inputStream, String fileName, String cadena) throws IOException {
+    private String writeToFileServer(InputStream inputStream, String fileName, String nitEmpresa, String cadena) throws IOException {
 
         OutputStream outputStream = null;
         //String qualifiedUploadFilePath = UPLOAD_FILE_SERVER + fileName;
-        String qualifiedUploadFilePath = getPathFoto("900787019", cadena) + fileName;
+        String qualifiedUploadFilePath = getPathFoto(nitEmpresa, cadena) + fileName;
 
         try {
             outputStream = new FileOutputStream(new File(qualifiedUploadFilePath));
@@ -668,65 +670,6 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             outputStream.close();
         }
         return qualifiedUploadFilePath;
-    }
-    
-    @GET
-    @Path("/solicitudXEstado")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getSolicitudXEstado(@QueryParam("documento") String documento,
-            @QueryParam("empresa") String nitEmpresa,
-            @QueryParam("estado") String estado,
-            @QueryParam("cadena") String cadena) {
-        int conteo = 0;
-        List s = null;
-        System.out.println("Parametros getSolicitudXEstado(): seudonimo: " + documento + ", empresa: " + nitEmpresa + ", estado: " + estado+", cadena: "+cadena);
-        try {
-            String secEmpl = getSecuenciaEmplPorSeudonimo(documento, nitEmpresa, cadena);
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
-            String sqlQuery = "select to_char(ks.fechageneracion, 'dd/mm/yyyy') fechacreacion, \n"
-                    + "to_char(kn.fechainicialdisfrute, 'dd/mm/yyyy') fechainicio, kn.dias dias, \n"
-                    + "to_char(e.fechaprocesamiento,'dd/mm/yyyy') fechaprocesamiento, e.estado,\n"
-                    + "to_char(kn.ADELANTAPAGOHASTA, 'dd/mm/yyyy') fechafin, \n"
-                    + "to_char(kn.FECHASIGUIENTEFINVACA, 'dd/mm/yyyy') fecharegreso,\n"
-                    + "TO_CHAR(v.INICIALCAUSACION, 'dd/mm/yyyy')||' a '||TO_CHAR(v.FINALCAUSACION, 'dd/mm/yyyy') periodocausado, \n"
-                    + " e.MOTIVOPROCESA motivoprocesa, "
-                    + "DECODE(KS.EMPLEADOJEFE, NULL, (select pei.nombre||' '||pei.primerapellido||' '||pei.segundoapellido from kioautorizadores kioa, personas pei where kioa.persona=pei.secuencia\n"
-                    + "and pei.secuencia=ks.autorizador),\n"
-                    + "(select pei.nombre||' '||pei.primerapellido||' '||pei.segundoapellido \n"
-                    + "from personas pei, empleados ei where ei.persona=pei.secuencia and ei.secuencia=e.empleadoejecuta)) empleadoejecuta, \n"
-                    + "e.secuencia secuencia \n"
-                    + "from KioEstadosSolici e,  kiosolicivacas ks, kionovedadessolici kn, VwVacaPendientesEmpleados v\n"
-                    + "where \n"
-                    + "e.kiosolicivaca = ks.secuencia \n"
-                    + "and ks.KIONOVEDADSOLICI = kn.secuencia \n"
-                    + "and kn.vacacion=v.RFVACACION\n"
-                    + "and ks.empleado = ? \n"
-                    + "and e.estado = ? \n"
-                    + "and e.secuencia = (select max(ei.secuencia)\n"
-                    + "from KioEstadosSolici ei, kiosolicivacas ksi \n"
-                    + "where ei.kioSoliciVaca = ksi.secuencia \n"
-                    + "and ksi.secuencia=ks.secuencia) \n"
-                    + "order by e.fechaProcesamiento DESC";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, secEmpl);
-            query.setParameter(2, estado);
-            s = query.getResultList();
-            s.forEach(System.out::println);
-
-        if (s.size()>0) {
-            for (int i = 0; i < s.size(); i++) {
-            JsonObject json=Json.createObjectBuilder()
-            .add("1", s.get(0).toString())
-            .build();
-            }
-        }
-          return Response.status(Response.Status.OK).entity(s).build();
-        } catch (Exception ex) {
-            System.out.println("Error: "+this.getClass().getName()+".getSolicitudXEstado(): " + ex);
-            conteo = 0;
-            return Response.status(Response.Status.OK).entity("").build();
-        }
     }
  
     public String getSecuenciaEmplPorSeudonimo(String seudonimo, String nitEmpresa, String cadena) {
@@ -748,65 +691,6 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         }
         return secuencia;
    }       
-    
-    @GET
-    @Path("/solicitudesXEmpleadoJefe")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getSolicitudesXEmpleadoJefe(@QueryParam("documentoJefe") String documentoJefe,
-            @QueryParam("empresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
-        int conteo = 0;
-        List s = null;
-        System.out.println("Webservice: solicitudesXEmpleadoJefe Parametros: empleado: " + documentoJefe + ", empresa: " + nitEmpresa);
-        try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
-            String sqlQuery = "  SELECT \n" +
-            "  t1.CODIGOEMPLEADO, P.PRIMERAPELLIDO||' '||P.SEGUNDOAPELLIDO||' '||P.NOMBRE NOMBRECOMPLETO,\n" +
-            "  to_char(t2.FECHAGENERACION, 'DD/MM/YYYY HH:mm:ss') solicitud, \n" +
-            "  to_char(kn.FECHAINICIALDISFRUTE, 'DD/MM/YYYY HH:mm:ss') FECHAINICIALDISFRUTE,\n" +
-            "  to_char(T0.FECHAPROCESAMIENTO, 'DD/MM/YYYY HH:mm:ss') FECHAPROCESAMIENTO,\n" +
-            "  t0.SECUENCIA, NVL(t0.MOTIVOPROCESA, 'N/A'), \n" +
-            "  to_char(kn.ADELANTAPAGOHASTA, 'DD/MM/YYYY HH:mm:ss') FECHAFINVACACIONES,\n" +
-            "  to_char(kn.fechaSiguienteFinVaca, 'DD/MM/YYYY HH:mm:ss') fecharegresolaborar,\n" +
-            "  kn.dias,\n" +
-            "  TO_CHAR(v.INICIALCAUSACION, 'DD/MM/YYYY')||' a '||TO_CHAR(v.FINALCAUSACION, 'DD/MM/YYYY') periodo,\n" +
-            "  (select pei.primerapellido||' '||pei.segundoapellido||' '||pei.nombre from personas pei, empleados ei\n" +
-            "  where pei.secuencia=ei.persona and t2.EMPLEADOJEFE=ei.secuencia) empleadojefe,\n" +
-            "  TO_CHAR(kn.FECHAPAGO, 'DD/MM/YYYY') FECHAPAGO\n, " +
-            "  t0.ESTADO ESTADO "+
-            "  FROM KIOESTADOSSOLICI t0, KIOSOLICIVACAS t2, EMPLEADOS t1, PERSONAS P, kionovedadessolici kn, VwVacaPendientesEmpleados v \n" +
-            "  WHERE (((((t1.EMPRESA = (select secuencia from empresas where nit=?)) \n" +
-            "  AND (t0.ESTADO IN ('AUTORIZADO', 'RECHAZADO','LIQUIDADO'))) "+
-            " AND (t2.EMPLEADOJEFE = (select secuencia from empleados where codigoempleado=?))) \n" +
-            "  AND (t0.SECUENCIA = (SELECT MAX(t3.SECUENCIA) FROM KIOSOLICIVACAS t4, KIOESTADOSSOLICI t3 \n" +
-            "  WHERE ((t4.SECUENCIA = t2.SECUENCIA) AND (t4.SECUENCIA = t3.KIOSOLICIVACA))))) \n" +
-            "  AND ((t2.SECUENCIA = t0.KIOSOLICIVACA) AND (t1.SECUENCIA = t2.EMPLEADO))\n" +
-            "  AND t1.PERSONA=P.SECUENCIA\n" +
-            "  and t2.KIONOVEDADSOLICI = kn.secuencia\n" +
-            "  and kn.vacacion=v.RFVACACION\n" +
-            "  ) \n" +
-            "  ORDER BY t0.FECHAPROCESAMIENTO DESC";
-            //Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, nitEmpresa);
-            query.setParameter(2, documentoJefe);
-            s = query.getResultList();
-            s.forEach(System.out::println);
-
-        if (s.size()>0) {
-            for (int i = 0; i < s.size(); i++) {
-            JsonObject json=Json.createObjectBuilder()
-            .add("1", s.get(0).toString())
-            .build();
-            }
-        }
-          return Response.status(Response.Status.OK).entity(s).build();
-        } catch (Exception ex) {
-            System.out.println("Error: " + ex);
-            conteo = 0;
-            return Response.status(Response.Status.OK).entity("").build();
-        }
-    }
     
     @GET
     @Path("/datosContactoKiosco/{nit}")
@@ -1238,7 +1122,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         int resCon = 0;
         boolean resultado = false;
         try {
-            System.out.println("Parametros registraToken(): usuario: "+usuario+", token: "+token+", "
+            System.out.println("Parametros registraToken(): usuario: "+usuario+", nitEmpresa: "+nitEmpresa+", token: "+token+", "
                     + "\n tipo: "+tipo+", fechaCreacion: "+fechacreacion+", fechaExpira: "+fechaexpira+", cadena: "+cadena);
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
@@ -1286,14 +1170,15 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             documento = (String) Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwt).getBody().get("documento");
             cadenaToken = (String) Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwt).getBody().get("cadena");
             grupoEmpresarial = (String) Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwt).getBody().get("grupo");
+            System.out.println("Información extraida token validaCuenta: usuario: "+usuario+", nit: "+nit+", documento: "+documento+", cadenaToken: "+cadena+", grupoEmpr: "+grupoEmpresarial);
         } catch (UnsupportedEncodingException ex) {
             System.out.println("Error "+ConexionesKioskos.class.getName()+"validarJWT: " + ex.getMessage());
         }
         try {
-            String esquema = getEsquema("900787019", cadenaToken);
+            String esquema = getEsquema(nit, cadenaToken);
             setearPerfil(esquema, cadena);
-            if (validarTokenExistente(jwt, "900787019", cadenaToken)) {
-                if (getEstadoToken(jwt, "900787019", cadenaToken).equals("S")){
+            if (validarTokenExistente(jwt, nit, cadenaToken)) {
+                if (getEstadoToken(jwt, nit, cadenaToken).equals("S")){
                      System.out.println("Token existe en bd");
                 
                      //String passwordEncriptacion = "Manager01*"+usuario+nit;
@@ -1314,11 +1199,13 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                     validoToken = false;
                     // mensaje="El token no es válido o está expirado";
                     mensaje = "El enlace no es válido o se ha expirado.";
+                    System.out.println("Estado del Token es distinto de S");
                 }
             
             } else {
                 //mensaje = "El token no es válido";
                 mensaje = "El enlace no es válido";
+                System.out.println("El token no es valido o no existe en la bd");
                 validoToken = false;
                  json=Json.createObjectBuilder()
                 .add("validoToken", validoToken)
@@ -1442,7 +1329,8 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             String sqlQuery = "SELECT ACTIVO FROM CONEXIONESTOKEN WHERE TOKEN = ?";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, token);
-            estado = query.getSingleResult().toString();           
+            estado = query.getSingleResult().toString();          
+            System.out.println("Resultado getEstadoToken(): "+estado);
         } catch (Exception e) {
             System.out.println("Error "+this.getClass().getName()+".getEstadoToken(): " + e);
         } 
@@ -1584,8 +1472,8 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                     getConfigCorreo(nitEmpresa, "CLAVE", cadena), 
                     getCorreoConexioneskioskos(usuario, nitEmpresa, cadena), 
                     getNombrePersona(usuario, nitEmpresa, cadena), 
-                    nuevaClave, "", cadena);
-        } else {
+                    nuevaClave, "", getPathFoto(nitEmpresa, cadena), nitEmpresa, cadena);
+        } else { 
             System.out.println("Error al actualizar la contraseña");
         }
         JsonObject json=Json.createObjectBuilder()
@@ -1736,7 +1624,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                        getConfigCorreo(nit, "PUERTO", cadena), 
                        getConfigCorreo(nit, "AUTENTICADO", cadena), 
                        getConfigCorreo(nit, "STARTTLS", cadena),getConfigCorreo(nit, "REMITENTE", cadena), getConfigCorreo(nit, "CLAVE", cadena), 
-                       getCorreoConexioneskioskos(usuario, nit, cadena), getNombrePersona(usuario,nit, cadena), jwt, urlKiosco, cadena);
+                       getCorreoConexioneskioskos(usuario, nit, cadena), getNombrePersona(usuario,nit, cadena), jwt, urlKiosco, nit, cadena);
             }
                         
             JsonObject json=Json.createObjectBuilder()

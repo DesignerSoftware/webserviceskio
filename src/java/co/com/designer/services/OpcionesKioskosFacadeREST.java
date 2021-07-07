@@ -52,17 +52,20 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
         }
     }
 
-    protected void setearPerfil(String cadenaPersistencia) {
+    protected void setearPerfil(String esquema, String cadenaPersistencia) {
         try {
-            System.out.println("setearPerfil(cadena)");
             String rol = "ROLKIOSKO";
+            if (esquema != null && !esquema.isEmpty()) {
+                rol = rol + esquema.toUpperCase();
+            }
+            System.out.println("setearPerfil(esquema, cadena)");
             String sqlQuery = "SET ROLE " + rol + " IDENTIFIED BY RLKSK ";
             Query query = getEntityManager(cadenaPersistencia).createNativeQuery(sqlQuery);
             query.executeUpdate();
         } catch (Exception ex) {
             System.out.println("Error setearPerfil(cadenaPersistencia): " + ex);
         }
-    }    
+    }  
     
     @GET
     @Path("/{nitEmpresa}")
@@ -78,16 +81,17 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
     }
     
     @GET
-    @Path("/prueba")
+    @Path("/opciones")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public List findAlls(@QueryParam("seudonimo") String seudonimo, @QueryParam("nitempresa") String nitempresa, @QueryParam("cadena") String cadena) {
-         setearPerfil(cadena);
+    public List findAlls(@QueryParam("seudonimo") String seudonimo, @QueryParam("nitempresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
+           String esquema = getEsquema(nitEmpresa, cadena);
+           setearPerfil(esquema, cadena);
            String sqlQuery = "SELECT ok "
                    + " FROM OpcionesKioskosApp ok "
                    + " WHERE "
                    + " ok.empresa.nit=:nitempresa ";
 
-            String roles = determinarRol(seudonimo, nitempresa, cadena);
+            String roles = determinarRol(seudonimo, nitEmpresa, cadena);
             System.out.println("Roles: "+roles);  
             if (!roles.contains("NOMINA")) {
                 sqlQuery+= " and ok.kiorol.nombre not in ('NOMINA') ";
@@ -104,7 +108,7 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
              sqlQuery+=  " order by ok.codigo asc";
                                
             Query query = getEntityManager(cadena).createQuery(sqlQuery);
-            query.setParameter("nitempresa", Long.parseLong(nitempresa));
+            query.setParameter("nitempresa", Long.parseLong(nitEmpresa));
             List<OpcionesKioskosApp>  lista = query.getResultList();
                 /*list for (int i = 0; i < lista.size(); i++) {
                     System.out.println("Recorre 2 "+lista.get(1));
@@ -123,15 +127,16 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
     @GET
     @Path("/opcionesMenu")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public List opcionesKiosko(@QueryParam("seudonimo") String seudonimo, @QueryParam("nitempresa") String nitempresa, @QueryParam("cadena") String cadena) {
-        setearPerfil(cadena);
+    public List opcionesKiosko(@QueryParam("seudonimo") String seudonimo, @QueryParam("nitempresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
+        String esquema = getEsquema(nitEmpresa, cadena);
+        setearPerfil(esquema, cadena);
         String sqlQuery = "SELECT ok "
                 + " FROM OpcionesKioskosApp ok "
                 + " WHERE "
                 + " ok.empresa.nit=:nitempresa "
                 + " and ok.clase = 'MENU'";
 
-        String roles = determinarRol(seudonimo, nitempresa, cadena);
+        String roles = determinarRol(seudonimo, nitEmpresa, cadena);
         System.out.println("Roles: " + roles);
         if (!roles.contains("NOMINA")) {
             sqlQuery += " and ok.kiorol.nombre not in ('NOMINA') ";
@@ -148,7 +153,7 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
         sqlQuery += " order by ok.codigo asc";
 
         Query query = getEntityManager(cadena).createQuery(sqlQuery);
-        query.setParameter("nitempresa", Long.parseLong(nitempresa));
+        query.setParameter("nitempresa", Long.parseLong(nitEmpresa));
         List<OpcionesKioskosApp> lista = query.getResultList();
         /*list for (int i = 0; i < lista.size(); i++) {
                     System.out.println("Recorre 2 "+lista.get(1));
@@ -158,7 +163,7 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
         //return Response.ok(getOpcioneskioskosApp("900937674", "1033696091"), MediaType.APPLICATION_JSON).build();
     } 
     
-    @GET
+   /* @GET
     @Path("/pruebaopciones")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})    
     public List obtenerOpciones() {
@@ -170,7 +175,7 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
             Query query = getEntityManager().createQuery(sqlQuery);
             List<OpcionesKioskosApp> lista = query.getResultList();
             return lista;
-    }
+    }*/
     
     public List getOpcioneskioskosApp(String nitEmpresa, String seudonimo, String cadena) { // retorna true si el usuario esta activo
         String datos = null;
@@ -184,7 +189,8 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
         }*/
         List lista2=null;
         try {
-            setearPerfil(cadena);
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT * FROM OPCIONESKIOSKOSAPP OKA, EMPRESAS EM WHERE OKA.EMPRESA=EM.SECUENCIA AND OKA.CLASE='MENU' AND EM.NIT=? ORDER BY OKA.CODIGO ASC";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
@@ -228,7 +234,8 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
         System.out.println("Parametros getOpciones(): nitEmpresa: "+nitEmpresa+", secuencia: "+secuencia+", cadena: "+cadena);
         List lista = null;
         try {
-            setearPerfil(cadena);
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT OKA.CODIGO, OKA.DESCRIPCION "
                     + "FROM OPCIONESKIOSKOSAPP OKA, "
                     + "EMPRESAS EM WHERE OKA.EMPRESA=EM.SECUENCIA AND OKA.CLASE='MENU' AND EM.NIT=? "
@@ -401,7 +408,8 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
        System.out.println("getDocumentoPorSeudonimo()");
        String documento=null;
         try {
-            setearPerfil(cadena);
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P, CONEXIONESKIOSKOS CK WHERE CK.PERSONA=P.SECUENCIA AND CK.SEUDONIMO=? AND CK.NITEMPRESA=?";
             System.out.println("Query: "+sqlQuery);
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
@@ -416,25 +424,25 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
         return documento;
    }
 
-    public String determinarRol(String seudonimo, String nit, String cadena) {
-        String documento = getDocumentoCorreoODocumento(seudonimo, cadena);
+    public String determinarRol(String seudonimo, String nitEmpresa, String cadena) {
+        String documento = getDocumentoCorreoODocumento(seudonimo, nitEmpresa, cadena);
            String rol="";
         try {            
-            if (esPersona(documento, cadena)) {
+            if (esPersona(documento, nitEmpresa, cadena)) {
                 rol= "PERSONA";
             } else {
                 rol = "";
             }
 
-            if (esAutorizador(documento, cadena)) {
+            if (esAutorizador(documento, nitEmpresa, cadena)) {
                 rol = rol + ";AUTORIZADOR";
             }
             
-            if (consultarEmpleadoXPersoEmpre(documento, nit, cadena)) {
+            if (consultarEmpleadoXPersoEmpre(documento, nitEmpresa, cadena)) {
                 rol = rol + ";EMPLEADO";
             }
             
-            if (esJefe(documento, nit, cadena)) {
+            if (esJefe(documento, nitEmpresa, cadena)) {
                 rol = rol + ";JEFE";
             }
             System.out.println("rol:"+ rol);
@@ -446,26 +454,28 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
     }
 
 
-    public boolean esPersona(String documento, String cadena) {
+    public boolean esPersona(String documento, String nitEmpresa, String cadena) {
         boolean retorno = false;
-        setearPerfil(cadena);
-        String sqlQuery ="SELECT COUNT(*) count FROM CONEXIONESKIOSKOS CK, PERSONAS P WHERE CK.PERSONA=P.SECUENCIA AND P.NUMERODOCUMENTO=?";
+        String esquema = getEsquema(nitEmpresa, cadena);
+        setearPerfil(esquema, cadena);
+        String sqlQuery = "SELECT COUNT(*) count FROM CONEXIONESKIOSKOS CK, PERSONAS P WHERE CK.PERSONA=P.SECUENCIA AND P.NUMERODOCUMENTO=?";
         try {
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, documento);
             BigDecimal conteo = BigDecimal.ZERO;
             conteo = (BigDecimal) query.getSingleResult();
             System.out.println("Conteo de persona: " + conteo);
-            retorno =  conteo.compareTo(BigDecimal.ZERO) > 0;;
+            retorno = conteo.compareTo(BigDecimal.ZERO) > 0;;
         } catch (Exception e) {
-            System.out.println("Error esPersona: "+e.getMessage());
+            System.out.println("Error esPersona: " + e.getMessage());
         }
         return retorno;
     }
     
-    public boolean esAutorizador(String documento, String cadena) {
+    public boolean esAutorizador(String documento, String nitEmpresa, String cadena) {
         boolean retorno = false;
-        setearPerfil(cadena);
+        String esquema = getEsquema(nitEmpresa, cadena);
+        setearPerfil(esquema, cadena);
         String sqlQuery = "select count(*) count "
                 + "from kioautorizadores ka "
                 + "where ka.persona = (select secuencia from personas where numerodocumento=?) ";
@@ -477,16 +487,17 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
             System.out.println("Conteo de esAutorizador: " + conteo);
             return conteo.compareTo(BigDecimal.ZERO) > 0;
         } catch (Exception e) {
-            System.out.println("Error esAutorizador: "+e.getMessage());
+            System.out.println("Error esAutorizador: " + e.getMessage());
         }
         return retorno;
     }
     
-    public String getDocumentoCorreoODocumento(String usuario, String cadena) {
+    public String getDocumentoCorreoODocumento(String usuario, String nitEmpresa, String cadena) {
        System.out.println("Parametros getDocumentoCorreoODocumento() usuario: "+usuario+", cadena: "+cadena);
        String documento=null;
         try {
-            setearPerfil(cadena);
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P WHERE P.EMAIL=?";
             if (this.validarCodigoUsuario(usuario)) {
                  sqlQuery+=" OR P.NUMERODOCUMENTO=?"; // si el valor es numerico validar por numero de documento
@@ -538,8 +549,9 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
         return resultado;
     }    
     
-    public boolean consultarEmpleadoXPersoEmpre(String numeroDocumento, String nit, String cadena) throws Exception {
-        setearPerfil(cadena);
+    public boolean consultarEmpleadoXPersoEmpre(String numeroDocumento, String nitEmpresa, String cadena) throws Exception {
+        String esquema = getEsquema(nitEmpresa, cadena);
+        setearPerfil(esquema, cadena);
         String sqlQuery = "select count(*) count "
                 + "from personas per, empleados empl, empresas em, vigenciascargos vc, estructuras es, organigramas o "
                 + "where per.secuencia = empl.persona "
@@ -555,18 +567,18 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
                 + "                        where vci.empleado = vc.empleado "
                 + "                        and vci.fechavigencia <= sysdate) "
                 + "and (EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(empl.secuencia, SYSDATE) = 'ACTIVO' OR EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(empl.secuencia, SYSDATE) = 'PENSIONADO')";
-                boolean empleado = false;
+        boolean empleado = false;
         try {
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, numeroDocumento);
-            query.setParameter(2, nit);
-             BigDecimal conteo = BigDecimal.ZERO;
+            query.setParameter(2, nitEmpresa);
+            BigDecimal conteo = BigDecimal.ZERO;
             conteo = (BigDecimal) query.getSingleResult();
-            empleado= conteo.compareTo(BigDecimal.ZERO) > 0; // verificar
-            System.out.println("conteo de empleado: "+conteo);
-        } catch (Exception e){
-            System.out.println("Error consultarEmpleadoXPersoEmpre: "+e.getMessage());
-        } 
+            empleado = conteo.compareTo(BigDecimal.ZERO) > 0; // verificar
+            System.out.println("conteo de empleado: " + conteo);
+        } catch (Exception e) {
+            System.out.println("Error consultarEmpleadoXPersoEmpre: " + e.getMessage());
+        }
         return empleado;
     }
     
@@ -578,8 +590,9 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
     public boolean esJefe(String secEmpleado, String nitEmpresa, String cadena) {
         boolean retorno = false;
         try {
-            setearPerfil(cadena);
-            System.out.println("Parametros esJefe(): secEmpleado: " + secEmpleado+", nitEmpresa: "+nitEmpresa+", cadena: "+cadena);
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
+            System.out.println("Parametros esJefe(): secEmpleado: " + secEmpleado + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
             String sqlQuery = "select count(*) count \n"
                     + "from vigenciascargos vc, vigenciastipostrabajadores vtt, "
                     + "tipostrabajadores tt, estructuras es, organigramas o, empresas em \n"
@@ -603,21 +616,36 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
                     + "                        from vigenciascargos vci \n"
                     + "                        where vci.empleado = vc.empleado \n"
                     + "                        and vci.fechavigencia <= sysdate) ";
-                Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
-                query.setParameter(1, nitEmpresa);
-                query.setParameter(2, secEmpleado);
-                query.setParameter(3, nitEmpresa);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, nitEmpresa);
+            query.setParameter(2, secEmpleado);
+            query.setParameter(3, nitEmpresa);
             BigDecimal conteo = BigDecimal.ZERO;
             conteo = (BigDecimal) query.getSingleResult();
-                System.out.println("Conteo de persona: " + conteo);
-                retorno =  conteo.compareTo(BigDecimal.ZERO) > 0;
-            } catch (Exception e) {
-                System.out.println("Error "+this.getClass().getName() + ".esJefe():" + e.getMessage());
-                return false;
-            } 
+            System.out.println("Conteo de persona: " + conteo);
+            retorno = conteo.compareTo(BigDecimal.ZERO) > 0;
+        } catch (Exception e) {
+            System.out.println("Error " + this.getClass().getName() + ".esJefe():" + e.getMessage());
+            return false;
+        }
         return retorno;
     }
     
-    
+    public String getEsquema( String nitEmpresa, String cadena) {
+        System.out.println("Parametros getEsquema(): nitempresa: "+nitEmpresa+", cadena: "+cadena);
+        String esquema = null;
+        String sqlQuery;
+        try {
+            sqlQuery = "SELECT ESQUEMA FROM CADENASKIOSKOSAPP WHERE NITEMPRESA=? AND CADENA=?";
+            Query query = getEntityManager("wscadenaskioskosPU").createNativeQuery(sqlQuery);
+            query.setParameter(1, nitEmpresa);
+            query.setParameter(2, cadena);
+            esquema = query.getSingleResult().toString();
+            System.out.println("Esquema: "+esquema);
+        } catch (Exception e) {
+            System.out.println("Error "+this.getClass().getName()+".getEsquema(): " + e);
+        } 
+        return esquema;
+    }     
     
 }
