@@ -405,12 +405,12 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
     
         
     public String getDocumentoPorSeudonimo(String seudonimo, String nitEmpresa, String cadena) {
-       System.out.println("getDocumentoPorSeudonimo()");
+       System.out.println("Parametros getDocumentoPorSeudonimo() seudonimo: "+seudonimo+", nitEmpresa: "+nitEmpresa+", cadena: "+cadena);
        String documento=null;
         try {
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P, CONEXIONESKIOSKOS CK WHERE CK.PERSONA=P.SECUENCIA AND CK.SEUDONIMO=? AND CK.NITEMPRESA=?";
+            String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P, CONEXIONESKIOSKOS CK WHERE CK.PERSONA=P.SECUENCIA AND lower(CK.SEUDONIMO)=lower(?) AND CK.NITEMPRESA=?";
             System.out.println("Query: "+sqlQuery);
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
 
@@ -425,11 +425,12 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
    }
 
     public String determinarRol(String seudonimo, String nitEmpresa, String cadena) {
-        String documento = getDocumentoCorreoODocumento(seudonimo, nitEmpresa, cadena);
-           String rol="";
-        try {            
+        // String documento = getDocumentoCorreoODocumento(seudonimo, nitEmpresa, cadena);
+        String documento = getDocumentoPorSeudonimo(seudonimo, nitEmpresa, cadena);
+        String rol = "";
+        try {
             if (esPersona(documento, nitEmpresa, cadena)) {
-                rol= "PERSONA";
+                rol = "PERSONA";
             } else {
                 rol = "";
             }
@@ -437,19 +438,19 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
             if (esAutorizador(documento, nitEmpresa, cadena)) {
                 rol = rol + ";AUTORIZADOR";
             }
-            
+
             if (consultarEmpleadoXPersoEmpre(documento, nitEmpresa, cadena)) {
                 rol = rol + ";EMPLEADO";
             }
-            
+
             if (esJefe(documento, nitEmpresa, cadena)) {
                 rol = rol + ";JEFE";
             }
-            System.out.println("rol:"+ rol);
+            System.out.println("rol:" + rol);
             return rol;
         } catch (Exception ex) {
-            System.out.println("Error determinarRol(): "+ex.getMessage());
-        } 
+            System.out.println("Error determinarRol(): " + ex.getMessage());
+        }
         return rol;
     }
 
@@ -498,7 +499,7 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
         try {
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P WHERE P.EMAIL=?";
+            String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P WHERE lower(P.EMAIL)=lower(?)";
             if (this.validarCodigoUsuario(usuario)) {
                  sqlQuery+=" OR P.NUMERODOCUMENTO=?"; // si el valor es numerico validar por numero de documento
             }
@@ -517,7 +518,7 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
                         + "FROM PERSONAS P, EMPLEADOS E "
                         + "WHERE "
                         + "P.SECUENCIA=E.PERSONA "
-                        + "AND (P.EMAIL=?";
+                        + "AND (lower(P.EMAIL)=lower(?)";
                 if (this.validarCodigoUsuario(usuario)) {
                     sqlQuery2 += " OR E.CODIGOEMPLEADO=?"; // si el valor es numerico validar por codigoempleado
                 }
@@ -535,7 +536,7 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
             }
         }
         return documento;
-   }  
+   } 
     
     public boolean validarCodigoUsuario(String usuario) {
         boolean resultado = false;

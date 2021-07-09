@@ -283,7 +283,7 @@ public class EmpleadosFacadeREST {
         try {
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P WHERE P.EMAIL=?";
+            String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P WHERE lower(P.EMAIL)=lower(?)";
             if (this.validarCodigoUsuario(usuario)) {
                  sqlQuery+=" OR P.NUMERODOCUMENTO=?"; // si el valor es numerico validar por numero de documento
             }
@@ -302,7 +302,7 @@ public class EmpleadosFacadeREST {
                         + "FROM PERSONAS P, EMPLEADOS E "
                         + "WHERE "
                         + "P.SECUENCIA=E.PERSONA "
-                        + "AND (P.EMAIL=?";
+                        + "AND (lower(P.EMAIL)=lower(?)";
                 if (this.validarCodigoUsuario(usuario)) {
                     sqlQuery2 += " OR E.CODIGOEMPLEADO=?"; // si el valor es numerico validar por codigoempleado
                 }
@@ -323,12 +323,12 @@ public class EmpleadosFacadeREST {
    }
     
     public String getDocumentoPorSeudonimo(String seudonimo, String nitEmpresa, String cadena) {
-       System.out.println("getDocumentoPorSeudonimo()");
+       System.out.println("Parametros getDocumentoPorSeudonimo() seudonimo: "+seudonimo+", nitEmpresa: "+nitEmpresa+", cadena: "+cadena);
        String documento=null;
         try {
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P, CONEXIONESKIOSKOS CK WHERE CK.PERSONA=P.SECUENCIA AND CK.SEUDONIMO=? AND CK.NITEMPRESA=?";
+            String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P, CONEXIONESKIOSKOS CK WHERE CK.PERSONA=P.SECUENCIA AND lower(CK.SEUDONIMO)=lower(?) AND CK.NITEMPRESA=?";
             System.out.println("Query: "+sqlQuery);
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
 
@@ -340,7 +340,7 @@ public class EmpleadosFacadeREST {
             System.out.println("Error: "+this.getClass().getName()+".getDocumentoPorSeudonimo: "+e.getMessage());
         }
         return documento;
-   }   
+   } 
       
     public String getSecuenciaEmplPorSeudonimo(String seudonimo, String nitEmpresa, String cadena) {
         System.out.println("Parametros getSecuenciaEmplPorSeudonimo(): seudonimo: "+seudonimo+", nitEmpresa: "+nitEmpresa+", cadena: "+cadena);

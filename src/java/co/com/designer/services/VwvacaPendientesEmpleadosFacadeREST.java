@@ -1206,23 +1206,24 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
     }    
         
     public String getDocumentoPorSeudonimo(String seudonimo, String nitEmpresa, String cadena) {
-        System.out.println("Parametros getDocumentoPorSeudonimo(): seudonimo: "+seudonimo+", nitEmpresa: "+nitEmpresa+", cadena: "+cadena);
-        String documento = null;
+       System.out.println("Parametros getDocumentoPorSeudonimo() seudonimo: "+seudonimo+", nitEmpresa: "+nitEmpresa+", cadena: "+cadena);
+       String documento=null;
         try {
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P, CONEXIONESKIOSKOS CK WHERE CK.PERSONA=P.SECUENCIA AND CK.SEUDONIMO=? AND CK.NITEMPRESA=?";
-            System.out.println("Query: " + sqlQuery);
+            String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P, CONEXIONESKIOSKOS CK WHERE CK.PERSONA=P.SECUENCIA AND lower(CK.SEUDONIMO)=lower(?) AND CK.NITEMPRESA=?";
+            System.out.println("Query: "+sqlQuery);
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+
             query.setParameter(1, seudonimo);
             query.setParameter(2, nitEmpresa);
-            documento = query.getSingleResult().toString();
-            System.out.println("documento: " + documento);
+            documento =  query.getSingleResult().toString();
+            System.out.println("documento: "+documento);
         } catch (Exception e) {
-            System.out.println("Error: "+this.getClass().getName()+".getDocumentoPorSeudonimo: " + e.getMessage());
+            System.out.println("Error: "+this.getClass().getName()+".getDocumentoPorSeudonimo: "+e.getMessage());
         }
         return documento;
-    }    
+   }   
     
     public String getSecuenciaEmplPorSeudonimo(String seudonimo, String nitEmpresa, String cadena) {
         System.out.println("Parametros getSecuenciaEmplPorSeudonimo(): seudonimo: "+seudonimo+", nitEmpresa: "+nitEmpresa+", cadena: "+cadena);

@@ -356,7 +356,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                 String secEmpl = getSecEmplPorDocumentoYEmpresa(documento, nitEmpresa, cadena);
                 String sqlQueryInsert = "INSERT INTO CONEXIONESKIOSKOS (SEUDONIMO, EMPLEADO, PERSONA, PWD, "
                         + "NITEMPRESA, ACTIVO) "
-                        + "VALUES (?, ?, "
+                        + "VALUES (lower(?), ?, "
                         + "(SELECT SECUENCIA FROM PERSONAS WHERE NUMERODOCUMENTO=?), "
                         + " GENERALES_PKG.ENCRYPT(?), ?, 'P')";
                 Query queryInsert = getEntityManager(cadena).createNativeQuery(sqlQueryInsert);
@@ -731,8 +731,18 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         try {
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
-           documento = getDocumentoCorreoODocumento(usuario, nitEmpresa, cadena);
-           System.out.println("documento asociado a correo o documento: "+usuario+ " es "+documento);
+            try {
+                documento = getDocumentoPorSeudonimo(usuario, nitEmpresa, cadena);
+                System.out.println("Consulta documento por Seudonimo: "+documento);
+                if (documento == null) {
+                    documento = getDocumentoCorreoODocumento(usuario, nitEmpresa, cadena);
+                    System.out.println("Consulta documento por email o documento: " + documento);
+                }
+            } catch (Exception e) {
+                documento = getDocumentoCorreoODocumento(usuario, nitEmpresa, cadena);
+                System.out.println("Consulta 3 documento por email o documento: "+documento);
+            }
+            System.out.println("documento asociado a correo o documento: "+usuario+ " es "+documento);
            if (documento!=null){
                 System.out.println("Ingresa ciclo documento!=null");
                 if (validarUsuarioyEmpresa(documento, nitEmpresa, cadena)) { // valida si existe relacion con la empresa y se encuentra activo
@@ -819,7 +829,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         try {
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P WHERE P.EMAIL=?";
+            String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P WHERE lower(P.EMAIL)=lower(?)";
             if (this.validarCodigoUsuario(usuario)) {
                  sqlQuery+=" OR P.NUMERODOCUMENTO=?"; // si el valor es numerico validar por numero de documento
             }
@@ -838,7 +848,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                         + "FROM PERSONAS P, EMPLEADOS E "
                         + "WHERE "
                         + "P.SECUENCIA=E.PERSONA "
-                        + "AND (P.EMAIL=?";
+                        + "AND (lower(P.EMAIL)=lower(?)";
                 if (this.validarCodigoUsuario(usuario)) {
                     sqlQuery2 += " OR E.CODIGOEMPLEADO=?"; // si el valor es numerico validar por codigoempleado
                 }
@@ -1103,7 +1113,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         try {
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P, CONEXIONESKIOSKOS CK WHERE CK.PERSONA=P.SECUENCIA AND CK.SEUDONIMO=? AND CK.NITEMPRESA=?";
+            String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P, CONEXIONESKIOSKOS CK WHERE CK.PERSONA=P.SECUENCIA AND lower(CK.SEUDONIMO)=lower(?) AND CK.NITEMPRESA=?";
             System.out.println("Query: "+sqlQuery);
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
 
@@ -1563,7 +1573,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         System.out.println("Parametros consultarCorreoPersonaEmpresa(): documento: "+documento+", nitEmpresa: "+nitEmpresa+", cadena: "+cadena);
         String datos = null;
         try {
-            String sqlQuery = "SELECT P.EMAIL email FROM EMPLEADOS e, Empresas em, personas p "
+            String sqlQuery = "SELECT lower(P.EMAIL) email FROM EMPLEADOS e, Empresas em, personas p "
                     + "WHERE e.empresa = em.secuencia and p.secuencia=e.persona "
                     + "AND p.numerodocumento = ? "
                     + "AND em.nit = ? "
