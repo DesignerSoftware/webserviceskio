@@ -6,6 +6,8 @@
 package co.com.designer.kiosko.correo;
 
 import java.util.Calendar;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -847,10 +849,14 @@ public class EnvioCorreo {
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(remitente));
             //message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(destinatario));
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(correoDestinatarioMain));
+            message.addRecipients(Message.RecipientType.TO, 
+            InternetAddress.parse(correoDestinatarioMain));
+            /*message.addRecipients(Message.RecipientType.TO, InternetAddress.parse(correoDestinatarioMain));
+            message.addRecipients(Message.RecipientType.TO, InternetAddress.parse("mateoc@nomina.com.co"));
+            message.addRecipients(Message.RecipientType.TO, InternetAddress.parse("mateocoronadocardona@gmail.com"));*/
            // if (correoUsuario != null) {
             if (correoCC != null) {
-                message.setRecipients(Message.RecipientType.CC, InternetAddress.parse(correoCC));
+                message.addRecipients(Message.RecipientType.CC, InternetAddress.parse(correoCC));
             }
             message.setSubject(asunto);
 

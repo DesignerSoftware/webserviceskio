@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -797,21 +798,35 @@ public class EmpleadosFacadeREST {
     
     public String getCorreoSoporteKiosco(String nitEmpresa, String cadena) {
         System.out.println("getCorreoSoporteKiosco()");
-        String emailSoporte="";
+        List emailSoporte=null;
+        String correoDestinatarios="";
         try {
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT EMAILCONTACTO FROM KIOPERSONALIZACIONES WHERE "
-                    + "EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?) AND ROWNUM<=1";
+                    + "EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?)";
             System.out.println("Query: "+sqlQuery);
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
-            emailSoporte =  query.getSingleResult().toString();
-            System.out.println("Email soporte: "+emailSoporte);
+            emailSoporte =  query.getResultList();
+                    Iterator<String> it = emailSoporte.iterator();
+        //System.out.println("obtener " + correoDestinatarioMain.get(0));
+        System.out.println("size: " + emailSoporte.size());
+        while (it.hasNext()) {
+            String correoenviar = it.next(); 
+            System.out.println("correo auditoria: " + correoenviar);
+            correoDestinatarios += correoenviar;
+            if (it.hasNext()) {
+                correoDestinatarios +=",";
+            }
+            //c.pruebaEnvio2("smtp.gmail.com","587","pruebaskiosco534@gmail.com","Nomina01", "S", correoenviar,
+        }
+            //emailSoporte =  query.getSingleResult().toString();
+            System.out.println("Emails soporte: "+correoDestinatarios);
         } catch (Exception e) {
             System.out.println("Error: getCorreoSoporteKiosco: "+e.getMessage());
         }
-        return emailSoporte;
+        return correoDestinatarios;
     }     
         
     
