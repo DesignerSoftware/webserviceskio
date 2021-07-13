@@ -37,7 +37,8 @@ public class ApplicationConfig extends Application {
         resources.add(co.com.designer.services.ReportesFacadeREST.class);
         resources.add(co.com.designer.services.VwvacaPendientesEmpleadosFacadeREST.class);
         resources.add(co.com.designer.services.filter.CorsFilter.class);
-        resources.add(org.glassfish.jersey.media.multipart.MultiPartFeature.class);
+        resources.add(co.com.designer.services.kioCausasAusentismosFacadeREST.class);
+        resources.add(org.glassfish.jersey.media.multipart.MultiPartFeature.class); 
     }
 
 }
