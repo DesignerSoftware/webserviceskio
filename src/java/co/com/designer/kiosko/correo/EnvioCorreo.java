@@ -451,7 +451,7 @@ public class EnvioCorreo {
     }   
     
     
-    public boolean enviarEnlaceValidacionCuenta(String servidorsmtp, String puerto, String autenticado, String starttls, String remitente, String clave, String destinatario, String nombreUsuario,
+    public boolean enviarEnlaceValidacionCuenta(String servidorsmtp, String puerto, String autenticado, String starttls, String remitente, String clave, String destinatario, String nombreUsuario, String seudonimo,
             String jwt, String urlKiosco, String nitEmpresa, String cadena) {
         boolean envioCorreo = false;
         Properties props = new Properties();
@@ -484,8 +484,9 @@ public class EnvioCorreo {
             String htmlText
                     = "<center>"
                     + "<img src=\'cid:image\'>"
-                    + "<H1>¡Bienvenido(a) " + nombreUsuario + "!</H1>"
+                    + "<H1>¡Bienvenid@ " + nombreUsuario + "!</H1>"
                     + "\n"
+                    + "<p style='font-size: 15px'>Recuerda que tu usuario para ingresar a Kiosco es: <b>"+seudonimo+"</b> </p>"
                     + "<p style='font-size: 20px'>Puedes confirmar tu cuenta a través del siguiente enlace:</p>"
                     + "\n"
                     + "<br>"

@@ -1162,151 +1162,165 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @GET
     @Path("/restKiosco/validarJWTActivarCuenta") // verificar nombre
     @Produces(MediaType.APPLICATION_JSON)
-    public Response validarJWT(@QueryParam("jwt") String jwt, @QueryParam("cadena") String cadena){
-        System.out.println("validarJWT() jwt: "+jwt+","
-                + "ValidatJWT() cadena: "+cadena);
+    public Response validarJWT(@QueryParam("jwt") String jwt, @QueryParam("cadena") String cadena) {
+        System.out.println("validarJWT() jwt: " + jwt + ","
+                + "ValidatJWT() cadena: " + cadena);
         boolean validoToken = false;
-        String mensaje="";
-        String usuario="";
-        String nit="";
-        String documento="";
+        String mensaje = "";
+        String usuario = "";
+        String nit = "";
+        String documento = "";
         JsonObject json;
-        String cadenaToken ="";
-        String grupoEmpresarial="";
-        
+        String cadenaToken = "";
+        String grupoEmpresarial = "";
+
         try {
             usuario = (String) Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwt).getBody().getSubject();
             nit = (String) Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwt).getBody().get("empresa");
             documento = (String) Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwt).getBody().get("documento");
             cadenaToken = (String) Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwt).getBody().get("cadena");
             grupoEmpresarial = (String) Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwt).getBody().get("grupo");
-            System.out.println("Información extraida token validaCuenta: usuario: "+usuario+", nit: "+nit+", documento: "+documento+", cadenaToken: "+cadena+", grupoEmpr: "+grupoEmpresarial);
-        } catch (UnsupportedEncodingException ex) {
-            System.out.println("Error "+ConexionesKioskos.class.getName()+"validarJWT: " + ex.getMessage());
-        }
-        try {
-            String esquema = getEsquema(nit, cadenaToken);
-            setearPerfil(esquema, cadena);
-            if (validarTokenExistente(jwt, nit, cadenaToken)) {
-                if (getEstadoToken(jwt, nit, cadenaToken).equals("S")){
-                     System.out.println("Token existe en bd");
-                
-                     //String passwordEncriptacion = "Manager01*"+usuario+nit;
-                     String passwordEncriptacion = "Manager01";
-                     Jwts.parser()
-                    .setSigningKey(passwordEncriptacion.getBytes("UTF-8"))
-                    .parseClaimsJws(
-                       jwt
-                    );
+            System.out.println("Información extraida token validaCuenta: usuario: " + usuario + ", nit: " + nit + ", documento: " + documento + ", cadenaToken: " + cadena + ", grupoEmpr: " + grupoEmpresarial);
 
-                //OK, we can trust this JWT
-                System.out.println("token válido");
-                validoToken = true;
-                mensaje="Token válido";
-                        
+            try {
+                String esquema = getEsquema(nit, cadenaToken);
+                setearPerfil(esquema, cadena);
+                if (validarTokenExistente(jwt, nit, cadenaToken)) {
+                    if (getEstadoToken(jwt, nit, cadenaToken).equals("S")) {
+                        System.out.println("Token existe en bd");
+
+                        //String passwordEncriptacion = "Manager01*"+usuario+nit;
+                        String passwordEncriptacion = "Manager01";
+                        Jwts.parser()
+                                .setSigningKey(passwordEncriptacion.getBytes("UTF-8"))
+                                .parseClaimsJws(
+                                        jwt
+                                );
+
+                        //OK, we can trust this JWT
+                        System.out.println("token válido");
+                        validoToken = true;
+                        mensaje = "Token válido";
+
+                    } else {
+                        validoToken = false;
+                        // mensaje="El token no es válido o está expirado";
+                        mensaje = "El enlace no es válido o se ha expirado.";
+                        System.out.println("Estado del Token es distinto de S");
+                    }
 
                 } else {
+                    //mensaje = "El token no es válido";
+                    mensaje = "El enlace no es válido";
+                    System.out.println("El token no es valido o no existe en la bd");
                     validoToken = false;
-                    // mensaje="El token no es válido o está expirado";
-                    mensaje = "El enlace no es válido o se ha expirado.";
-                    System.out.println("Estado del Token es distinto de S");
+                    json = Json.createObjectBuilder()
+                            .add("validoToken", validoToken)
+                            .add("mensaje", mensaje)
+                            .add("documento", documento)
+                            .add("cadena", cadenaToken)
+                            .add("grupo", grupoEmpresarial)
+                            .build();
+                    return Response.status(Response.Status.ACCEPTED.getStatusCode()).entity(json)
+                            .build();
                 }
-            
-            } else {
-                //mensaje = "El token no es válido";
-                mensaje = "El enlace no es válido";
-                System.out.println("El token no es valido o no existe en la bd");
+
+            } catch (SignatureException e) {
+
+                //don't trust the JWT!
+                System.out.println("Error, jwt no válido " + e.getMessage());
                 validoToken = false;
-                 json=Json.createObjectBuilder()
-                .add("validoToken", validoToken)
-                .add("mensaje", mensaje)
-                .add("documento", documento)
-                .add("cadena", cadenaToken)
-                .add("grupo", grupoEmpresarial)         
-                .build();
-                return Response.status(Response.Status.ACCEPTED .getStatusCode()).entity(json)
-                .build();
+                mensaje = "Error, jwt no válido " + e.getMessage();
+                json = Json.createObjectBuilder()
+                        .add("validoToken", validoToken)
+                        .add("mensaje", mensaje)
+                        .add("documento", documento)
+                        .add("cadena", cadenaToken)
+                        .add("grupo", grupoEmpresarial)
+                        .build();
+                return Response.status(Response.Status.NOT_FOUND.getStatusCode()).entity(json)
+                        .build();
+            } catch (io.jsonwebtoken.ExpiredJwtException exp) {
+                System.out.println("Token expirado. " + exp.getMessage());
+                validoToken = false;
+                //mensaje ="El token se ha expirado";
+                mensaje = "El enlace se ha expirado";
+                System.out.println(mensaje);
+                json = Json.createObjectBuilder()
+                        .add("validoToken", validoToken)
+                        .add("mensaje", mensaje)
+                        .add("documento", documento)
+                        .add("cadena", cadenaToken)
+                        .add("grupo", grupoEmpresarial)
+                        .build();
+                return Response.status(Response.Status.ACCEPTED.getStatusCode()).entity(json)
+                        .build();
+            } catch (UnsupportedEncodingException ex) {
+                System.out.println("Error ");
+                validoToken = false;
+                //mensaje="El token no es válido";
+                mensaje = "El enlace no es válido";
+                json = Json.createObjectBuilder()
+                        .add("validoToken", validoToken)
+                        .add("mensaje", mensaje)
+                        .add("documento", documento)
+                        .add("cadena", cadenaToken)
+                        .add("grupo", grupoEmpresarial)
+                        .build();
+                return Response.status(Response.Status.ACCEPTED.getStatusCode()).entity(json)
+                        .build();
+            } catch (io.jsonwebtoken.MalformedJwtException emj) {
+                validoToken = false;
+                //mensaje = "El jwt no tiene un formato válido";
+                mensaje = "El enlace no es válido";
+                System.out.println("El token no tiene un formato válido");
+                json = Json.createObjectBuilder()
+                        .add("validoToken", validoToken)
+                        .add("mensaje", mensaje)
+                        .add("documento", documento)
+                        .add("cadena", cadenaToken)
+                        .add("grupo", grupoEmpresarial)
+                        .build();
+                return Response.status(Response.Status.ACCEPTED.getStatusCode()).entity("El jwt no tiene un formato válido")
+                        .build();
+            } catch (Exception e) {
+                validoToken = false;
+                //mensaje = "El token no es válido "+e.getMessage();
+                mensaje = "El enlace no es válido. " + e.getMessage();
+
             }
 
-        } catch (SignatureException e) {
-
-            //don't trust the JWT!
-            System.out.println("Error, jwt no válido " + e.getMessage());
-            validoToken = false;
-            mensaje = "Error, jwt no válido " + e.getMessage();
-             json=Json.createObjectBuilder()
-            .add("validoToken", validoToken)
-            .add("mensaje", mensaje)
-            .add("documento", documento)
-            .add("cadena", cadenaToken)
-            .add("grupo", grupoEmpresarial)         
-            .build();
-            return Response.status(Response.Status.NOT_FOUND.getStatusCode()).entity(json)
-            .build();
-        } catch (io.jsonwebtoken.ExpiredJwtException exp) {
-            System.out.println("Token expirado. " + exp.getMessage());
-            validoToken = false;
-            //mensaje ="El token se ha expirado";
-            mensaje = "El enlace se ha expirado";
-            System.out.println(mensaje);
-             json=Json.createObjectBuilder()
-            .add("validoToken", validoToken)
-            .add("mensaje", mensaje)
-            .add("documento", documento)
-            .add("cadena", cadenaToken)
-            .add("grupo", grupoEmpresarial)
-            .build();
-            return Response.status(Response.Status.ACCEPTED.getStatusCode()).entity(json)
-            .build();
         } catch (UnsupportedEncodingException ex) {
-            System.out.println("Error ");
+            System.out.println("Error " + ConexionesKioskos.class.getName() + "validarJWT: " + ex.getMessage());
+        } catch (io.jsonwebtoken.ExpiredJwtException ie) {
+            System.out.println("Error Expiración de token: " + ie.getMessage());
+            mensaje = "El enlace se ha expirado, intente iniciar sesión nuevamente para generar uno nuevo.";
             validoToken = false;
-            //mensaje="El token no es válido";
-            mensaje = "El enlace no es válido";
-            json=Json.createObjectBuilder()
-            .add("validoToken", validoToken)
-            .add("mensaje", mensaje)
-            .add("documento", documento)
-            .add("cadena", cadenaToken)
-            .add("grupo", grupoEmpresarial)
-            .build();
+            json = Json.createObjectBuilder()
+                    .add("validoToken", validoToken)
+                    .add("mensaje", mensaje)
+                    .add("documento", documento)
+                    .add("cadena", cadena)
+                    .add("grupo", grupoEmpresarial)
+                    .build();
             return Response.status(Response.Status.ACCEPTED.getStatusCode()).entity(json)
-            .build();
-        } catch (io.jsonwebtoken.MalformedJwtException emj){
-            validoToken = false;
-            //mensaje = "El jwt no tiene un formato válido";
-            mensaje = "El enlace no es válido";
-            System.out.println("El token no tiene un formato válido");
-             json=Json.createObjectBuilder()
-            .add("validoToken", validoToken)
-            .add("mensaje", mensaje)
-            .add("documento", documento)
-            .add("cadena", cadenaToken)
-            .add("grupo", grupoEmpresarial)
-            .build();
-             return Response.status(Response.Status.ACCEPTED.getStatusCode()).entity("El jwt no tiene un formato válido")
-             .build();
-        } catch (Exception e) {
-            validoToken = false;
-            //mensaje = "El token no es válido "+e.getMessage();
-            mensaje = "El enlace no es válido. " +e.getMessage();
-
+                    .build();
         }
         
-        json=Json.createObjectBuilder()
-            .add("validoToken", validoToken)
-            .add("mensaje", mensaje)
-            .add("usuario", usuario)
-            .add("empresa", nit)
-            .add("documento", documento)
-            .add("cadena", cadenaToken)
-            .add("grupo", grupoEmpresarial)
-            .build();
-        
+        json = Json.createObjectBuilder()
+                .add("validoToken", validoToken)
+                .add("mensaje", mensaje)
+                .add("usuario", usuario)
+                .add("empresa", nit)
+                .add("documento", documento)
+                .add("cadena", cadenaToken)
+                .add("grupo", grupoEmpresarial)
+                .build();
+
         return Response.status(Response.Status.ACCEPTED.getStatusCode()).entity(json)
-        .build();
+                .build();
     }
-    
+
     
     // validar si existe token
     public boolean validarTokenExistente(String token, String nitEmpresa, String cadena){
@@ -1607,7 +1621,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         /*if (r==true) {*/
             long tiempo=System.currentTimeMillis();
             Date fechaCreacion= new Date(tiempo);
-            Date fechaExpiracion= new Date(tiempo+2160000);
+            Date fechaExpiracion= new Date(tiempo+3600000); //2160000
             //java.sql.Date fechaExpiracion =  (Date) java.sql.Date.from(ZonedDateTime.now().plusMinutes(60).toInstant());
             String jwt=Jwts.builder()
                     .signWith(SignatureAlgorithm.HS256, passwordEncript.getBytes("UTF-8"))
@@ -1627,14 +1641,14 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             EnvioCorreo p=new EnvioCorreo();
             creaRegistro = registraToken(usuario, nit, jwt, "VALIDACUENTA", fechaCreacion, fechaExpiracion, cadena);
             if (creaRegistro) {
-               System.out.println("Token registrado");
+               System.out.println("Token VALIDACUENTA registrado");
                // estadoEnvioCorreo = p.enviarEnlaceValidacionCuenta("smtp.gmail.com", "465", "S", "pruebaskiosco534@gmail.com", "Nomina01", getCorreoConexioneskioskos(usuario, nit), getNombrePersona(usuario), jwt, urlKiosco);
                estadoEnvioCorreo = p.enviarEnlaceValidacionCuenta(
                        getConfigServidorSMTP(nit, cadena), 
                        getConfigCorreo(nit, "PUERTO", cadena), 
                        getConfigCorreo(nit, "AUTENTICADO", cadena), 
                        getConfigCorreo(nit, "STARTTLS", cadena),getConfigCorreo(nit, "REMITENTE", cadena), getConfigCorreo(nit, "CLAVE", cadena), 
-                       getCorreoConexioneskioskos(usuario, nit, cadena), getNombrePersona(usuario,nit, cadena), jwt, urlKiosco, nit, cadena);
+                       getCorreoConexioneskioskos(usuario, nit, cadena), getNombrePersona(usuario,nit, cadena), usuario, jwt, urlKiosco, nit, cadena);
             }
                         
             JsonObject json=Json.createObjectBuilder()

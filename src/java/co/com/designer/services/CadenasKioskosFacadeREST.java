@@ -7,6 +7,7 @@ package co.com.designer.services;
 
 import co.com.designer.kiosko.entidades.ConexionesKioskos;
 import co.com.designer.kiosko.entidades.OpcionesKioskosApp;
+import java.math.BigDecimal;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -57,7 +58,7 @@ public class CadenasKioskosFacadeREST {
         List s = null;
         System.out.println("Parametros: Grupo: " + grupo);
         try {
-            String sqlQuery = "SELECT CODIGO, DESCRIPCION, NITEMPRESA, GRUPO, CADENA, EMPLNOMINA, ESQUEMA FROM CADENASKIOSKOSAPP WHERE GRUPO=?";
+            String sqlQuery = "SELECT CODIGO, DESCRIPCION, NITEMPRESA, GRUPO, CADENA, EMPLNOMINA, ESQUEMA, ESTADO, OBSERVACION FROM CADENASKIOSKOSAPP WHERE GRUPO=?";
             Query query = getEntityManager().createNativeQuery(sqlQuery);
             query.setParameter(1, grupo);
             s = query.getResultList();
@@ -69,5 +70,24 @@ public class CadenasKioskosFacadeREST {
             return Response.status(Response.Status.OK).entity(s).build();
         }
     }
+    
+    @GET
+    @Path("validaGrupoInactivo/{grupo}")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Long getValidaEstadoInactivoXGrupo(@PathParam("grupo") String grupo) {
+        Long res = null;
+        System.out.println("Parametros: Grupo: " + grupo);
+        try {
+            String sqlQuery = "SELECT COUNT(*) FROM CADENASKIOSKOSAPP WHERE GRUPO=? AND ESTADO='INACTIVO' ";
+            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            query.setParameter(1, grupo);
+            res = (Long) query.getSingleResult();
+            System.out.println("count(*) inactivo: "+res);
+        } catch (Exception ex) {
+            System.out.println("Error: "+ex.getMessage());
+            res = Long.valueOf(0);
+        }
+        return res;
+    }    
     
 }

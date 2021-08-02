@@ -10,25 +10,27 @@ import java.math.BigInteger;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author UPC006
  */
 @Entity
-@Table(name = "KIOROLES")
+@Table(name = "DIAGNOSTICOSCATEGORIAS")
+@XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "KioRoles.findAll", query = "SELECT k FROM KioRoles k order by k.codigo ASC")})
-public class KioRoles implements Serializable {
-    /*@Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private BigDecimal id;*/
+    @NamedQuery(name = "DiagnosticosCategorias.findAll", query = "SELECT ka FROM DiagnosticosCategorias ka ")})
+public class DiagnosticosCategorias implements Serializable {
+
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
@@ -41,12 +43,9 @@ public class KioRoles implements Serializable {
     private String codigo;
     @Basic(optional = false)
     @NotNull
-    @Size(min = 1, max = 30)
-    @Column(name = "NOMBRE")
-    private String nombre;
-    @Size(max = 100)
-    @Column(name = "OBSERVACION")
-    private String observacion;
+    @Size(max = 200)
+    @Column(name = "DESCRIPCION")
+    private String descripcion;
 
     public BigInteger getSecuencia() {
         return secuencia;
@@ -64,22 +63,14 @@ public class KioRoles implements Serializable {
         this.codigo = codigo;
     }
 
-    public String getNombre() {
-        return nombre;
+    public String getDescripcion() {
+        return descripcion;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 
-    public String getObservacion() {
-        return observacion;
-    }
-
-    public void setObservacion(String observacion) {
-        this.observacion = observacion;
-    }
-    
     @Override
     public int hashCode() {
         int hash = 0;
@@ -93,8 +84,8 @@ public class KioRoles implements Serializable {
         if (!(object instanceof KioRoles)) {
             return false;
         }
-        KioRoles other = (KioRoles) object;
-        if ((this.secuencia == null && other.secuencia != null) || (this.secuencia != null 
+        DiagnosticosCategorias other = (DiagnosticosCategorias) object;
+        if ((this.secuencia == null && other.secuencia != null) || (this.secuencia != null
                 && !this.secuencia.equals(other.secuencia))) {
             return false;
         }
@@ -103,7 +94,7 @@ public class KioRoles implements Serializable {
 
     @Override
     public String toString() {
-        return "co.com.designer.kiosko.entidades.KioRoles[ secuencia=" + secuencia + " ]";
+        return "co.com.designer.kiosko.entidades.DiagnosticosCategorias[ secuencia=" + secuencia + " ]";
     }
-    
+
 }

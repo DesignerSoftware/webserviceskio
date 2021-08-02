@@ -105,6 +105,9 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
             if (!roles.contains("AUTORIZADOR")) {
                 sqlQuery+= " and ok.kiorol.nombre not in ('AUTORIZADOR') ";
             }
+            if (!roles.contains("AUTORIZAAUSENTISMOS")) {
+                sqlQuery+= " and ok.kiorol.nombre not in ('AUTORIZAAUSENTISMOS') ";
+            }            
              sqlQuery+=  " order by ok.codigo asc";
                                
             Query query = getEntityManager(cadena).createQuery(sqlQuery);
@@ -149,6 +152,9 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
         }
         if (!roles.contains("AUTORIZADOR")) {
             sqlQuery += " and ok.kiorol.nombre not in ('AUTORIZADOR') ";
+        }
+        if (!roles.contains("AUTORIZAAUSENTISMOS")) {
+            sqlQuery += " and ok.kiorol.nombre not in ('AUTORIZAAUSENTISMOS') ";
         }
         sqlQuery += " order by ok.codigo asc";
 
@@ -445,7 +451,13 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
 
             if (esJefe(documento, nitEmpresa, cadena)) {
                 rol = rol + ";JEFE";
+                rol = rol + ";AUTORIZAAUSENTISMOS";
             }
+            
+            /*Habilitación de módulo ausentismo de acuerdo a registro en tabla KIOAUTORIZADORES*/
+            /*if (esAutorizadorAusentismos(documento, nitEmpresa, cadena)) {
+                rol = rol + ";AUTORIZAAUSENTISMOS";
+            }*/
             System.out.println("rol:" + rol);
             return rol;
         } catch (Exception ex) {
@@ -492,6 +504,30 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
         }
         return retorno;
     }
+    
+    /*public boolean esAutorizadorAusentismos(String documento, String nitEmpresa, String cadena) {
+        boolean retorno = false;
+        String esquema = getEsquema(nitEmpresa, cadena);
+        setearPerfil(esquema, cadena);
+        String sqlQuery = "select count(*) count \n"
+                + "from kioautorizadores ka, personas p, kiomodulos km\n"
+                + "where \n"
+                + "ka.persona=p.secuencia\n"
+                + "and ka.kiomodulo=km.secuencia\n"
+                + "and km.nombre='REPORTEAUSENTISMOS'\n"
+                + "and p.numerodocumento = ? ";
+        try {
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, documento);
+            BigDecimal conteo = BigDecimal.ZERO;
+            conteo = (BigDecimal) query.getSingleResult();
+            System.out.println("Conteo de esAutorizadorAusentismos: " + conteo);
+            return conteo.compareTo(BigDecimal.ZERO) > 0;
+        } catch (Exception e) {
+            System.out.println("Error esAutorizadorAusentismos: " + e.getMessage());
+        }
+        return retorno;
+    }*/    
     
     public String getDocumentoCorreoODocumento(String usuario, String nitEmpresa, String cadena) {
        System.out.println("Parametros getDocumentoCorreoODocumento() usuario: "+usuario+", cadena: "+cadena);
