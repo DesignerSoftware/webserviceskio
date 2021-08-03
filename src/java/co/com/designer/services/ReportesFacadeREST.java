@@ -4,6 +4,9 @@ package co.com.designer.services;
 import co.com.designer.kiosko.correo.EnvioCorreo;
 import co.com.designer.kiosko.reportes.IniciarReporte;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -12,6 +15,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -200,6 +205,32 @@ public class ReportesFacadeREST {
         return Response.status(Response.Status.NOT_FOUND).build();
     }
     
+    @GET
+    @Path("/obtenerAnexo/")
+    @Produces({"application/pdf"})
+    public Response obtenerFoto(@QueryParam("anexo") String anexo, @QueryParam("cadena") String cadena, @QueryParam("empresa") String nitEmpresa) {
+        System.out.println("Parametros obtenerFoto(): anexo: "+anexo+", cadena: "+cadena+", nitEmpresa: "+nitEmpresa);
+        FileInputStream fis = null;
+        File file = null;
+        String RUTAFOTO = getPathFoto(nitEmpresa, cadena);
+        try {
+            fis = new FileInputStream(new File(RUTAFOTO + anexo));
+            file = new File(RUTAFOTO + anexo);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(ConexionesKioskosFacadeREST.class.getName()).log(Level.SEVERE, "Anexo no encontrada: " + anexo, ex);
+            System.getProperty("user.dir");
+            System.out.println("Ruta del proyecto: "+this.getClass().getClassLoader().getResource("").getPath());;
+        } finally {
+            try {
+                fis.close();
+            } catch (IOException ex) {
+                Logger.getLogger(ConexionesKioskosFacadeREST.class.getName()).log(Level.SEVERE, "Error cerrando fis " + anexo, ex);
+            }
+        }
+        Response.ResponseBuilder responseBuilder = Response.ok((Object) file);
+        responseBuilder.header("Content-Disposition", "attachment; filename=\"" + anexo + "\"");
+        return responseBuilder.build();
+    }
     
     @GET
     @Path("generaFoto1/{documento}")
