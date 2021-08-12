@@ -5,10 +5,10 @@
  */
 package co.com.designer.services;
 
+import co.com.designer.kiosko.correo.EnvioCorreo;
 import co.com.designer.kiosko.entidades.KioCausasAusentismos;
 import co.com.designer.kiosko.entidades.DiagnosticosCategorias;
 import co.com.designer.kiosko.entidades.OpcionesKioskosApp;
-import co.com.designer.kiosko.entidades.VwVacaPendientesEmpleados;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -60,25 +60,25 @@ import javax.ws.rs.core.Response;
  */
 @Stateless
 @Path("ausentismos")
-public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAusentismos>  {
+public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAusentismos> {
 
     public kioCausasAusentismosFacadeREST() {
         super(KioCausasAusentismos.class);
-    }          
-            
+    }
+
     @Override
     protected EntityManager getEntityManager() {
-        String unidadPersistencia="wsreportePU";
-        EntityManager em = Persistence.createEntityManagerFactory(unidadPersistencia).createEntityManager();
-        return em;
-    }   
-    
-    protected EntityManager getEntityManager(String persistence) {
-        String unidadPersistencia=persistence;
+        String unidadPersistencia = "wsreportePU";
         EntityManager em = Persistence.createEntityManagerFactory(unidadPersistencia).createEntityManager();
         return em;
     }
-    
+
+    protected EntityManager getEntityManager(String persistence) {
+        String unidadPersistencia = persistence;
+        EntityManager em = Persistence.createEntityManagerFactory(unidadPersistencia).createEntityManager();
+        return em;
+    }
+
     @Override
     protected void setearPerfil() {
         try {
@@ -88,8 +88,9 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             query.executeUpdate();
         } catch (Exception ex) {
             System.out.println("Error setearPerfil: " + ex);
-        }    }    
-    
+        }
+    }
+
     protected void setearPerfil(String cadenaPersistencia) {
         try {
             String rol = "ROLKIOSKO";
@@ -100,7 +101,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             System.out.println("Error setearPerfil: " + ex);
         }
     }
-    
+
     protected void setearPerfil(String esquema, String cadenaPersistencia) {
         try {
             String rol = "ROLKIOSKO";
@@ -114,17 +115,17 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         } catch (Exception ex) {
             System.out.println("Error setearPerfil(cadenaPersistencia): " + ex);
         }
-    }         
-    
+    }
+
     @GET
     //@Path("/")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public List findAlls() {
-         setearPerfil();
-         return super.findAll();
+        setearPerfil();
+        return super.findAll();
     }
-    
-   /*@GET
+
+    /*@GET
     @Path("/causas")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public List findAlls(@QueryParam("nitempresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
@@ -139,7 +140,6 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             List<OpcionesKioskosApp>  lista = query.getResultList();
             return lista;
     }*/
-    
     @GET
     @Path("/causas")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
@@ -155,8 +155,8 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         query.setParameter("nitempresa", Long.parseLong(nitEmpresa));
         List<OpcionesKioskosApp> lista = query.getResultList();
         return lista;
-    }  
-    
+    }
+
     @GET
     @Path("/codigosDiagnosticos")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
@@ -169,7 +169,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         List<DiagnosticosCategorias> lista = query.getResultList();
         return lista;
     }
-    
+
     @GET
     @Path("/codigosDiagnosticos2")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
@@ -183,8 +183,8 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         lista = query.getResultList();
         //lista.forEach(System.out::println);
         return lista;
-    } 
-    
+    }
+
     @GET
     @Path("/consultaNombreAutorizaAusentismos")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
@@ -194,43 +194,43 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             @QueryParam("cadena") String cadena) {
         String esquema = null;
         try {
-            esquema=getEsquema(nitEmpresa, cadena);
+            esquema = getEsquema(nitEmpresa, cadena);
         } catch (Exception e) {
-            System.out.println("Error al consultar esquema "+e.getMessage());
+            System.out.println("Error al consultar esquema " + e.getMessage());
         }
         String retorno = "";
-        String mensaje ="";
+        String mensaje = "";
         String secEmplJefe = null;
         try {
             String secEmpleado = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena, esquema);
-            if (secEmpleado!=null){
-                     try {
-                         secEmplJefe = consultarSecuenciaEmpleadoJefe(secEmpleado, nitEmpresa, cadena, esquema);
-                         if (secEmplJefe != null) {
-                             retorno = getApellidoNombreXsecEmpl(secEmplJefe, nitEmpresa, cadena, esquema);
-                             System.out.println("Empleado jefe: " + retorno);
-                         } else {
-                             mensaje = "No hay un autorizador/jefe relacionado";
-                             throw new Exception("El empleado jefe no está registrado.");
-                         }
-                     } catch (Exception e) {
-                         System.out.println("Error consultando jefe: " + e.getMessage());
-                         return Response.status(Response.Status.OK).entity("Error").build();
-                     }
-            }else{
+            if (secEmpleado != null) {
+                try {
+                    secEmplJefe = consultarSecuenciaEmpleadoJefe(secEmpleado, nitEmpresa, cadena, esquema);
+                    if (secEmplJefe != null) {
+                        retorno = getApellidoNombreXsecEmpl(secEmplJefe, nitEmpresa, cadena, esquema);
+                        System.out.println("Empleado jefe: " + retorno);
+                    } else {
+                        mensaje = "No hay un autorizador/jefe relacionado";
+                        throw new Exception("El empleado jefe no está registrado.");
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error consultando jefe: " + e.getMessage());
+                    return Response.status(Response.Status.OK).entity("Error").build();
+                }
+            } else {
                 mensaje = "El empleado no existe";
             }
         } catch (Exception e) {
-           // return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
-           mensaje = "Se ha presentado un error al hacer la consulta. Si el error persiste por favor comuniquese con el área de Talento humano de su empresa.";
-        }    
-         JsonObject json=Json.createObjectBuilder()
-        .add("resultado", retorno)
-        .add("mensaje", mensaje)
-        .build();
+            // return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
+            mensaje = "Se ha presentado un error al hacer la consulta. Si el error persiste por favor comuniquese con el área de Talento humano de su empresa.";
+        }
+        JsonObject json = Json.createObjectBuilder()
+                .add("resultado", retorno)
+                .add("mensaje", mensaje)
+                .build();
         return Response.ok(json, MediaType.APPLICATION_JSON).build();
-    }  
-    
+    }
+
     @POST
     @Path("/crearNovedadAusentismo")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
@@ -280,10 +280,10 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             String urlKioOlvidoClave = urlKiosco + "#/olvidoClave/" + grupoEmpr;
             secEmplJefe = consultarSecuenciaEmpleadoJefe(secEmpl, nit, cadena, esquema);
             if ("S".equals(anexoAdjunto)) {
-                nombreAnexo = secEmpl + "_" + secCausaAusent + "_" + fechaGeneracion+".pdf";
+                nombreAnexo = secEmpl + "_" + secCausaAusent + "_" + fechaGeneracion + ".pdf";
             }
             if (secEmplJefe != null) {
-                System.out.println("creaKioSoliciVacas: EmpleadoJefe: " + secEmplJefe);
+                System.out.println("creaKioSoliciAusent: EmpleadoJefe: " + secEmplJefe);
                 nombreAutorizaSolici += getApellidoNombreXsecEmpl(secEmplJefe, nit, cadena, esquema);
                 correoAutorizaSolici = getCorreoXsecEmpl(secEmplJefe, nit, cadena, esquema);
                 System.out.println("El empleado tiene relacionado a empleadoJefe " + nombreAutorizaSolici + " - " + correoAutorizaSolici);
@@ -292,8 +292,8 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                 if (creaKioSoliciAusentismos(seudonimo, secEmplJefe, nit, nombreAnexo, fechaGeneracion, cadena, esquema)) {
                     String secKioSoliciAusent = getSecKioSoliciAusent(secEmpl, fechaGeneracion, secEmplJefe, nit, cadena, esquema);
                     System.out.println("secuencia kiosoliciausentismos creada: " + secKioSoliciAusent);
-                    
-                    int diasIncapacidad =Integer.parseInt(dias);
+
+                    int diasIncapacidad = Integer.parseInt(dias);
                     /*if (diasIncapacidad<=2){
                         // Si los días reportados son 2 o menos se deben registrar en una sola novedad
                         if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaAusent, 2, fechafin, secKioSoliciAusent, cadena, esquema)){
@@ -314,7 +314,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                             mensaje = "Ha ocurrido un error y no fue posible reportar la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuniquese con el área de nómina y recursos humanos de su empresa";
                         }
                     }*/
-                    
+
                     // Registro en tabla KIOESTADOSSOLICIAUSENT
                     if (creaKioEstadoSoliciAusent(seudonimo, nit, secKioSoliciAusent, fechaGeneracion, "ENVIADO", null, cadena, esquema)) {
                         System.out.println("Estado de novedad de ausentismo creado.");
@@ -347,7 +347,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         }
         return obj.toString();
     }
-    
+
     public boolean creaKioSoliciAusentismos(String seudonimo, String secEmplJefe, String nit, String nombreAnexo, String fechaGeneracion, String cadena, String esquema) {
         System.out.println("Parametros creaKioSoliciAusentismos(): seudonimo: " + seudonimo + ", nit: " + nit + ", nombreAnexo: " + nombreAnexo + ", fechaGeneracion: " + fechaGeneracion
                 + ", secEmplJefe: " + secEmplJefe + ", cadena: " + cadena);
@@ -373,12 +373,12 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                 conteo = 0; // No crear la solicitud si no hay un jefe relacionado
             }
         } catch (Exception e) {
-            System.out.println("Error "+this.getClass().getName()+".creaKioSoliciAusentismos(): "+e.getMessage());
+            System.out.println("Error " + this.getClass().getName() + ".creaKioSoliciAusentismos(): " + e.getMessage());
             conteo = 0;
         }
         return conteo > 0;
     }
-    
+
     /*Retorna la secuencia del registro en kioSoliciAusentismos*/
     public String getSecKioSoliciAusent(String secEmpl, String fechaGeneracion,
             String secEmplJefe, String nitEmpresa, String cadena, String esquema) {
@@ -390,20 +390,20 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
 
             String sqlQuery = "SELECT SECUENCIA FROM KIOSOLICIAUSENTISMOS WHERE EMPLEADO=? "
                     + " AND FECHAGENERACION=TO_DATE(?, 'ddmmyyyy HH24miss') "
-                    + " AND EMPLEADOJEFE=? AND ACTIVA='S' ";                
+                    + " AND EMPLEADOJEFE=? AND ACTIVA='S' ";
             System.out.println("Query: " + sqlQuery);
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpl);
             query.setParameter(2, fechaGeneracion);
-            query.setParameter(3, secEmplJefe);      
+            query.setParameter(3, secEmplJefe);
             secKioSoliciAusent = query.getSingleResult().toString();
             System.out.println("SecKioSoliciAusent: " + secKioSoliciAusent);
         } catch (Exception e) {
-            System.out.println("Error: "+this.getClass().getName()+".+getSecKioSoliciAusent(): " + e.getMessage());
+            System.out.println("Error: " + this.getClass().getName() + ".+getSecKioSoliciAusent(): " + e.getMessage());
         }
         return secKioSoliciAusent;
-    }      
-    
+    }
+
     public boolean creaKioNovedadSoliciAusent(String seudonimo, String nitEmpresa, String fechainicial,
             String secTipo, String secClase, String secCausa,
             int dias, String fechaFin, String kioSoliciAusentismo, String cadena, String esquema) {
@@ -411,7 +411,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         try {
             //String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
-            System.out.println("parametros creaKioNovedadSolici seudonimo: " + seudonimo + ", nit: " + nitEmpresa + ", fechainicial: " + fechainicial + " fecha fin: " + fechaFin + " dias: " + dias );
+            System.out.println("parametros creaKioNovedadSolici seudonimo: " + seudonimo + ", nit: " + nitEmpresa + ", fechainicial: " + fechainicial + " fecha fin: " + fechaFin + " dias: " + dias);
             String sql = "INSERT INTO KIONOVEDADESSOLICI "
                     + "(EMPLEADO, FECHAINICIALAUSENTISMO, DIAS, TIPO, SUBTIPO, "
                     + "TIPOAUSENTISMO, CLASEAUSENTISMO, CAUSAAUSENTISMO, "
@@ -447,14 +447,14 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             System.out.println("Error creaKioNovedadSolici: " + e.getMessage());
             return false;
         }
-    }  
-    
+    }
+
     /*Crea nuevo registro kioEstadosSoliciAusent */
     public boolean creaKioEstadoSoliciAusent(
-            String seudonimo, String nit, String kioSoliciAusentismo, 
+            String seudonimo, String nit, String kioSoliciAusentismo,
             String fechaProcesa, String estado, String motivo, String cadena, String esquema) {
-        System.out.println("parametros creaKioEstadoSoliciAusent(): seudonimo: " + seudonimo + ", nit: "+nit+", kiosoliciausentismo: "+kioSoliciAusentismo+""
-                + "\n fechaProcesa: "+fechaProcesa+", estado: " + estado+", cadena: "+cadena);
+        System.out.println("parametros creaKioEstadoSoliciAusent(): seudonimo: " + seudonimo + ", nit: " + nit + ", kiosoliciausentismo: " + kioSoliciAusentismo + ""
+                + "\n fechaProcesa: " + fechaProcesa + ", estado: " + estado + ", cadena: " + cadena);
         int res = 0;
         try {
             String secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nit, cadena, esquema);
@@ -471,16 +471,16 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             query.setParameter(4, secEmpl);
             query.setParameter(5, motivo);
             res = query.executeUpdate();
-            System.out.println("registro kioestadosoliciausent: "+res);
+            System.out.println("registro kioestadosoliciausent: " + res);
         } catch (Exception ex) {
-            System.out.println("Error "+this.getClass().getName()+".creaKioEstadoSoliciAusent(): " + ex.getMessage());
+            System.out.println("Error " + this.getClass().getName() + ".creaKioEstadoSoliciAusent(): " + ex.getMessage());
             return false;
         }
-        return res>0;
-    }    
-    
+        return res > 0;
+    }
+
     public String getSecuenciaEmplPorSeudonimo(String seudonimo, String nitEmpresa, String cadena, String esquema) {
-        System.out.println("Parametros getSecuenciaEmplPorSeudonimo(): seudonimo: "+seudonimo+", nitEmpresa: "+nitEmpresa+", cadena: "+cadena);
+        System.out.println("Parametros getSecuenciaEmplPorSeudonimo(): seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
         String secuencia = null;
         try {
             //String esquema = getEsquema(nitEmpresa, cadena);
@@ -493,13 +493,127 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             secuencia = query.getSingleResult().toString();
             System.out.println("secuenciaEmpl: " + secuencia);
         } catch (Exception e) {
-            System.out.println("Error: "+this.getClass().getName()+".getSecuenciaEmplPorSeudonimo: " + e.getMessage());
+            System.out.println("Error: " + this.getClass().getName() + ".getSecuenciaEmplPorSeudonimo: " + e.getMessage());
         }
         return secuencia;
-    }   
-    
+    }
+
+    public String getSecuenciaPorNitEmpresa(String nitEmpresa, String cadena, String esquema) {
+        String secuencia = null;
+        try {
+            //String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
+            String sqlQuery = "SELECT EM.SECUENCIA SECUENCIAEMPRESA FROM EMPRESAS EM WHERE EM.NIT=?";
+            System.out.println("Query: " + sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, nitEmpresa);
+            secuencia = query.getSingleResult().toString();
+            System.out.println("secuencia: " + secuencia);
+        } catch (Exception e) {
+            System.out.println("Error: " + this.getClass().getName() + ".getSecuenciaPorNitEmpresa: " + e.getMessage());
+        }
+        return secuencia;
+    }
+
+    public String getEmplJefeXsecKioEstadoSolici(String secKioEstadoSolici, String nitEmpresa, String cadena) {
+        String secEmplJefe = null;
+        try {
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
+            String sqlQuery = "SELECT KSA.EMPLEADOJEFE \n"
+                    + "FROM \n"
+                    + "KIOESTADOSSOLICIAUSENT KES, \n"
+                    + "KIOSOLICIAUSENTISMOS KSA, \n"
+                    + "KIONOVEDADESSOLICIAUSENT  KNSA \n"
+                    + "WHERE \n"
+                    + "KES.KIOSOLICIAUSENTISMO=KSA.SECUENCIA \n"
+                    + "AND KNSA.KIOSOLICIAUSENTISMO = KSA.SECUENCIA \n"
+                    + "AND KES.SECUENCIA=?";
+            System.out.println("Query: " + sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+
+            query.setParameter(1, secKioEstadoSolici);
+            secEmplJefe = query.getSingleResult().toString();
+            System.out.println("Empl jefe asociado: " + secEmplJefe);
+        } catch (Exception e) {
+            System.out.println("Error: " + this.getClass().getName() + ".getEmplJefeXsecKioEstadoSolici: " + e.getMessage());
+        }
+        return secEmplJefe;
+    }
+
+    public String getCorreoXsecPer(String secPersona, String nitEmpresa, String cadena, String esquema) {
+        System.out.println("Parametros getCorreoXsecPer(): secPer: " + secPersona + ", cadena: " + cadena);
+        String correo = null;
+        String sqlQuery;
+        try {
+            //String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
+            sqlQuery = "SELECT P.EMAIL "
+                    + " FROM PERSONAS P "
+                    + " WHERE "
+                    + " P.SECUENCIA=? ";
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, secPersona);
+            System.out.println("getCorreoXsecPer(): " + correo);
+            correo = query.getSingleResult().toString();
+        } catch (Exception e) {
+            System.out.println("Error: " + this.getClass().getName() + "getCorreoXsecPer(): " + e.getMessage());
+        }
+        return correo;
+    }
+
+    public String getApellidoNombreXSecPer(String secPersona, String nitEmpresa, String cadena, String esquema) {
+        System.out.println("Parametros getApellidoNombreXSecPer(): secPersona: " + secPersona + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
+        String nombre = null;
+        //boolean seudonimo_documento = validarCodigoUsuario(usuario);
+        String sqlQuery;
+        try {
+            //String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
+            // if (seudonimo_documento) {
+            sqlQuery = "SELECT PRIMERAPELLIDO||' '||SEGUNDOAPELLIDO||' '||NOMBRE nombreCompleto FROM PERSONAS WHERE SECUENCIA=?";
+            //} else {
+            //  sqlQuery = "SELECT InitCap(NVL(NOMBRE, 'USUARIO')) NOMBRE FROM PERSONAS WHERE EMAIL=?";
+            //}
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, secPersona);
+            nombre = query.getSingleResult().toString();
+            System.out.println("Nombre Autorizador vacaciones: " + nombre);
+        } catch (Exception e) {
+            System.out.println(this.getClass().getName() + "." + "getApellidoNombreXSecPer" + "()");
+        }
+        return nombre;
+    }
+
+    public String getSecPerAutorizadorXsecKioEstadoSolici(String secKioEstadoSolici, String nitEmpresa, String cadena) {
+        System.out.println("Parametros getSecPerAutorizadorXsecKioEstadoSolici(): secKioEstadoSolici: " + secKioEstadoSolici + " nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
+        String secPerAutorizador = null;
+        try {
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
+            String sqlQuery = "SELECT KSA.AUTORIZADOR \n"
+                    + "FROM \n"
+                    + "KIOESTADOSSOLICIAUSENT KES, \n"
+                    + "KIOSOLICIAUSENTISMOS KSA, \n"
+                    + "KIONOVEDADESSOLICIAUSENT  KNSA \n"
+                    + "WHERE\n"
+                    + "KES.KIOSOLICIAUSENTISMO=KSA.SECUENCIA\n"
+                    + "AND KNSA.KIOSOLICIAUSENTISMO = KSA.SECUENCIA \n"
+                    + "AND KES.SECUENCIA=?";
+            System.out.println("Query: " + sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+
+            query.setParameter(1, secKioEstadoSolici);
+            secPerAutorizador = query.getSingleResult().toString();
+            System.out.println("Secuencia persona KioAutorizador: " + secPerAutorizador);
+        } catch (Exception e) {
+            System.out.println("Error: " + this.getClass().getName() + ".getSecPerAutorizadorXsecKioEstadoSolici: " + e.getMessage());
+        }
+        return secPerAutorizador;
+    }
+
     public String consultarSecuenciaEmpleadoJefe(String secEmpleado, String nitEmpresa, String cadena, String esquema) {
-        System.out.println("parametros consultarSecuenciaEmpleadoJefe: secEmpleado: "+secEmpleado+", cadena: "+cadena);
+        System.out.println("parametros consultarSecuenciaEmpleadoJefe: secEmpleado: " + secEmpleado + ", cadena: " + cadena);
         String secJefe = null;
         try {
             //String esquema = getEsquema(nitEmpresa, cadena);
@@ -524,11 +638,37 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             secJefe = query.getSingleResult().toString();
             System.out.println("secuencia jefe: " + secJefe);
         } catch (Exception e) {
-            System.out.println("Error: "+this.getClass().getName()+".consultarSecuenciaEmpleadoJefe: " + e.getMessage());
+            System.out.println("Error: " + this.getClass().getName() + ".consultarSecuenciaEmpleadoJefe: " + e.getMessage());
         }
         return secJefe;
-    } 
-    
+    }
+
+    public String getEmplXsecKioEstadoSolici(String kioEstadoSolici, String nitEmpresa, String cadena, String esquema) {
+        System.out.println("Parametros getEmplXsecKioEstadoSolici(): kioEstadoSolici: " + kioEstadoSolici + ", cadena: " + cadena);
+        String secEmpl = null;
+        try {
+            //String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
+            String sqlQuery = "SELECT KSA.EMPLEADO\n"
+                    + "FROM \n"
+                    + "KIOESTADOSSOLICIAUSENT KES, \n"
+                    + "KIOSOLICIAUSENTISMOS KSA, \n"
+                    + "KIONOVEDADESSOLICIAUSENT  KNSA \n"
+                    + "WHERE\n"
+                    + "KES.KIOSOLICIAUSENTISMO=KSA.SECUENCIA\n"
+                    + "AND KNSA.KIOSOLICIAUSENTISMO = KSA.SECUENCIA \n"
+                    + "AND KES.SECUENCIA=?";
+            System.out.println("Query: " + sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, kioEstadoSolici);
+            secEmpl = query.getSingleResult().toString();
+            System.out.println("Valor getEmplXsecKioEstadoSolici(): " + secEmpl);
+        } catch (Exception e) {
+            System.out.println("Error: " + this.getClass().getName() + ".getEmplXsecKioEstadoSolici(): " + e.getMessage());
+        }
+        return secEmpl;
+    }
+
     public String getApellidoNombreXsecEmpl(String secEmpl, String nitEmpresa, String cadena, String esquema) {
         System.out.println("getApellidoNombreXsecEmpl()");
         String nombre = null;
@@ -542,16 +682,16 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpl);
             nombre = (String) query.getSingleResult();
-            System.out.println("Resultado getApellidoNombreXsecEmpl(): "+nombre);
+            System.out.println("Resultado getApellidoNombreXsecEmpl(): " + nombre);
         } catch (Exception e) {
-            System.out.println("Error "+this.getClass().getName()+".getApellidoNombreXsecEmpl(): " + e);
+            System.out.println("Error " + this.getClass().getName() + ".getApellidoNombreXsecEmpl(): " + e);
         }
         return nombre;
-    }    
-    
+    }
+
     public String getCorreoXsecEmpl(String secEmpl, String nitEmpresa, String cadena, String esquema) {
-        System.out.println("Parametros getCorreoXsecEmpl(): secEmpl: "+secEmpl+", cadena: "+cadena);
-        System.out.println("sec Empleado: "+secEmpl);
+        System.out.println("Parametros getCorreoXsecEmpl(): secEmpl: " + secEmpl + ", cadena: " + cadena);
+        System.out.println("sec Empleado: " + secEmpl);
         String correo = null;
         String sqlQuery;
         try {
@@ -564,16 +704,16 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     + " AND CK.EMPLEADO=?";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpl);
-            System.out.println("getCorreoXsecEmpl(): "+correo);
+            System.out.println("getCorreoXsecEmpl(): " + correo);
             correo = query.getSingleResult().toString();
         } catch (Exception e) {
-            System.out.println("Error: "+this.getClass().getName()+"getCorreoXsecEmpl(): " + e.getMessage());
+            System.out.println("Error: " + this.getClass().getName() + "getCorreoXsecEmpl(): " + e.getMessage());
         }
         return correo;
-    }    
-    
-    public String getEsquema( String nitempresa, String cadena) {
-        System.out.println("Parametros getEsquema(): nitempresa: "+nitempresa+", cadena: "+cadena);
+    }
+
+    public String getEsquema(String nitempresa, String cadena) {
+        System.out.println("Parametros getEsquema(): nitempresa: " + nitempresa + ", cadena: " + cadena);
         String esquema = null;
         String sqlQuery;
         try {
@@ -582,33 +722,545 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             query.setParameter(1, nitempresa);
             query.setParameter(2, cadena);
             esquema = query.getSingleResult().toString();
-            System.out.println("Esquema: "+esquema);
+            System.out.println("Esquema: " + esquema);
         } catch (Exception e) {
-            System.out.println("Error "+this.getClass().getName()+".getEsquema(): " + e);
-        } 
+            System.out.println("Error " + this.getClass().getName() + ".getEsquema(): " + e);
+        }
         return esquema;
-    }      
+    }
 
- 
-    
+    public String getConfigCorreoServidorSMTP(String nitEmpresa, String cadena, String esquema) {
+        System.out.println("getConfigCorreoServidorSMTP(): nit: " + cadena + ", cadena: " + cadena);
+        String servidorsmtp = "smtp.designer.com.co";
+        try {
+            //String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
+            String sqlQuery = "SELECT SERVIDORSMTP FROM CONFICORREOKIOSKO WHERE EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?)";
+            System.out.println("Query: " + sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, nitEmpresa);
+            servidorsmtp = query.getSingleResult().toString();
+            System.out.println("Servidor smtp: " + servidorsmtp);
+        } catch (Exception e) {
+            System.out.println("Error: " + this.getClass().getName() + ".getConfigCorreoServidorSMTP: " + e.getMessage());
+        }
+        return servidorsmtp;
+    }
+
+    public String getConfigCorreo(String nitEmpresa, String valor, String cadena, String esquema) {
+        System.out.println("getPathArchivosPlanos()");
+        String servidorsmtp = "smtp.designer.com.co";
+        try {
+            //String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
+            String sqlQuery = "SELECT " + valor + " FROM CONFICORREOKIOSKO WHERE EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?)";
+            System.out.println("Query: " + sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, nitEmpresa);
+            servidorsmtp = query.getSingleResult().toString();
+            System.out.println(valor + ": " + servidorsmtp);
+        } catch (Exception e) {
+            System.out.println("Error: " + this.getClass().getName() + ".getConfigCorreo(): " + e.getMessage());
+        }
+        return servidorsmtp;
+    }
+
     @GET
     @Path("/fechaFinAusentismo")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public Response getFecha(@QueryParam("nitempresa") String nitEmpresa
-                , @QueryParam("cadena") String cadena,@QueryParam("fechaInicio") String fechaInicio
-                ,@QueryParam("dias") String dias,@QueryParam("empleado") String empleado
-                ,@QueryParam("causa") String causa) {
-           String esquema = getEsquema(nitEmpresa, cadena);
-           setearPerfil(esquema, cadena);
-           JsonObject fechaSugerida = prueba(fechaInicio, dias, empleado, causa, cadena, nitEmpresa, esquema);
-                    
-            /*return Response.ok(
-                response("ValidarUsuarioYClave", "Usuario: "+usuario+", Clave: "+clave, String.valueOf(r)), MediaType.APPLICATION_JSON).build();*/
-            return Response.status(Response.Status.CREATED).entity(fechaSugerida)
-                    .build();
-    } 
-     /**
+    public Response getFecha(@QueryParam("nitempresa") String nitEmpresa,
+            @QueryParam("cadena") String cadena, @QueryParam("fechaInicio") String fechaInicio,
+            @QueryParam("dias") String dias, @QueryParam("empleado") String empleado,
+            @QueryParam("causa") String causa) {
+        String esquema = getEsquema(nitEmpresa, cadena);
+        setearPerfil(esquema, cadena);
+        JsonObject fechaSugerida = prueba(fechaInicio, dias, empleado, causa, cadena, nitEmpresa, esquema);
 
+        /*return Response.ok(
+                response("ValidarUsuarioYClave", "Usuario: "+usuario+", Clave: "+clave, String.valueOf(r)), MediaType.APPLICATION_JSON).build();*/
+        return Response.status(Response.Status.CREATED).entity(fechaSugerida)
+                .build();
+    }
+
+    @GET
+    @Path("/prorroga")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public List getProrrogaSig(@QueryParam("nitempresa") String nitEmpresa,
+            @QueryParam("cadena") String cadena, @QueryParam("empleado") String empleado,
+            @QueryParam("causa") String causa) {
+        String esquema = getEsquema(nitEmpresa, cadena);
+        setearPerfil(esquema, cadena);
+        String secEmpleado = getSecuenciaEmplPorSeudonimo(empleado, nitEmpresa, cadena, esquema);
+        System.out.println("datos para encontrar la prorroga " + secEmpleado + nitEmpresa + cadena + esquema);
+        List prorroga = getProrroga(secEmpleado, causa, cadena, esquema);
+
+        /*return Response.ok(
+                response("ValidarUsuarioYClave", "Usuario: "+usuario+", Clave: "+clave, String.valueOf(r)), MediaType.APPLICATION_JSON).build();*/
+        return prorroga;
+    }
+
+    @GET
+    @Path("/solicitudXEstado")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getSolicitudXEstado(@QueryParam("documento") String documento,
+            @QueryParam("empresa") String nitEmpresa,
+            @QueryParam("estado") String estado,
+            @QueryParam("cadena") String cadena) {
+        int conteo = 0;
+        List s = null;
+        System.out.println("Parametros getSolicitudXEstado(): seudonimo: " + documento + ", empresa: " + nitEmpresa + ", estado: " + estado + ", cadena: " + cadena);
+        try {
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
+            String secEmpl = getSecuenciaEmplPorSeudonimo(documento, nitEmpresa, cadena, esquema);
+            //String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
+            String sqlQuery = "select \n"
+                    + "to_char(KSA.fechageneracion, 'dd/mm/yyyy') fechacreacion, \n"
+                    + "TO_CHAR(KSA.FECHAINICIO,'DD/MM/YYYY' ) INICIALAUSENT,\n"
+                    + "KSA.dias dias, \n"
+                    + "to_char(KES.fechaprocesamiento,'dd/mm/yyyy') fechaprocesamiento, \n"
+                    + "KES.estado,\n"
+                    + "TO_CHAR(KSA.FECHAFIN,'DD/MM/YYYY') FECHAREGRESO,\n"
+                    + "KES.MOTIVOPROCESA motivoprocesa, \n"
+                    + "(SELECT DESCRIPCION FROM CAUSASAUSENTISMOS CA WHERE KSA.CAUSAREPORTADA = CA.SECUENCIA) CAUSA,\n"
+                    + "(SELECT DESCRIPCION FROM TIPOSAUSENTISMOS TI WHERE KNSA.TIPOAUSENTISMO = TI.SECUENCIA),\n"
+                    + "(SELECT DESCRIPCION FROM CLASESAUSENTISMOS CA WHERE KNSA.CLASEAUSENTISMO = CA.SECUENCIA),\n"
+                    + "(SELECT CODIGO FROM DIAGNOSTICOSCATEGORIAS DC WHERE KNSA.DIAGNOSTICOCATEGORIA = DC.SECUENCIA),\n"
+                    + "(SELECT DESCRIPCION FROM DIAGNOSTICOSCATEGORIAS DC WHERE KNSA.DIAGNOSTICOCATEGORIA = DC.SECUENCIA),\n"
+                    + "KNSA.KIONOVEDADPRORROGA,\n"
+                    + "DECODE(KES.PERSONAEJECUTA,\n"
+                    + "(select pei.nombre||' '||pei.primerapellido||' '||pei.segundoapellido \n"
+                    + "from personas pei, empleados ei where ei.persona=pei.secuencia and ei.secuencia=KES.empleadoejecuta), \n"
+                    + "(select pei.nombre||' '||pei.primerapellido||' '||pei.segundoapellido from personas pei \n"
+                    + "where pei.secuencia=KES.PERSONAEJECUTA) \n"
+                    + ") empleadoejecuta,  \n"
+                    + "KES.secuencia secuencia \n"
+                    + "from KIOESTADOSSOLICIAUSENT KES, \n"
+                    + "KIOSOLICIAUSENTISMOS KSA, \n"
+                    + "KIONOVEDADESSOLICIAUSENT  KNSA \n"
+                    + "where \n"
+                    + "KSA.SECUENCIA = KES.KIOSOLICIAUSENTISMO\n"
+                    + "AND KSA.SECUENCIA=KNSA.KIOSOLICIAUSENTISMO\n"
+                    + "AND KNSA.SECUENCIA = (select MIN(ei.SECUENCIA) \n"
+                    + "    from KIONOVEDADESSOLICIAUSENT ei, KIOSOLICIAUSENTISMOS ksi \n"
+                    + "    where ei.KIOSOLICIAUSENTISMO = ksi.secuencia \n"
+                    + "    and ksi.secuencia=KSA.secuencia)\n"
+                    + "and KES.FECHAPROCESAMIENTO = (select MAX(ei.FECHAPROCESAMIENTO) \n"
+                    + "from KIOESTADOSSOLICIAUSENT ei, KIOSOLICIAUSENTISMOS ksi \n"
+                    + "where ei.KIOSOLICIAUSENTISMO = ksi.secuencia \n"
+                    + "and ksi.secuencia=KSA.secuencia) \n"
+                    + "AND (KES.SECUENCIA = (SELECT MAX(t3.SECUENCIA) FROM KIOSOLICIAUSENTISMOS t4, KIOESTADOSSOLICIAUSENT t3 \n"
+                    + "WHERE ((t4.SECUENCIA = KSA.SECUENCIA) AND (t4.SECUENCIA = t3.KIOSOLICIAUSENTISMO))))"
+                    + "and KSA.empleado = ? \n"
+                    + "and KES.estado = ?\n"
+                    + "order by KES.fechaProcesamiento DESC";
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, secEmpl);
+            query.setParameter(2, estado);
+            s = query.getResultList();
+            s.forEach(System.out::println);
+
+            if (s.size() > 0) {
+                for (int i = 0; i < s.size(); i++) {
+                    JsonObject json = Json.createObjectBuilder()
+                            .add("1", s.get(0).toString())
+                            .build();
+                }
+            }
+            return Response.status(Response.Status.OK).entity(s).build();
+        } catch (Exception ex) {
+            System.out.println("Error: " + this.getClass().getName() + ".getSolicitudXEstado(): " + ex);
+            conteo = 0;
+            return Response.status(Response.Status.OK).entity("").build();
+        }
+    }
+
+    @GET
+    @Path("/solicitudesXEmpleadoJefe")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getSolicitudesXEmpleadoJefe(@QueryParam("usuario") String seudonimo,
+            @QueryParam("empresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
+        int conteo = 0;
+        List s = null;
+        String esquema = getEsquema(nitEmpresa, cadena);
+        setearPerfil(esquema, cadena);
+        String secEmplJefe = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena, esquema);
+        System.out.println("Webservice: solicitudesXEmpleadoJefe Parametros: usuario: secEmplJefe: " + secEmplJefe + ", empresa: " + nitEmpresa);
+        try {
+            //String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
+            String sqlQuery = "SELECT \n"
+                    + "t1.codigoempleado documento, \n"
+                    + "REPLACE(TRIM(P.PRIMERAPELLIDO||' '||P.SEGUNDOAPELLIDO||' '||P.NOMBRE), '  ', ' ') NOMBRE,\n"
+                    + "KES.SECUENCIA, \n"
+                    + "TO_CHAR(KES.FECHAPROCESAMIENTO, 'DD/MM/YYYY') SOLICITUD, \n"
+                    + "TO_CHAR(KSA.FECHAINICIO,'DD/MM/YYYY' ) INICIALAUSENT,\n"
+                    + "KES.ESTADO, \n"
+                    + "KES.MOTIVOPROCESA, \n"
+                    + "KES.NOVEDADSISTEMA, \n"
+                    + "TO_CHAR(KSA.FECHAFIN,'DD/MM/YYYY') FECHAREGRESO,\n"
+                    + "(SELECT DESCRIPCION FROM CAUSASAUSENTISMOS CA WHERE KSA.CAUSAREPORTADA = CA.SECUENCIA) CAUSA,\n"
+                    + "KSA.DIAS,\n"
+                    + "(SELECT DESCRIPCION FROM TIPOSAUSENTISMOS TI WHERE KNSA.TIPOAUSENTISMO = TI.SECUENCIA),\n"
+                    + "(SELECT DESCRIPCION FROM CLASESAUSENTISMOS CA WHERE KNSA.CLASEAUSENTISMO = CA.SECUENCIA),\n"
+                    + "KNSA.CAUSAAUSENTISMO,\n"
+                    + "KNSA.KIONOVEDADPRORROGA,\n"
+                    + "DC.CODIGO,\n"
+                    + "DC.DESCRIPCION,\n"
+                    + "(SELECT PER.PRIMERAPELLIDO||' '||PER.SEGUNDOAPELLIDO||' '||PER.NOMBRE FROM PERSONAS PER, EMPLEADOS EMPL\n"
+                    + "WHERE EMPL.PERSONA=PER.SECUENCIA\n"
+                    + "AND EMPL.SECUENCIA=JEFE.SECUENCIA) EMPLEADOJEFE,        \n"
+                    + "KNSA.FECHAFINPAGO FECHAPAGO,\n"
+                    + "KES.secuencia secuencia\n"
+                    + "FROM KIOESTADOSSOLICIAUSENT KES, KIOSOLICIAUSENTISMOS KSA, EMPLEADOS t1, PERSONAS P, KIONOVEDADESSOLICIAUSENT KNSA,\n"
+                    + "DIAGNOSTICOSCATEGORIAS DC, EMPLEADOS JEFE\n"
+                    + "WHERE (((((t1.EMPRESA = (select secuencia from empresas where nit= ?)) \n"
+                    + "AND (KES.ESTADO IN ('AUTORIZADO', 'RECHAZADO','LIQUIDADO'))) \n"
+                    + "AND (KSA.EMPLEADOJEFE = ?)) \n"
+                    + " AND (KSA.EMPLEADOJEFE =(select ei.secuencia from empleados ei, personas pei where ei.persona=pei.secuencia and pei.numerodocumento=?)))\n"
+                    + "AND (KSA.EMPLEADOJEFE =?))\n"
+                    + "AND (KES.SECUENCIA = (SELECT MAX(t3.SECUENCIA) FROM KIOSOLICIAUSENTISMOS t4, KIOESTADOSSOLICIAUSENT t3 \n"
+                    + "WHERE ((t4.SECUENCIA = KSA.SECUENCIA) AND (t4.SECUENCIA = t3.KIOSOLICIAUSENTISMO))))\n"
+                    + "AND ((KSA.SECUENCIA = KES.KIOSOLICIAUSENTISMO) AND (t1.SECUENCIA = KSA.EMPLEADO))\n"
+                    + "AND t1.PERSONA=P.SECUENCIA\n"
+                    + "AND KSA.SECUENCIA=KNSA.KIOSOLICIAUSENTISMO\n"
+                    + "AND KNSA.SECUENCIA = (select min(ei.SECUENCIA) \n"
+                    + "    from KIONOVEDADESSOLICIAUSENT ei, KIOSOLICIAUSENTISMOS ksi \n"
+                    + "    where ei.KIOSOLICIAUSENTISMO = ksi.secuencia \n"
+                    + "    and ksi.secuencia=KSA.secuencia)\n"
+                    + "AND KSA.EMPLEADOJEFE=JEFE.SECUENCIA \n"
+                    + "AND DC.SECUENCIA(+) = KNSA.DIAGNOSTICOCATEGORIA\n"
+                    + "ORDER BY KES.FECHAPROCESAMIENTO DESC";
+            //Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, nitEmpresa);
+            query.setParameter(2, secEmplJefe);
+            query.setParameter(3, seudonimo);
+            query.setParameter(4, secEmplJefe);
+            s = query.getResultList();
+            s.forEach(System.out::println);
+
+            if (s.size() > 0) {
+                for (int i = 0; i < s.size(); i++) {
+                    JsonObject json = Json.createObjectBuilder()
+                            .add("1", s.get(0).toString())
+                            .build();
+                }
+            }
+            return Response.status(Response.Status.OK).entity(s).build();
+        } catch (Exception ex) {
+            System.out.println("Error: " + ex);
+            conteo = 0;
+            return Response.status(Response.Status.OK).entity("").build();
+        }
+    }
+
+    @GET
+    @Path("/soliciSinProcesarJefe")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response getSoliciSinProcesarJefe(@QueryParam("nit") String nitEmpresa, @QueryParam("jefe") String jefe,
+            @QueryParam("estado") String estado, @QueryParam("cadena") String cadena) {
+        System.out.println("parametros getSoliciSinProcesarJefe(): nit: " + nitEmpresa + " jefe " + jefe + " estado: " + estado + " cadena " + cadena);
+        List s = null;
+        String esquema = getEsquema(nitEmpresa, cadena);
+        setearPerfil(esquema, cadena);
+        try {
+            String secuenciaJefe = getSecuenciaEmplPorSeudonimo(jefe, nitEmpresa, cadena, esquema);
+            String secuenciaEmpresa = getSecuenciaPorNitEmpresa(nitEmpresa, cadena, esquema);
+            //String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
+            String sqlQuery = "SELECT \n"
+                    + "t1.codigoempleado documento, \n"
+                    + "REPLACE(TRIM(P.PRIMERAPELLIDO||' '||P.SEGUNDOAPELLIDO||' '||P.NOMBRE), '  ', ' ') NOMBRE,\n"
+                    + "KES.SECUENCIA, \n"
+                    + "TO_CHAR(KES.FECHAPROCESAMIENTO, 'DD/MM/YYYY') SOLICITUD, \n"
+                    + "TO_CHAR(KSA.FECHAINICIO,'DD/MM/YYYY' ) INICIALAUSENT,\n"
+                    + "TO_CHAR(KES.FECHAPROCESAMIENTO, 'DD/MM/YYYY') FECHAULTMODIF,\n"
+                    + "KES.ESTADO, \n"
+                    + "KES.MOTIVOPROCESA, \n"
+                    + "KES.NOVEDADSISTEMA, \n"
+                    + "TO_CHAR(KSA.FECHAFIN,'DD/MM/YYYY') FECHAREGRESO,\n"
+                    + "(SELECT DESCRIPCION FROM CAUSASAUSENTISMOS CA WHERE KSA.CAUSAREPORTADA = CA.SECUENCIA) CAUSA,\n"
+                    + "KSA.DIAS,\n"
+                    + "(SELECT DESCRIPCION FROM TIPOSAUSENTISMOS TI WHERE KNSA.TIPOAUSENTISMO = TI.SECUENCIA) TIPO,\n"
+                    + "(SELECT DESCRIPCION FROM CLASESAUSENTISMOS CA WHERE KNSA.CLASEAUSENTISMO = CA.SECUENCIA) CLASE,\n"
+                    + "KNSA.KIONOVEDADPRORROGA,\n"
+                    + "DC.CODIGO,\n"
+                    + "DC.DESCRIPCION,\n"
+                    + "(SELECT PER.PRIMERAPELLIDO||' '||PER.SEGUNDOAPELLIDO||' '||PER.NOMBRE FROM PERSONAS PER, EMPLEADOS EMPL\n"
+                    + "WHERE EMPL.PERSONA=PER.SECUENCIA\n"
+                    + "AND EMPL.SECUENCIA=JEFE.SECUENCIA) EMPLEADOJEFE,        \n"
+                    + "KSA.OBSERVACION OBSERCAVION,\n"
+                    + "KNSA.FECHAFINPAGO FECHAPAGO,\n"
+                    + "KES.secuencia secuencia, \n"
+                    + "KSA.NOMBREANEXO ANEXO "
+                    + "FROM \n"
+                    + "KIOESTADOSSOLICIAUSENT KES,\n"
+                    + "KIOSOLICIAUSENTISMOS KSA,\n"
+                    + "EMPLEADOS t1,    \n"
+                    + "PERSONAS P,\n"
+                    + "KIONOVEDADESSOLICIAUSENT KNSA,\n"
+                    + "EMPLEADOS JEFE,\n"
+                    + "DIAGNOSTICOSCATEGORIAS DC\n"
+                    + "WHERE \n"
+                    + "((((\n"
+                    + "(t1.EMPRESA = ?) AND (KES.ESTADO = ?)) AND (KSA.EMPLEADOJEFE = ?))) \n"
+                    + "AND ((KSA.SECUENCIA = KES.KIOSOLICIAUSENTISMO) AND (t1.SECUENCIA = KSA.EMPLEADO))) \n"
+                    + "AND T1.PERSONA=P.SECUENCIA\n"
+                    + "AND KSA.SECUENCIA=KNSA.KIOSOLICIAUSENTISMO\n"
+                    + "AND KNSA.SECUENCIA = (select MIN(ei.SECUENCIA) \n"
+                    + "   from KIONOVEDADESSOLICIAUSENT ei, KIOSOLICIAUSENTISMOS ksi \n"
+                    + "    where ei.KIOSOLICIAUSENTISMO = ksi.secuencia \n"
+                    + "    and ksi.secuencia=KSA.secuencia)\n"
+                    + "and KES.FECHAPROCESAMIENTO = (select max(ei.FECHAPROCESAMIENTO) \n"
+                    + "from KIOESTADOSSOLICIAUSENT ei, KIOSOLICIAUSENTISMOS ksi \n"
+                    + "where ei.KIOSOLICIAUSENTISMO = ksi.secuencia \n"
+                    + "and ksi.secuencia=KSA.secuencia)\n"
+                    + "AND (KES.SECUENCIA = (SELECT MAX(t3.SECUENCIA) FROM KIOSOLICIAUSENTISMOS t4, KIOESTADOSSOLICIAUSENT t3 \n"
+                    + "WHERE ((t4.SECUENCIA = KSA.SECUENCIA) AND (t4.SECUENCIA = t3.KIOSOLICIAUSENTISMO))))\n"
+                    + "AND KSA.EMPLEADOJEFE=JEFE.SECUENCIA  \n"
+                    + "AND DC.SECUENCIA(+) = KNSA.DIAGNOSTICOCATEGORIA\n"
+                    + "ORDER BY KES.FECHAPROCESAMIENTO DESC";
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, secuenciaEmpresa);
+            query.setParameter(2, estado);
+            query.setParameter(3, secuenciaJefe);
+
+            s = query.getResultList();
+            s.forEach(System.out::println);
+            return Response.status(Response.Status.OK).entity(s).build();
+        } catch (Exception ex) {
+            System.out.println("Error " + this.getClass().getName() + ".getSoliciSinProcesarJefe: " + ex);
+            return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
+        }
+    }
+
+    @POST
+    @Path("/nuevoEstadoSolici")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response setNuevoEstadoSolici(@QueryParam("secuencia") String secKioEstadoSolici, @QueryParam("motivo") String motivo,
+            @QueryParam("seudonimo") String seudonimo, @QueryParam("nitempresa") String nitEmpresa, @QueryParam("estado") String estado,
+            @QueryParam("fechainicio") String fechaInicio,
+            @QueryParam("cadena") String cadena, @QueryParam("grupo") String grupoEmpr, @QueryParam("urlKiosco") String urlKiosco) {
+        System.out.println("nuevoEstadoSolici()");
+        System.out.println("parametros: secuencia: " + secKioEstadoSolici + ", motivo " + motivo + ", empleado " + seudonimo + ", estado: " + estado + ", cadena " + cadena + ", nit: " + nitEmpresa + ", urlKiosco: " + urlKiosco + ", grupoEmpresarial: " + grupoEmpr);
+        System.out.println("esta es la fecha inicio: " + fechaInicio);
+
+        List s = null;
+        int res = 0;
+        String urlKio = urlKiosco + "#/login/" + grupoEmpr;
+        String urlKioOlvidoClave = urlKiosco + "#/olvidoClave/" + grupoEmpr;
+        String esquema = null;
+        try {
+            esquema = getEsquema(nitEmpresa, cadena);
+        } catch (Exception e) {
+            System.out.println("Error al consultar esquema " + e.getMessage());
+        }
+        try {
+            String secEmplEjecuta = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena, esquema);
+            System.out.println("La persona que ejecuta es: " + secEmplEjecuta);
+            String secEmplSolicita = getEmplXsecKioEstadoSolici(secKioEstadoSolici, nitEmpresa, cadena, esquema);
+            String secEmplJefe = null;
+            String secPerAutoriza = null;
+            String nombreAutorizaSolici = "";
+            String correoAutorizaSolici = null;
+            String fecha = new SimpleDateFormat("dd/MM/yyyy").format(new Date());
+            if (motivo == null || motivo == "") {
+                motivo = " ";
+            }
+            try {
+                secPerAutoriza = getSecPerAutorizadorXsecKioEstadoSolici(secKioEstadoSolici, nitEmpresa, cadena);
+            } catch (Exception e) {
+                System.out.println("Error al consultar autorizador relacionado a la solicitud");
+            }
+            if (secPerAutoriza != null) {
+                nombreAutorizaSolici = getApellidoNombreXSecPer(secPerAutoriza, nitEmpresa, cadena, esquema);
+                correoAutorizaSolici = getCorreoXsecPer(secPerAutoriza, nitEmpresa, cadena, esquema);
+            } else {
+                try {
+                    secEmplJefe = getEmplJefeXsecKioEstadoSolici(secKioEstadoSolici, nitEmpresa, cadena);
+                    if (secEmplJefe != null) {
+                        nombreAutorizaSolici = getApellidoNombreXsecEmpl(secEmplJefe, nitEmpresa, cadena, esquema);
+                        correoAutorizaSolici = getCorreoXsecEmpl(secEmplJefe, nitEmpresa, cadena, esquema);
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error al consultar empleadoJefe relacionado a la solicitud");
+                }
+            }
+            String sqlQuery = "";
+            Query query = null;
+            if (estado.equals("RECHAZADO")) {
+                sqlQuery = "INSERT INTO KIOESTADOSSOLICIAUSENT \n"
+                        + "(KIOSOLICIAUSENTISMO, FECHAPROCESAMIENTO, ESTADO, EMPLEADOEJECUTA, NOVEDADSISTEMA, MOTIVOPROCESA, PERSONAEJECUTA)\n"
+                        + "SELECT\n"
+                        + "KIOSOLICIAUSENTISMO, SYSDATE FECHAPROCESAMIENTO, ?, ? EMPLEADOEJECUTA\n"
+                        + ", NOVEDADSISTEMA, ?, ?\n"
+                        + "FROM KIOESTADOSSOLICIAUSENT\n"
+                        + "WHERE SECUENCIA=?";
+                //String esquema = getEsquema(nitEmpresa, cadena);
+                setearPerfil(esquema, cadena);
+                query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+                query.setParameter(1, estado);
+                query.setParameter(2, secEmplEjecuta);
+                query.setParameter(3, motivo);
+                if (estado.equals("CANCELADO")) {
+                    query.setParameter(4, null);
+                    System.out.println("La solicitud está siendo CANCELADA");
+                } else {
+                    query.setParameter(4, secPerAutoriza);
+                }
+                // query.setParameter(4, secPerAutoriza);
+                query.setParameter(5, secKioEstadoSolici);
+            } else {
+                sqlQuery = "INSERT INTO KIOESTADOSSOLICIAUSENT \n"
+                        + "(KIOSOLICIAUSENTISMO, FECHAPROCESAMIENTO, ESTADO, EMPLEADOEJECUTA, NOVEDADSISTEMA, PERSONAEJECUTA)\n"
+                        + "SELECT\n"
+                        + "KIOSOLICIAUSENTISMO, SYSDATE FECHAPROCESAMIENTO, ?, ? EMPLEADOEJECUTA\n"
+                        + ", NOVEDADSISTEMA, ? \n"
+                        + "FROM KIOESTADOSSOLICIAUSENT \n"
+                        + "WHERE SECUENCIA=?";
+                //String esquema = getEsquema(nitEmpresa, cadena);
+                setearPerfil(esquema, cadena);
+                query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+                query.setParameter(1, estado);
+                query.setParameter(2, secEmplEjecuta);
+                if (estado.equals("CANCELADO")) {
+                    query.setParameter(3, null);
+                    System.out.println("La solicitud está siendo CANCELADA");
+                } else {
+                    query.setParameter(3, secPerAutoriza);
+                }
+                // query.setParameter(4, secPerAutoriza);
+                query.setParameter(4, secKioEstadoSolici);
+            }
+            res = query.executeUpdate();
+            EnvioCorreo c = new EnvioCorreo();
+            String estadoVerbo = estado.equals("CANCELADO") ? "CANCELAR"
+                    : estado.equals("AUTORIZADO") ? "PRE-APROBAR"
+                    : estado.equals("RECHAZADO") ? "RECHAZAR" : estado;
+            String estadoPasado = estado.equals("CANCELADO") ? "canceló"
+                    : estado.equals("AUTORIZADO") ? "pre-aprobó"
+                    : estado.equals("RECHAZADO") ? "rechazó" : estado;
+            String mensaje = "Nos permitimos informar que se acaba de " + estadoVerbo + " una solicitud de ausentismo";
+            if (estado.equals("RECHAZADO") || estado.equals("AUTORIZADO")) {
+                mensaje += " creada para " + getApellidoNombreXsecEmpl(secEmplSolicita, nitEmpresa, cadena, esquema);
+            }
+            mensaje += " en el módulo de Kiosco Nómina Designer. Por favor llevar el caso desde su cuenta de usuario en el portal de Kiosco y continuar con el proceso."
+                    + "<br><br>"
+                    + "La persona que " + estadoPasado.toUpperCase() + " LA SOLICITUD es: " + getApellidoNombreXsecEmpl(secEmplEjecuta, nitEmpresa, cadena, esquema) + "<br>";
+            if (estado.equals("CANCELADO")) {
+                mensaje += "La persona a cargo de HACER EL SEGUIMIENTO es: " + nombreAutorizaSolici + "<br>";
+            }
+            mensaje += "Por favor seguir el proceso en: <a style='color: white !important;' target='_blank' href=" + urlKio + ">" + urlKio + "</a><br><br>"
+                    + "Si no puede ingresar, necesitará instalar la última versión de su navegador, la cual podrá descargar de forma gratuita.<br><br>"
+                    + "En caso de que haya olvidado su clave podrá generar una nueva haciendo clic en ¿Olvidó su clave? en el módulo Kiosco o a través del link: "
+                    + "<br><a href='" + urlKioOlvidoClave + "'>" + urlKioOlvidoClave + "</a>";
+
+            String fechaInicioAusent = fechaInicio;
+            System.out.println("esta es la fecha inicio: " + fechaInicioAusent);
+            System.out.println("url Kiosco: " + urlKio);
+            if (res > 0) {
+                System.out.println("solicitud " + estado + " con éxito.");
+                String servidorsmtp = getConfigCorreoServidorSMTP(nitEmpresa, cadena, esquema);
+                String puerto = getConfigCorreo(nitEmpresa, "PUERTO", cadena, esquema);
+                String autenticado = getConfigCorreo(nitEmpresa, "AUTENTICADO", cadena, esquema);
+                String starttls = getConfigCorreo(nitEmpresa, "STARTTLS", cadena, esquema);
+                String remitente = getConfigCorreo(nitEmpresa, "REMITENTE", cadena, esquema);
+                String clave = getConfigCorreo(nitEmpresa, "CLAVE", cadena, esquema);
+                if (estado.equals("CANCELADO")) {
+                    if (c.enviarCorreoVacaciones(
+                            servidorsmtp, puerto, autenticado, starttls, remitente, clave,
+                            getCorreoXsecEmpl(secEmplSolicita, nitEmpresa, cadena, esquema),
+                            "Solicitud de ausentismo Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de ausentismo: " + fechaInicioAusent,
+                            mensaje, urlKio, nitEmpresa, cadena)) {
+                        System.out.println("Correo enviado a la persona que ejecuta");
+                    }
+                    //------------ comentado
+                    /*if (c.enviarCorreoVacaciones(
+                            servidorsmtp, puerto, autenticado, starttls, remitente, clave,
+                            //getCorreoXsecEmpl(secEmplJefe, cadena),
+                            correoAutorizaSolici,
+                            "Solicitud de vacaciones Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de vacaciones: " + fechaInicioAusent,
+                            mensaje, urlKio, nitEmpresa, cadena)) {
+                        System.out.println("Correo enviado al empleado que solicita asociado");
+                    }*/
+                    //----------
+                }
+
+                if (estado.equals("AUTORIZADO") || estado.equals("RECHAZADO")) {
+                    if (c.enviarCorreoVacaciones(
+                            servidorsmtp, puerto, autenticado, starttls, remitente, clave,
+                            getCorreoXsecEmpl(secEmplSolicita, nitEmpresa, cadena, esquema),
+                            "Solicitud de ausentismo Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de ausentismo: " + fechaInicioAusent,
+                            mensaje, urlKio, nitEmpresa, cadena)) {
+                        System.out.println("Correo enviada a la persona que ejecuta");
+                    }
+                    // Enviar correo al jefe/autorizador de vacaciones
+                    if (c.enviarCorreoVacaciones(
+                            servidorsmtp, puerto, autenticado, starttls, remitente, clave,
+                            correoAutorizaSolici,
+                            "Solicitud de ausentismo Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de ausentismo: " + fechaInicioAusent,
+                            mensaje, urlKio, nitEmpresa, cadena)) {
+                        System.out.println("Correo enviado al empleado que solicita asociado " + correoAutorizaSolici);
+                    }
+                    //--------------comentado 
+                    // Enviar correo de autoria
+                    /*boolean auditProcesarJefe = consultaAuditoria("SOLICITUDVACACIONES", "33", nitEmpresa, cadena).compareTo(BigDecimal.ZERO) > 0;
+                    boolean auditProcesarAutorizador =consultaAuditoria("SOLICITUDVACACIONES", "35", nitEmpresa, cadena).compareTo(BigDecimal.ZERO) > 0;
+                    if (auditProcesarJefe || auditProcesarAutorizador) {
+                        System.out.println("Si debe llevar auditoria procesar solicitud Vacaciones");
+                        String sqlQueryAud = "select email from kioconfigmodulos where codigoopcion=? and nitempresa=?";
+                        //Query query2 = getEntityManager(cadena).createNativeQuery(sqlQuery);
+                        System.out.println("Query2: " + sqlQuery);
+                        Query query2 = getEntityManager(cadena).createNativeQuery(sqlQuery);
+                        if (secPerAutoriza!=null) {
+                          query2.setParameter(1, "35");  
+                            System.out.println("codigoOpcion 35");                          
+                        } else {
+                          query2.setParameter(1, "33"); 
+                            System.out.println("codigoOpcion 33");
+                        }
+                        query2.setParameter(2, nitEmpresa);
+                        List lista = query2.getResultList();
+                        Iterator<String> it = lista.iterator();
+                        System.out.println("obtener " + lista.get(0));
+                        System.out.println("size: " + lista.size());
+                        // String mensajeAuditoria = "Nos permitimos informar que " + personaCreaSolici
+                           // + " generó la SOLICITUD DE VACACIONES el " + fechaCorreo + " a las " + horaGeneracion + " en el módulo de Kiosco Nómina Designer.";
+                      String mensajeAuditoria="Nos permitimos informar que se acaba de "+estadoVerbo+" una solicitud de vacaciones";
+                    if (estado.equals("RECHAZADO") || estado.equals("AUTORIZADO")){
+                        mensaje+=" creada para "+getApellidoNombreXsecEmpl(secEmplSolicita, nitEmpresa, cadena);
+                    }
+                    mensajeAuditoria+=" en el módulo de Kiosco Nómina Designer. Por favor llevar el caso desde su cuenta de usuario en el portal de Kiosco y continuar con el proceso."
+                    + "<br><br>"
+                    + "La persona que "+estadoPasado.toUpperCase()+" LA SOLICITUD es: "+getApellidoNombreXsecEmpl(secEmplEjecuta, nitEmpresa, cadena)+"<br>";
+                        while (it.hasNext()) {
+                            String correoenviar = it.next();
+                            System.out.println("correo auditoria: " + correoenviar);
+                            //c.pruebaEnvio2("smtp.gmail.com","587","pruebaskiosco534@gmail.com","Nomina01", "S", correoenviar,
+                            // c.enviarCorreoVacaciones(servidorsmtp, puerto, autenticado, starttls, remitente, clave, correoenviar, 
+                        "Auditoria: Nueva Solicitud de vacaciones Kiosco. "+fechaCorreo, mensajeAuditoria, urlKio, nit);
+                            c.enviarCorreoInformativo("Auditoria: Se ha "+estadoPasado+" una Solicitud de vacaciones Kiosco. " + fecha,
+                                    "Estimado usuario: ", mensajeAuditoria, nitEmpresa, urlKio, cadena, correoenviar, null);
+                        }
+                    } else {
+                        System.out.println("No lleva auditoria Vacaciones");
+                    }*/
+                    //--------------
+                }
+            } else {
+                System.out.println("Error al procesar la solicitud.");
+            }
+            return Response.status(Response.Status.OK).entity(res > 0).build();
+        } catch (Exception ex) {
+            System.out.println("Error " + this.getClass().getName() + ".setNuevoEstadoSolici: " + ex);
+            return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
+        }
+    }
+
+    /**
+     *
      */
     /*public static Date ParseFecha(String fecha)
     {
@@ -626,8 +1278,10 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
     }*/
     /**
      * metodo publico para convertir a tipo fecha
+     *
      * @param operation Operacion que se realiza en el APIREST
-     * @param paramater fecha en String, cadena del cliente, Esquema para setear rol
+     * @param paramater fecha en String, cadena del cliente, Esquema para setear
+     * rol
      * @param result una variable en tipo Date
      * @return Date
      */
@@ -643,7 +1297,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             query = getEntityManager(cadena).createNativeQuery(consulta);
             query.setParameter(1, fechaStr);
             fechaRegreso = (Date) (query.getSingleResult());
-            System.out.println("getDate(): "+fechaRegreso);
+            System.out.println("getDate(): " + fechaRegreso);
             return fechaRegreso;
         } catch (PersistenceException pe) {
             System.out.println("Error de persistencia en calculaFechaRegreso.");
@@ -655,17 +1309,52 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             System.out.println("Error general en calculaFechaRegreso. " + e);
             throw new Exception(e.toString());
         }
-    } 
-    
+    }
+
+    public List getProrroga(String empleado, String causa, String cadena, String esquema) {
+        System.out.println("Parametros getProrroga(): empleado: " + empleado + ", causa: " + causa);
+        System.out.println("Entre a getProrroga");
+        List prorroga = null;
+        String sqlQuery;
+        try {
+            setearPerfil(esquema, cadena);
+            sqlQuery = "SELECT KNSA.secuencia, \n"
+                    + "KNSA.FECHAFINAUSENTISMO+1 finsiguiente,\n"
+                    + "CA.DESCRIPCION,\n"
+                    + "(select B.CODIGO from DIAGNOSTICOSCATEGORIAS B where B.secuencia = KNSA.diagnosticocategoria) codigo,\n"
+                    + "(select  B.DESCRIPCION  from DIAGNOSTICOSCATEGORIAS B where B.secuencia = KNSA.diagnosticocategoria) descripcion,\n"
+                    + "TO_CHAR(KNSA.FECHAINICIALAUSENTISMO, 'dd/mm/yyyy') FECHA, \n"
+                    + "TO_CHAR(KNSA.FECHAFINAUSENTISMO , 'dd/mm/yyyy') FECHAFIN, \n"
+                    + "KNSA.dias\n"
+                    + "FROM CAUSASAUSENTISMOS CA, KIONOVEDADESSOLICIAUSENT KNSA \n"
+                    + "WHERE CA.secuencia = KNSA.CAUSAAUSENTISMO\n"
+                    + "AND KNSA.EMPLEADO = ?\n"
+                    + "and KNSA.CAUSAAUSENTISMO in (?)\n"
+                    //+ "--and KNSA.secuencia <> NVL(221601155,0)\n"
+                    + "ORDER BY FECHA DESC";
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, empleado);
+            query.setParameter(2, causa);
+            System.out.println("datos para encontrar la prorroga " + empleado + causa + esquema + cadena);
+            prorroga = (List) query.getResultList();
+            System.out.println("prorroga: " + prorroga);
+        } catch (Exception e) {
+            System.out.println("Error " + this.getClass().getName() + ".getProrroga(): " + e);
+        }
+        return prorroga;
+    }
+
     /**
      * metodo publico para consultar la fecha de contratacion del empleado
+     *
      * @param operation Operacion que se realiza en el APIREST
-     * @param paramater secuencia del empleado, fechainicio, cadena del cliente, Esquema para setear rol
+     * @param paramater secuencia del empleado, fechainicio, cadena del cliente,
+     * Esquema para setear rol
      * @param result una variable en tipo Date con la fecha del resultado
      * @return Date
      */
-       public Date getFechaContrato( String empleado, String fechaInic, String cadena, String esquema) {
-        System.out.println("Parametros getFechaContrato(): empleado: "+empleado+", fechaInicio: "+fechaInic);
+    public Date getFechaContrato(String empleado, String fechaInic, String cadena, String esquema) {
+        System.out.println("Parametros getFechaContrato(): empleado: " + empleado + ", fechaInicio: " + fechaInic);
         System.out.println("Entre a getFechaContrato");
         Date fechaVigencia = null;
         String sqlQuery;
@@ -675,28 +1364,32 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     + " WHERE V.EMPLEADO=? "
                     + " AND V.FECHAVIGENCIA = "
                     + "     (SELECT MAX(FECHAVIGENCIA) FROM VIGENCIASTIPOSCONTRATOS VI "
-                    + "     WHERE V.EMPLEADO = VI.empleado " 
+                    + "     WHERE V.EMPLEADO = VI.empleado "
                     + "     AND VI.FECHAVIGENCIA <= to_date(?, 'dd/mm/yyyy')) ";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, empleado);
             query.setParameter(2, fechaInic);
             fechaVigencia = (Date) query.getSingleResult();
-            System.out.println("fechaVigencia: "+fechaVigencia);
+            System.out.println("fechaVigencia: " + fechaVigencia);
         } catch (Exception e) {
-            System.out.println("Error "+this.getClass().getName()+".getFechaContrato(): " + e);
-        } 
+            System.out.println("Error " + this.getClass().getName() + ".getFechaContrato(): " + e);
+        }
         return fechaVigencia;
-    } 
-       
+    }
+
     /**
-     * metodo publico para consultar la Secuencia del tipo trabajdor del empleado
+     * metodo publico para consultar la Secuencia del tipo trabajdor del
+     * empleado
+     *
      * @param operation Operacion que se realiza en el APIREST
-     * @param paramater secuencia del empleado, fechainicio, cadena del cliente, Esquema para setear rol
-     * @param result una variable en tipo String para traer la secuencia del tipo de trabajador
+     * @param paramater secuencia del empleado, fechainicio, cadena del cliente,
+     * Esquema para setear rol
+     * @param result una variable en tipo String para traer la secuencia del
+     * tipo de trabajador
      * @return String
-     */   
-    public String getTipoTrabajador( String empleado, String fechaInic, String cadena, String esquema) {
-        System.out.println("Parametros getTipoTrabajador(): empleado: "+empleado+", fechaInicio: "+fechaInic);
+     */
+    public String getTipoTrabajador(String empleado, String fechaInic, String cadena, String esquema) {
+        System.out.println("Parametros getTipoTrabajador(): empleado: " + empleado + ", fechaInicio: " + fechaInic);
         System.out.println("Entre a getTipoTrabajador");
         String tipoTabajador = null;
         String sqlQuery;
@@ -712,22 +1405,26 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             query.setParameter(1, empleado);
             query.setParameter(2, fechaInic);
             tipoTabajador = query.getSingleResult().toString();
-            System.out.println("tipoTabajador: "+tipoTabajador);
+            System.out.println("tipoTabajador: " + tipoTabajador);
         } catch (Exception e) {
-            System.out.println("Error "+this.getClass().getName()+".getTipoTrabajador(): " + e);
-        } 
+            System.out.println("Error " + this.getClass().getName() + ".getTipoTrabajador(): " + e);
+        }
         return tipoTabajador;
-    } 
+    }
+
     /**
-     * metodo publico para consultar los dias del tipo trabajador 
+     * metodo publico para consultar los dias del tipo trabajador
+     *
      * @param operation Operacion que se realiza en el APIREST
-     * @param paramater secuencia del TipoTrabajador, fechainicio, cadena del cliente, Esquema para setear rol
-     * @param result una variable en tipo String con la cantidad de dias de tipo trabajador
+     * @param paramater secuencia del TipoTrabajador, fechainicio, cadena del
+     * cliente, Esquema para setear rol
+     * @param result una variable en tipo String con la cantidad de dias de tipo
+     * trabajador
      * @return String
      */
-    public String getDiasTrabajador( String tipoTrabador, String fechaInic, String cadena, String esquema) {
+    public String getDiasTrabajador(String tipoTrabador, String fechaInic, String cadena, String esquema) {
         //mensaje 2
-        System.out.println("Parametros getDiasTrabajador(): tipoTrabador: "+tipoTrabador+", fechaInicio: "+fechaInic);
+        System.out.println("Parametros getDiasTrabajador(): tipoTrabador: " + tipoTrabador + ", fechaInicio: " + fechaInic);
         System.out.println("Entre a getDiasTrabajador");
         String dias = null;
         String sqlQuery;
@@ -737,30 +1434,32 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     + " WHERE VD.TIPOTRABAJADOR=? "
                     + " AND ROWNUM=1 "
                     + " AND VD.FECHAVIGENCIA = "
-                    + "     (SELECT MAX(VDI.FECHAVIGENCIA) FROM VIGENCIASDIASTT VDI " 
-                    + "     WHERE VDI.TIPOTRABAJADOR=VD.TIPOTRABAJADOR " 
+                    + "     (SELECT MAX(VDI.FECHAVIGENCIA) FROM VIGENCIASDIASTT VDI "
+                    + "     WHERE VDI.TIPOTRABAJADOR=VD.TIPOTRABAJADOR "
                     + "     AND VDI.FECHAVIGENCIA <= to_date(?, 'dd/mm/yyyy')) ";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, tipoTrabador);
             query.setParameter(2, fechaInic);
             dias = query.getSingleResult().toString();
-            System.out.println("dias: "+dias);
+            System.out.println("dias: " + dias);
         } catch (Exception e) {
-            System.out.println("Error "+this.getClass().getName()+".getDiasTrabajador(): " + e);
-        } 
+            System.out.println("Error " + this.getClass().getName() + ".getDiasTrabajador(): " + e);
+        }
         return dias;
     }
+
     /**
-     * metodo publico para consultar el acronimo de la causa seleccionada 
+     * metodo publico para consultar el acronimo de la causa seleccionada
+     *
      * @param operation Operacion que se realiza en el APIREST
-     * @param paramater secuencia de la causa, cadena del cliente, Esquema para setear rol
-     * @param result una variable en tipo Sting con un tamaño de 2 caracteres 
+     * @param paramater secuencia de la causa, cadena del cliente, Esquema para
+     * setear rol
+     * @param result una variable en tipo Sting con un tamaño de 2 caracteres
      * @return String
      */
-    
-    public String getCausaOrigenIncapacidad( String causa , String cadena, String esquema) {
+    public String getCausaOrigenIncapacidad(String causa, String cadena, String esquema) {
         //mensaje 2
-        System.out.println("Parametros getCausaOrigen(): causa: "+causa);
+        System.out.println("Parametros getCausaOrigen(): causa: " + causa);
         System.out.println("Entre a getCausaOrigen");
         String CausaOrigenIncapacidad = null;
         String sqlQuery;
@@ -776,30 +1475,34 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             while(it.hasNext()) {
               System.out.println(it.next());
             }*/
-            System.out.println("CausaOrigenIncapacidad: "+ CausaOrigenIncapacidad);
+            System.out.println("CausaOrigenIncapacidad: " + CausaOrigenIncapacidad);
             /*
             CausaFormaLiquidacion.forEach(System.out::println);
             System.out.println("CausaFormaLiquidacion 4: " + CausaFormaLiquidacion.get(0).toString());
             System.out.println("CausaFormaLiquidacion 1: " + CausaFormaLiquidacion);
             System.out.println("CausaFormaLiquidacion 3: " + CausaFormaLiquidacion.toArray()[0]);*/
-          
 
         } catch (Exception e) {
-            System.out.println("Error "+this.getClass().getName()+".getCausaOrigen(): " + e);
+            System.out.println("Error " + this.getClass().getName() + ".getCausaOrigen(): " + e);
             CausaOrigenIncapacidad = null;
-        } 
+        }
         return CausaOrigenIncapacidad;
     }
+
     /**
-     * metodo publico para consultar la secuencia de la causa de MATERNIDAD Y PATERNIDAD
+     * metodo publico para consultar la secuencia de la causa de MATERNIDAD Y
+     * PATERNIDAD
+     *
      * @param operation Operacion que se realiza en el APIREST
-     * @param paramater Acronimo de la causa, cadena del cliente, Esquema para setear rol
-     * @param result una variable en tipo String con la secuencia de la causa de MATERNIDAD Y PATERNIDAD 
+     * @param paramater Acronimo de la causa, cadena del cliente, Esquema para
+     * setear rol
+     * @param result una variable en tipo String con la secuencia de la causa de
+     * MATERNIDAD Y PATERNIDAD
      * @return String
      */
-    public String getSecuenciaCausa( String causa , String cadena, String esquema) {
+    public String getSecuenciaCausa(String causa, String cadena, String esquema) {
         //Secuencia de causa 
-        System.out.println("Parametros getCausaOrigen(): causa: "+causa);
+        System.out.println("Parametros getCausaOrigen(): causa: " + causa);
         System.out.println("Entre a getCausaFormaLiquidacion");
         String CausaFormaLiquidacion = null;
         String sqlQuery;
@@ -814,30 +1517,33 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             while(it.hasNext()) {
               System.out.println(it.next());
             }*/
-            System.out.println("getCausaFormaLiquidacion: "+ CausaFormaLiquidacion);
+            System.out.println("getCausaFormaLiquidacion: " + CausaFormaLiquidacion);
             /*
             CausaFormaLiquidacion.forEach(System.out::println);
             System.out.println("CausaFormaLiquidacion 4: " + CausaFormaLiquidacion.get(0).toString());
             System.out.println("CausaFormaLiquidacion 1: " + CausaFormaLiquidacion);
             System.out.println("CausaFormaLiquidacion 3: " + CausaFormaLiquidacion.toArray()[0]);*/
-          
 
         } catch (Exception e) {
-            System.out.println("Error "+this.getClass().getName()+".getCausaFormaLiquidacion(): " + e);
+            System.out.println("Error " + this.getClass().getName() + ".getCausaFormaLiquidacion(): " + e);
             CausaFormaLiquidacion = null;
-        } 
+        }
         return CausaFormaLiquidacion;
     }
+
     /**
-     * metodo publico para consultar la forma de liquidacion de la causa seleccionada 
+     * metodo publico para consultar la forma de liquidacion de la causa
+     * seleccionada
+     *
      * @param operation Operacion que se realiza en el APIREST
-     * @param paramater secuencia de la causa, cadena del cliente, Esquema para setear rol
+     * @param paramater secuencia de la causa, cadena del cliente, Esquema para
+     * setear rol
      * @param result una variable en tipo String con el nombre de la liquidacion
      * @return String
      */
-    public String getCausaFormaLiquidacion( String causa , String cadena, String esquema) {
+    public String getCausaFormaLiquidacion(String causa, String cadena, String esquema) {
         //mensaje 2
-        System.out.println("Parametros getCausaOrigen(): causa: "+causa);
+        System.out.println("Parametros getCausaOrigen(): causa: " + causa);
         System.out.println("Entre a getCausaFormaLiquidacion");
         String CausaFormaLiquidacion = null;
         String sqlQuery;
@@ -853,30 +1559,32 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             while(it.hasNext()) {
               System.out.println(it.next());
             }*/
-            System.out.println("getCausaFormaLiquidacion: "+ CausaFormaLiquidacion);
+            System.out.println("getCausaFormaLiquidacion: " + CausaFormaLiquidacion);
             /*
             CausaFormaLiquidacion.forEach(System.out::println);
             System.out.println("CausaFormaLiquidacion 4: " + CausaFormaLiquidacion.get(0).toString());
             System.out.println("CausaFormaLiquidacion 1: " + CausaFormaLiquidacion);
             System.out.println("CausaFormaLiquidacion 3: " + CausaFormaLiquidacion.toArray()[0]);*/
-          
 
         } catch (Exception e) {
-            System.out.println("Error "+this.getClass().getName()+".getCausaFormaLiquidacion(): " + e);
+            System.out.println("Error " + this.getClass().getName() + ".getCausaFormaLiquidacion(): " + e);
             CausaFormaLiquidacion = null;
-        } 
+        }
         return CausaFormaLiquidacion;
     }
+
     /**
      * metodo publico para consultar el orcentaje de liquidacion por defecto
+     *
      * @param operation Operacion que se realiza en el APIREST
-     * @param paramater secuencia de la causa, cadena del cliente, Esquema para setear rol
-     * @param result una variable en tipo String con un numero 
+     * @param paramater secuencia de la causa, cadena del cliente, Esquema para
+     * setear rol
+     * @param result una variable en tipo String con un numero
      * @return String
      */
-    public String getCausaPorcentajeLiq( String causa , String cadena, String esquema) {
+    public String getCausaPorcentajeLiq(String causa, String cadena, String esquema) {
         //mensaje 2
-        System.out.println("Parametros getCausaOrigen(): causa: "+causa);
+        System.out.println("Parametros getCausaOrigen(): causa: " + causa);
         System.out.println("Entre a getCausaFormaLiquidacion");
         String CausaFormaLiquidacion = null;
         String sqlQuery;
@@ -892,91 +1600,102 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             while(it.hasNext()) {
               System.out.println(it.next());
             }*/
-            System.out.println("getCausaFormaLiquidacion: "+ CausaFormaLiquidacion);
+            System.out.println("getCausaFormaLiquidacion: " + CausaFormaLiquidacion);
             /*
             CausaFormaLiquidacion.forEach(System.out::println);
             System.out.println("CausaFormaLiquidacion 4: " + CausaFormaLiquidacion.get(0).toString());
             System.out.println("CausaFormaLiquidacion 1: " + CausaFormaLiquidacion);
             System.out.println("CausaFormaLiquidacion 3: " + CausaFormaLiquidacion.toArray()[0]);*/
-          
 
         } catch (Exception e) {
-            System.out.println("Error "+this.getClass().getName()+".getCausaFormaLiquidacion(): " + e);
+            System.out.println("Error " + this.getClass().getName() + ".getCausaFormaLiquidacion(): " + e);
             CausaFormaLiquidacion = null;
-        } 
+        }
         return CausaFormaLiquidacion;
     }
+
     /**
-     * metodo publico para consultar la fecha de inicio de solicitud para validar que no exista una solicitud de ausentismo ya creada 
+     * metodo publico para consultar la fecha de inicio de solicitud para
+     * validar que no exista una solicitud de ausentismo ya creada
+     *
      * @param operation Operacion que se realiza en el APIREST
-     * @param paramater secuencia del empleado, fechainicio, cadena del cliente, Esquema para setear rol
+     * @param paramater secuencia del empleado, fechainicio, cadena del cliente,
+     * Esquema para setear rol
      * @param result una variable en BigDecimal con 0=ninguna y 1=Si esxite
      * @return BigDecimal
      */
     public BigDecimal getValidaFechaAusentismo(String empleado, String fechaInic, String cadena, String esquema) {
         //mensaje 3
-        System.out.println("Parametros getValidaFecha(): empleado: "+empleado+", fechaInic: "+fechaInic);
+        System.out.println("Parametros getValidaFecha(): empleado: " + empleado + ", fechaInic: " + fechaInic);
         System.out.println("Entre a getValidaFecha");
         BigDecimal haySolici = BigDecimal.ZERO;
         String sqlQuery;
         try {
             setearPerfil(esquema, cadena);
-            sqlQuery = "SELECT COUNT(*) " +
-                       " FROM SOAUSENTISMOS SO WHERE EMPLEADO = ? " +
-                       " AND to_date(?, 'dd/mm/yyyy') BETWEEN SO.FECHA AND SO.FECHAFINAUS ";
+            sqlQuery = "SELECT COUNT(*) "
+                    + " FROM SOAUSENTISMOS SO WHERE EMPLEADO = ? "
+                    + " AND to_date(?, 'dd/mm/yyyy') BETWEEN SO.FECHA AND SO.FECHAFINAUS ";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, empleado);
             query.setParameter(2, fechaInic);
             haySolici = (BigDecimal) query.getSingleResult();
-            System.out.println("haySolici: "+haySolici);
+            System.out.println("haySolici: " + haySolici);
         } catch (Exception e) {
-            System.out.println("Error "+this.getClass().getName()+".getValidaFecha(): " + e);
-        } 
+            System.out.println("Error " + this.getClass().getName() + ".getValidaFecha(): " + e);
+        }
         return haySolici;
     }
+
     /**
-     * metodo publico para consultar la fecha de inicio de solicitud para validar que no exista una solicitud de vacaciones ya creada 
+     * metodo publico para consultar la fecha de inicio de solicitud para
+     * validar que no exista una solicitud de vacaciones ya creada
+     *
      * @param operation Operacion que se realiza en el APIREST
-     * @param paramater secuencia del empleado, fechainicio, cadena del cliente, Esquema para setear rol
+     * @param paramater secuencia del empleado, fechainicio, cadena del cliente,
+     * Esquema para setear rol
      * @param result una variable en BigDecimal con 0=ninguna y 1=Si esxite
      * @return BigDecimal
      */
     public BigDecimal getValidaFechaVacacion(String empleado, String fechaInic, String cadena, String esquema) {
         //mensaje 3
-        System.out.println("Parametros getValidaFechaVacacion(): empleado: "+empleado+", fechaInic: "+fechaInic);
+        System.out.println("Parametros getValidaFechaVacacion(): empleado: " + empleado + ", fechaInic: " + fechaInic);
         System.out.println("Entre a getValidaFechaVacacion");
         BigDecimal haySolici = BigDecimal.ZERO;
         String sqlQuery;
         try {
             setearPerfil(esquema, cadena);
             sqlQuery = "select  COUNT(*) "
-                       +"FROM NOVEDADESSISTEMA NS WHERE NS.EMPLEADO = ? "
-                       +"AND NS.TIPO='VACACION' AND NS.SUBTIPO='TIEMPO' " 
-                       +" AND to_date(?, 'dd/mm/yyyy') BETWEEN NS.FECHAINICIALDISFRUTE AND NS.FECHASIGUIENTEFINVACA-1 ";
+                    + "FROM NOVEDADESSISTEMA NS WHERE NS.EMPLEADO = ? "
+                    + "AND NS.TIPO='VACACION' AND NS.SUBTIPO='TIEMPO' "
+                    + " AND to_date(?, 'dd/mm/yyyy') BETWEEN NS.FECHAINICIALDISFRUTE AND NS.FECHASIGUIENTEFINVACA-1 ";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, empleado);
             query.setParameter(2, fechaInic);
             haySolici = (BigDecimal) query.getSingleResult();
-            System.out.println("haySolici: "+haySolici);
+            System.out.println("haySolici: " + haySolici);
         } catch (Exception e) {
-            System.out.println("Error "+this.getClass().getName()+".getValidaFechaVacacion(): " + e);
-        } 
+            System.out.println("Error " + this.getClass().getName() + ".getValidaFechaVacacion(): " + e);
+        }
         return haySolici;
     }
+
     /**
-     * metodo publico para consultar la fecha sugerida de regreso cuando es menor a 30 dias 
+     * metodo publico para consultar la fecha sugerida de regreso cuando es
+     * menor a 30 dias
+     *
      * @param operation Operacion que se realiza en el APIREST
-     * @param paramater fechainicio, dias solicitados ,cadena del cliente, Esquema para setear rol
+     * @param paramater fechainicio, dias solicitados ,cadena del cliente,
+     * Esquema para setear rol
      * @param result una variable en String con la fecha calculada
      * @return String
      */
     public String getFechaSugerida(String fechaInicio, String dias, String cadena, String esquema) {
         //mensaje 4
-        System.out.println("Parametros getFechaSugerida(): fechaInicio: "+fechaInicio+", dias: "+dias);
+        System.out.println("Parametros getFechaSugerida(): fechaInicio: " + fechaInicio + ", dias: " + dias);
         System.out.println("Entre a getFechaSugerida");
         String fechaSugerida = null;
         String sqlQuery;
-        
+
         try {
             setearPerfil(esquema, cadena);
             sqlQuery = "SELECT TO_CHAR(TO_DATE(?, 'dd/mm/yyyy') + ? - 1 ,'dd/mm/yyyy' ) FROM DUAL ";
@@ -984,27 +1703,30 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             query.setParameter(1, fechaInicio);
             query.setParameter(2, dias);
             fechaSugerida = query.getSingleResult().toString();
-            System.out.println("fechaSugerida: "+fechaSugerida);
+            System.out.println("fechaSugerida: " + fechaSugerida);
         } catch (Exception e) {
-            System.out.println("Error "+this.getClass().getName()+".getFechaSugerida(): " + e);
-        } 
+            System.out.println("Error " + this.getClass().getName() + ".getFechaSugerida(): " + e);
+        }
         return fechaSugerida;
-    }   
+    }
+
     /**
-     * metodo publico para consultar la fecha sugerida de regreso 
+     * metodo publico para consultar la fecha sugerida de regreso
+     *
      * @param operation Operacion que se realiza en el APIREST
-     * @param paramater fechainicio, dias solicitados ,cadena del cliente, Esquema para setear rol
+     * @param paramater fechainicio, dias solicitados ,cadena del cliente,
+     * Esquema para setear rol
      * @param result una variable en String con la fecha calculada
      * @return String
      */
     public String getFechaSugerida2(String fechaInicio, String dias, BigDecimal cantDiasBD, String cadena, String esquema) {
         //mensaje 4
-        System.out.println("Parametros getFechaSugerida(): fechaInicio: "+fechaInicio+", cantidadDias DB "+ cantDiasBD + ", dias: "+dias);
+        System.out.println("Parametros getFechaSugerida(): fechaInicio: " + fechaInicio + ", cantidadDias DB " + cantDiasBD + ", dias: " + dias);
         System.out.println("Entre a getFechaSugerida2");
-        System.out.println("Cantidad de dias bd"+ cantDiasBD);
+        System.out.println("Cantidad de dias bd" + cantDiasBD);
         String fechaSugerida = null;
         String sqlQuery;
-        
+
         try {
             setearPerfil(esquema, cadena);
             sqlQuery = "SELECT TO_CHAR(TO_DATE(?, 'dd/mm/yyyy') + ? - ? ,'dd/mm/yyyy') FROM DUAL ";
@@ -1013,26 +1735,29 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             query.setParameter(2, dias);
             query.setParameter(3, cantDiasBD);
             fechaSugerida = query.getSingleResult().toString();
-            System.out.println("fechaSugerida: "+fechaSugerida);
+            System.out.println("fechaSugerida: " + fechaSugerida);
         } catch (Exception e) {
-            System.out.println("Error "+this.getClass().getName()+".getFechaSugerida2(): " + e);
-        } 
+            System.out.println("Error " + this.getClass().getName() + ".getFechaSugerida2(): " + e);
+        }
         return fechaSugerida;
     }
+
     /**
-     * metodo publico para consultar la fecha sugerida de regreso 
+     * metodo publico para consultar la fecha sugerida de regreso
+     *
      * @param operation Operacion que se realiza en el APIREST
-     * @param paramater fechainicio, dias solicitados ,cadena del cliente, Esquema para setear rol
+     * @param paramater fechainicio, dias solicitados ,cadena del cliente,
+     * Esquema para setear rol
      * @param result una variable en String con la fecha calculada
      * @return String
      */
     public String getFechaSugerida3(String fechaInicio, String dias, String cadena, String esquema) {
         //mensaje 4
-        System.out.println("Parametros getFechaSugerida(): fechaInicio: "+fechaInicio+", dias: "+dias);
+        System.out.println("Parametros getFechaSugerida(): fechaInicio: " + fechaInicio + ", dias: " + dias);
         System.out.println("Entre a getFechaSugerida3");
         String fechaSugerida = null;
         String sqlQuery;
-        
+
         try {
             setearPerfil(esquema, cadena);
             sqlQuery = "SELECT TO_CHAR(TO_DATE(?, 'dd/mm/yyyy') + ?,'dd/mm/yyyy') FROM DUAL ";
@@ -1040,22 +1765,26 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             query.setParameter(1, fechaInicio);
             query.setParameter(2, dias);
             fechaSugerida = query.getSingleResult().toString();
-            System.out.println("fechaSugerida: "+fechaSugerida);
+            System.out.println("fechaSugerida: " + fechaSugerida);
         } catch (Exception e) {
-            System.out.println("Error "+this.getClass().getName()+".getFechaSugerida3(): " + e);
-        } 
+            System.out.println("Error " + this.getClass().getName() + ".getFechaSugerida3(): " + e);
+        }
         return fechaSugerida;
     }
+
     /**
-     * metodo publico para consultar la Cantidad de dias que hay entre fecha inicio y fecha sugerida
+     * metodo publico para consultar la Cantidad de dias que hay entre fecha
+     * inicio y fecha sugerida
+     *
      * @param operation Operacion que se realiza en el APIREST
-     * @param paramater fechainicio, Fecha sugerida ,cadena del cliente, Esquema para setear rol
+     * @param paramater fechainicio, Fecha sugerida ,cadena del cliente, Esquema
+     * para setear rol
      * @param result una variable en String con la fecha calculada
      * @return String
      */
     public BigDecimal getCalculaDias(String fechaInicio, String fechaSugerida, String cadena, String esquema) {
         //mensaje 4
-        System.out.println("Parametros getCalculaDias(): fechaInicio: "+fechaInicio+", fechaSugerida: "+fechaSugerida);
+        System.out.println("Parametros getCalculaDias(): fechaInicio: " + fechaInicio + ", fechaSugerida: " + fechaSugerida);
         System.out.println("Entre a getCalculaDias");
         BigDecimal diasCalculados = BigDecimal.ZERO;
         String sqlQuery;
@@ -1068,16 +1797,17 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             query.setParameter(1, fechaInicio);
             query.setParameter(2, fechaSugerida);
             diasCalculados = (BigDecimal) query.getSingleResult();
-            System.out.println("diasCalculados: "+diasCalculados);
+            System.out.println("diasCalculados: " + diasCalculados);
         } catch (Exception e) {
-            System.out.println("Error "+this.getClass().getName()+".getCalculaDias(): " + e);
-        } 
+            System.out.println("Error " + this.getClass().getName() + ".getCalculaDias(): " + e);
+        }
         return diasCalculados;
     }
+
     /*
     Metodo que ejecuta la logica de sugerir fecha
-    */
-    public JsonObject prueba(String fechaInicio,String dias,String documento,String causa,
+     */
+    public JsonObject prueba(String fechaInicio, String dias, String documento, String causa,
             String cadena, String nitEmpleado, String esquema) {
         //Se Crean las variable necesarias 
         System.out.println("Entre a prueba");
@@ -1088,15 +1818,15 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         String CausaOrigenIncapacidad = null;
         String CausaFormaLiquidacion = null;
         String CausaPorcentajeLiq = null;
-        String secCausaBD= null;
+        String secCausaBD = null;
         BigDecimal cantidadDiasBD = BigDecimal.ZERO;
         BigDecimal validaFechaAusentismo = BigDecimal.ZERO;
         BigDecimal validaFechaVacacion = BigDecimal.ZERO;
         String msj = null;
-        
+
         //Se ejecutan metodos 
         String secEmpl = getSecuenciaEmplPorSeudonimo(documento, nitEmpleado, cadena);
-        fechaContrato = getFechaContrato(secEmpl,fechaInicio, cadena, esquema);
+        fechaContrato = getFechaContrato(secEmpl, fechaInicio, cadena, esquema);
         System.out.println("Sali de getFechaContrato");
         tipoTrabajador = getTipoTrabajador(secEmpl, fechaInicio, cadena, esquema);
         System.out.println("Sali de getTipoTrabajador");
@@ -1104,17 +1834,17 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         System.out.println("Sali de getDiasTrabajador");
         CausaOrigenIncapacidad = getCausaOrigenIncapacidad(causa, cadena, esquema);
         System.out.println("Sali de getCausaOrigen");
-        CausaFormaLiquidacion =getCausaFormaLiquidacion(causa, cadena , esquema);
+        CausaFormaLiquidacion = getCausaFormaLiquidacion(causa, cadena, esquema);
         System.out.println("Sali de getCausaFormaLiquidacion");
         CausaPorcentajeLiq = getCausaPorcentajeLiq(causa, cadena, esquema);
         System.out.println("Sali de getCausaPorcentajeLiq");
         System.out.println(CausaOrigenIncapacidad);
         //System.out.println("CausaFormaLiquidacion 4: " + CausaOrigen.get(0).toString());
-        
+
         Date fechaPrueba = null;
         int diasSolicitados = Integer.parseInt(dias);
         int diasTipoTraj = Integer.parseInt(diasTipoTrabador);
-        secCausaBD = getSecuenciaCausa("MA", cadena , esquema);
+        secCausaBD = getSecuenciaCausa("MA", cadena, esquema);
         //diasSolicitados = Integer.parseInt();
         try {
             fechaPrueba = getDate(fechaInicio, cadena, esquema);
@@ -1127,11 +1857,11 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         /*
         Se valida que sí la forma de liquidacion es nula traiga un valor por defecto  para 
         formula de liquidacion y porcentaje de liquidacion 
-        */
+         */
         if (CausaFormaLiquidacion == null) {
             System.out.println("Entre a validar ");
             if (CausaOrigenIncapacidad == "AT" || CausaOrigenIncapacidad == "EP"
-                || CausaOrigenIncapacidad == "EG" || CausaOrigenIncapacidad == "MA") {
+                    || CausaOrigenIncapacidad == "EG" || CausaOrigenIncapacidad == "MA") {
                 System.out.println("Entre a validar ");
                 CausaFormaLiquidacion = "IBC MES ANTERIOR";
                 CausaPorcentajeLiq = "100";
@@ -1140,74 +1870,72 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                 CausaFormaLiquidacion = "BASICO";
                 CausaPorcentajeLiq = "100";
             }
-        } 
+        }
         //System.out.println("causa "+ CausaFormaLiquidacion);
         //System.out.println("porcentaje "+ CausaPorcentajeLiq);
         // se crea la logica para consultar fecha sugerida
-        if(fechaContrato.before(fechaPrueba)) {
+        if (fechaContrato.before(fechaPrueba)) {
             validaFechaAusentismo = getValidaFechaAusentismo(secEmpl, fechaInicio, cadena, esquema);
-            System.out.println("ausemtismos" +validaFechaAusentismo);
-            if (validaFechaAusentismo.signum()>0) {
+            System.out.println("ausemtismos" + validaFechaAusentismo);
+            if (validaFechaAusentismo.signum() > 0) {
                 System.out.println("Caso 1");
                 msj = "Ya existe un registro en ese rango de fechas de ausentismo";
                 System.out.println(msj);
                 fechaFin = getFechaSugerida(fechaInicio, dias, cadena, esquema);
                 cantidadDiasBD = getCalculaDias(fechaInicio, fechaFin, cadena, esquema);
-                System.out.println("Numero de dias "+diasSolicitados);
-                System.out.println("diasTipoTrabajador "+diasTipoTraj);
-                System.out.println("Causa Origen  "+CausaOrigenIncapacidad);
-                if (diasSolicitados>30 && 
-                    ((diasTipoTraj==30 && (CausaOrigenIncapacidad != "MA" ||
-                                                        CausaOrigenIncapacidad != "EG" ||
-                                                        CausaOrigenIncapacidad != "EP" ||
-                                                        CausaOrigenIncapacidad != "AT"))
-                      ||  (CausaOrigenIncapacidad == "MA" ||
-                          CausaOrigenIncapacidad == "EG" ||
-                          CausaOrigenIncapacidad == "EP" ||
-                          CausaOrigenIncapacidad == "AT")) 
-                    ) {
+                System.out.println("Numero de dias " + diasSolicitados);
+                System.out.println("diasTipoTrabajador " + diasTipoTraj);
+                System.out.println("Causa Origen  " + CausaOrigenIncapacidad);
+                if (diasSolicitados > 30
+                        && ((diasTipoTraj == 30 && (CausaOrigenIncapacidad != "MA"
+                        || CausaOrigenIncapacidad != "EG"
+                        || CausaOrigenIncapacidad != "EP"
+                        || CausaOrigenIncapacidad != "AT"))
+                        || (CausaOrigenIncapacidad == "MA"
+                        || CausaOrigenIncapacidad == "EG"
+                        || CausaOrigenIncapacidad == "EP"
+                        || CausaOrigenIncapacidad == "AT"))) {
                     System.out.println("si pude validar");
                     //fechaFin = getFechaSugerida2(fechaInicio, dias, cantidadDiasBD, cadena);
                     fechaFin = getFechaSugerida3(fechaInicio, dias, cadena, esquema);
-                    if(secCausaBD.equals(causa)) {
+                    if (secCausaBD.equals(causa)) {
                         System.out.println("Si es permiso de Maternidad");
                         fechaFin = getFechaSugerida(fechaInicio, dias, cadena, esquema);
                     }
                 } else {
                     fechaFin = getFechaSugerida(fechaInicio, dias, cadena, esquema);
-                } 
-                      
+                }
+
             } else {
                 validaFechaVacacion = getValidaFechaVacacion(secEmpl, fechaInicio, cadena, esquema);
-                System.out.println("Validacion fecha vacaciones"+validaFechaVacacion);
-                if (validaFechaVacacion.signum()>0) {
+                System.out.println("Validacion fecha vacaciones" + validaFechaVacacion);
+                if (validaFechaVacacion.signum() > 0) {
                     System.out.println("Caso 2");
                     msj = "Ya existe un registro en ese rango de fechas de vacaicones";
                     System.out.println(msj);
                     fechaFin = getFechaSugerida(fechaInicio, dias, cadena, esquema);
                     cantidadDiasBD = getCalculaDias(fechaInicio, fechaFin, cadena, esquema);
-                    System.out.println("Numero de dias "+diasSolicitados);
-                    System.out.println("diasTipoTrabajador "+diasTipoTraj);
-                    System.out.println("Causa Origen  "+CausaOrigenIncapacidad);
-                    if (diasSolicitados>30 && 
-                            ((diasTipoTraj==30 && (CausaOrigenIncapacidad != "MA" ||
-                                                        CausaOrigenIncapacidad != "EG" ||
-                                                        CausaOrigenIncapacidad != "EP" ||
-                                                        CausaOrigenIncapacidad != "AT"))
-                                ||  (CausaOrigenIncapacidad == "MA" ||
-                                  CausaOrigenIncapacidad == "EG" ||
-                                  CausaOrigenIncapacidad == "EP" ||
-                                  CausaOrigenIncapacidad == "AT")) 
-                        ) {
+                    System.out.println("Numero de dias " + diasSolicitados);
+                    System.out.println("diasTipoTrabajador " + diasTipoTraj);
+                    System.out.println("Causa Origen  " + CausaOrigenIncapacidad);
+                    if (diasSolicitados > 30
+                            && ((diasTipoTraj == 30 && (CausaOrigenIncapacidad != "MA"
+                            || CausaOrigenIncapacidad != "EG"
+                            || CausaOrigenIncapacidad != "EP"
+                            || CausaOrigenIncapacidad != "AT"))
+                            || (CausaOrigenIncapacidad == "MA"
+                            || CausaOrigenIncapacidad == "EG"
+                            || CausaOrigenIncapacidad == "EP"
+                            || CausaOrigenIncapacidad == "AT"))) {
                         System.out.println("si pude validar");
                         //fechaFin = getFechaSugerida2(fechaInicio, dias, cantidadDiasBD, cadena);
                         fechaFin = getFechaSugerida3(fechaInicio, dias, cadena, esquema);
-                        if(secCausaBD.equals(causa)) {
+                        if (secCausaBD.equals(causa)) {
                             System.out.println("Si es permiso de Maternidad");
                             fechaFin = getFechaSugerida(fechaInicio, dias, cadena, esquema);
                         }
                     } else {
-                    fechaFin = getFechaSugerida(fechaInicio, dias, cadena, esquema);
+                        fechaFin = getFechaSugerida(fechaInicio, dias, cadena, esquema);
                     }
                 } else {
                     System.out.println("Caso 3");
@@ -1215,27 +1943,26 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     System.out.println(msj);
                     fechaFin = getFechaSugerida(fechaInicio, dias, cadena, esquema);
                     cantidadDiasBD = getCalculaDias(fechaInicio, fechaFin, cadena, esquema);
-                    System.out.println("Numero de dias "+diasSolicitados);
-                    System.out.println("diasTipoTrabajador "+diasTipoTraj);
-                    System.out.println("Causa Origen  "+CausaOrigenIncapacidad);
-                    if (diasSolicitados>30 && 
-                    ((diasTipoTraj==30 && (CausaOrigenIncapacidad != "MA" ||
-                                                        CausaOrigenIncapacidad != "EG" ||
-                                                        CausaOrigenIncapacidad != "EP" ||
-                                                        CausaOrigenIncapacidad != "AT"))
-                            ||  (CausaOrigenIncapacidad == "MA" ||
-                                CausaOrigenIncapacidad == "EG" ||
-                                CausaOrigenIncapacidad == "EP" ||
-                                CausaOrigenIncapacidad == "AT")) 
-                        ) {
+                    System.out.println("Numero de dias " + diasSolicitados);
+                    System.out.println("diasTipoTrabajador " + diasTipoTraj);
+                    System.out.println("Causa Origen  " + CausaOrigenIncapacidad);
+                    if (diasSolicitados > 30
+                            && ((diasTipoTraj == 30 && (CausaOrigenIncapacidad != "MA"
+                            || CausaOrigenIncapacidad != "EG"
+                            || CausaOrigenIncapacidad != "EP"
+                            || CausaOrigenIncapacidad != "AT"))
+                            || (CausaOrigenIncapacidad == "MA"
+                            || CausaOrigenIncapacidad == "EG"
+                            || CausaOrigenIncapacidad == "EP"
+                            || CausaOrigenIncapacidad == "AT"))) {
                         System.out.println("si pude validar");
                         //fechaFin = getFechaSugerida2(fechaInicio, dias, cantidadDiasBD, cadena);
                         fechaFin = getFechaSugerida3(fechaInicio, dias, cadena, esquema);
-                        if(secCausaBD.equals(causa)) {
+                        if (secCausaBD.equals(causa)) {
                             System.out.println("Si es permiso de Maternidad");
                             fechaFin = getFechaSugerida(fechaInicio, dias, cadena, esquema);
                         }
-                    } else{
+                    } else {
                         fechaFin = getFechaSugerida(fechaInicio, dias, cadena, esquema);
                     }
                 }
@@ -1243,17 +1970,17 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         } else {
             System.out.println("La fecha contrato es menor que la fecha prueba");
         }
-        JsonObject json=Json.createObjectBuilder()
-                        .add("fechafin", fechaFin)
-                        .add("mensaje", msj)
-                        .add("porcentajeLiquidaicon", CausaPorcentajeLiq)
-                        .add("formaLiquidaicon", CausaFormaLiquidacion)
-                    .build();
+        JsonObject json = Json.createObjectBuilder()
+                .add("fechafin", fechaFin)
+                .add("mensaje", msj)
+                .add("porcentajeLiquidaicon", CausaPorcentajeLiq)
+                .add("formaLiquidaicon", CausaFormaLiquidacion)
+                .build();
         return json;
     }
-  
+
     public String getSecuenciaEmplPorSeudonimo(String seudonimo, String nitEmpresa, String cadena) {
-        System.out.println("Parametros getSecuenciaEmplPorSeudonimo(): seudonimo: "+seudonimo+", nitEmpresa: "+nitEmpresa+", cadena: "+cadena);
+        System.out.println("Parametros getSecuenciaEmplPorSeudonimo(): seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
         String secuencia = null;
         try {
             String esquema = getEsquema(nitEmpresa, cadena);
@@ -1266,7 +1993,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             secuencia = query.getSingleResult().toString();
             System.out.println("secuenciaEmpl: " + secuencia);
         } catch (Exception e) {
-            System.out.println("Error: "+this.getClass().getName()+".getSecuenciaEmplPorSeudonimo: " + e.getMessage());
+            System.out.println("Error: " + this.getClass().getName() + ".getSecuenciaEmplPorSeudonimo: " + e.getMessage());
         }
         return secuencia;
     }
