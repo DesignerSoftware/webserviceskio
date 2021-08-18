@@ -521,7 +521,8 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                 + "    ) t, VwVacaPendientesEmpleados VWI \n"
                 + "    where vwi.inicialCausacion >= empleadocurrent_pkg.fechatipocontrato(vwi.empleado, sysdate) \n"
                 + "    AND VWI.EMPLEADO = vw.empleado \n"
-                + "    AND (VWI.DIASPENDIENTES - NVL(T.SUMADIAS,0)) <> 0 \n"
+                //+ "    AND (VWI.DIASPENDIENTES - NVL(T.SUMADIAS,0)) <> 0 \n"
+                + "    AND (VWI.DIASPENDIENTES - NVL(T.SUMADIAS,0)) > 0 \n"
                 + "    AND VWI.rfvacacion = t.VACACION(+) \n"
                 + ") ";
         try {
@@ -572,7 +573,8 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                 + "    ) t, VwVacaPendientesEmpleados VWI \n"
                 + "    where vwi.inicialCausacion >= empleadocurrent_pkg.fechatipocontrato(vwi.empleado, sysdate) \n"
                 + "    AND VWI.EMPLEADO = vw.empleado \n"
-                + "    AND (VWI.DIASPENDIENTES - NVL(T.SUMADIAS,0)) <> 0 \n"
+               // + "    AND (VWI.DIASPENDIENTES - NVL(T.SUMADIAS,0)) <> 0 \n"
+                + "    AND (VWI.DIASPENDIENTES - NVL(T.SUMADIAS,0)) > 0 \n"
                 + "    AND VWI.rfvacacion = t.VACACION(+) \n"
                 + ") ";
         try {

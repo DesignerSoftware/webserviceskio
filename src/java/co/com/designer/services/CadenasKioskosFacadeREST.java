@@ -17,6 +17,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -70,6 +71,33 @@ public class CadenasKioskosFacadeREST {
             return Response.status(Response.Status.OK).entity(s).build();
         }
     }
+    
+    /**
+     * Devuelve todos los campos de la tabla cadenaskioskosapp
+     * @param grupo nombre del grupo empresarial asignado para la URL
+     * @param nitEmpresa nit de la empresa a la que pertenece el empleado conectado
+     * @return List con los campos de la tabla cadenaskioskosapp
+     */    
+    @GET
+    @Path("{grupo}/{empresa}")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response getCadenasXGrupoNit(@PathParam("grupo") String grupo, @PathParam("empresa") String nitEmpresa) {
+        List s = null;
+        System.out.println("Parametros: Grupo: " + grupo+", nit: "+nitEmpresa);
+        try {
+            String sqlQuery = "SELECT CODIGO, DESCRIPCION, NITEMPRESA, GRUPO, CADENA, EMPLNOMINA, ESQUEMA, ESTADO, OBSERVACION FROM CADENASKIOSKOSAPP WHERE GRUPO=? AND NITEMPRESA=?";
+            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            query.setParameter(1, grupo);
+            query.setParameter(2, nitEmpresa);
+            s = query.getResultList();
+            System.out.println("1" + s.get(0));
+            s.forEach(System.out::println);
+            return Response.status(Response.Status.OK).entity(s).build();
+        } catch (Exception ex) {
+            System.out.println("Error: "+this.getClass().getName()+" getCadenas():" + ex);
+            return Response.status(Response.Status.OK).entity(s).build();
+        }
+    }    
     
     @GET
     @Path("validaGrupoInactivo/{grupo}")

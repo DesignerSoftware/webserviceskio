@@ -206,33 +206,6 @@ public class ReportesFacadeREST {
     }
     
     @GET
-    @Path("/obtenerAnexo/")
-    @Produces({"application/pdf"})
-    public Response obtenerFoto(@QueryParam("anexo") String anexo, @QueryParam("cadena") String cadena, @QueryParam("empresa") String nitEmpresa) {
-        System.out.println("Parametros obtenerFoto(): anexo: "+anexo+", cadena: "+cadena+", nitEmpresa: "+nitEmpresa);
-        FileInputStream fis = null;
-        File file = null;
-        String RUTAFOTO = getPathFoto(nitEmpresa, cadena);
-        try {
-            fis = new FileInputStream(new File(RUTAFOTO + anexo));
-            file = new File(RUTAFOTO + anexo);
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(ConexionesKioskosFacadeREST.class.getName()).log(Level.SEVERE, "Anexo no encontrada: " + anexo, ex);
-            System.getProperty("user.dir");
-            System.out.println("Ruta del proyecto: "+this.getClass().getClassLoader().getResource("").getPath());;
-        } finally {
-            try {
-                fis.close();
-            } catch (IOException ex) {
-                Logger.getLogger(ConexionesKioskosFacadeREST.class.getName()).log(Level.SEVERE, "Error cerrando fis " + anexo, ex);
-            }
-        }
-        Response.ResponseBuilder responseBuilder = Response.ok((Object) file);
-        responseBuilder.header("Content-Disposition", "attachment; filename=\"" + anexo + "\"");
-        return responseBuilder.build();
-    }
-    
-    @GET
     @Path("generaFoto1/{documento}")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getFile1(@PathParam("documento") String documento, @QueryParam("nit") String nitEmpresa, @QueryParam("cadena") String cadena) {

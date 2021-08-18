@@ -1717,7 +1717,8 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         try {
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);            
-            String sqlQuery = "SELECT "+valor+" FROM CONFICORREOKIOSKO WHERE EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?)";
+            String sqlQuery = "SELECT "+valor+" FROM CONFICORREOKIOSKO WHERE EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?)"
+                    + " AND ROWNUM<=1";
             System.out.println("Query: "+sqlQuery);
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
