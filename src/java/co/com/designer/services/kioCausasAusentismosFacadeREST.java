@@ -831,6 +831,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
     public List getProrrogaSig(@QueryParam("nitempresa") String nitEmpresa,
             @QueryParam("cadena") String cadena, @QueryParam("empleado") String empleado,
             @QueryParam("causa") String causa, @QueryParam("fechainicio") String fechaInicio) {
+        System.out.println("Parametros getProrrogaSig: nitempresa: "+nitEmpresa+", causa: "+causa+", fechainicio: "+fechaInicio);
         String esquema = getEsquema(nitEmpresa, cadena);
         setearPerfil(esquema, cadena);
         String secEmpleado = getSecuenciaEmplPorSeudonimo(empleado, nitEmpresa, cadena, esquema);
@@ -1378,7 +1379,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     + "FROM KIONOVEDADESSOLICIAUSENT KNSAI \n"
                     + "WHERE KNSAI.SECUENCIA=KNSA.SECUENCIA \n"
                     + "AND KNSA.KIOSOLICIAUSENTISMO=KNSAI.KIOSOLICIAUSENTISMO \n"
-                    + "AND KNSAI.FECHAINICIALAUSENTISMO<=?)) \n"
+                    + "AND KNSAI.FECHAINICIALAUSENTISMO<=TO_DATE(?, 'YYYY-MM-DD')) \n"
                     + "AND KES.FECHAPROCESAMIENTO=(SELECT MAX(KESI.FECHAPROCESAMIENTO) \n"
                     + "FROM KIOESTADOSSOLICIAUSENT KESI \n"
                     + "WHERE KESI.SECUENCIA=KES.SECUENCIA \n"
