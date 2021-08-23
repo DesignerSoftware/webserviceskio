@@ -362,8 +362,8 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                         // si la causa es accidente de trabajo 
                     } else if (causaOrigen.equals("AT")) {
                         String secCausaATPrimerDia = getSecCausaPrimerosDias("39", cadena, esquema);
-                        if (diasIncapacidad == 1) {
-                            // Si los días reportados son 1 día se deben registrar en una sola novedad
+                        if (diasIncapacidad <= 1) {
+                            // Si los días reportados son 2 o menos se deben registrar en una sola novedad
                             System.out.println("Los dias reportados es 1 dia.");
                             String fechaFin1 = (String) calculaFechafinAusent(fechainicial, dias, seudonimo, secCausaATPrimerDia, cadena, nit, esquema);
                             //fechaFin1 = getDateYMD(fechaFin1, cadena, esquema);
@@ -374,9 +374,9 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                                 soliciCreada = true;
                                 getEntityManager(cadena).close();
                             }
-                        } else if (diasIncapacidad>1) {
+                        } else {
                             // Si los dias reportados son más de 1 se deben registrar en dos novedades
-                            // Registro novedad primeros 1 dia
+                            // Registro novedad primeros 1 dia1
                             System.out.println("Los días reportados son más de 1.");
                             System.out.println(esquema);
                             String fechaFin1 = (String) calculaFechafinAusent(fechainicial, "1", seudonimo, secCausaATPrimerDia, cadena, nit, esquema);
@@ -389,7 +389,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                                 System.out.println(esquema);
                                 System.out.println("se crea novedad por un dia");
                                 if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicialEG2, secTipoAusent, secClaseAusent, secCausaAusent, secCodDiagnostico, diasIncapacidad - 1, fechaFin2, secKioSoliciAusent, "null", formaLiq, porcentajeLiq, cadena, esquema)) {
-                                    System.out.println("se crea segunda novedad");
+                                    System.out.println("se crea novedad por dos dias");
                                     mensaje = "Novedad de ausentismo reportada exitosamente.";
                                     soliciCreada = true;
                                     getEntityManager(cadena).close();
@@ -401,7 +401,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                         }
 
                     } else {
-                        System.out.println("Causa diferente a ENFERMEDAD GENERAL o a ACCIDENTE DE TRABAJO");
+                        System.out.println("Causa diferente a ENFERMEDAD GENERAL");
                         if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaAusent, secCodDiagnostico, diasIncapacidad, fechafin, secKioSoliciAusent, secKioNovedadAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
                             mensaje = "Novedad de ausentismo reportada exitosamente.";
                             soliciCreada = true;
@@ -411,13 +411,40 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                             mensaje = "Ha ocurrido un error y no fue posible reportar la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuniquese con el área de nómina y recursos humanos de su empresa";
                         }
                     }
+                    /*if (diasIncapacidad <= 2) {
+                        // Si los días reportados son 2 o menos se deben registrar en una sola novedad
+                        secCausaAusent = ''; 
+                        System.out.println("Los dias reportados son 2 o menos.");
+                        String fechaFin1 = (String) calculaFechafinAusent(fechainicial, dias, seudonimo, secCausaAusent, cadena, nit, esquema).getString("fechafin");
+                        //fechaFin1 = getDateYMD(fechaFin1, cadena, esquema);
+                        System.out.println("Fecha novedad 1: "+fechaFin);
+                        if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaAusent, secCodDiagnostico, Integer.parseInt(dias), fechaFin1, secKioSoliciAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
+                            System.out.println("registrada novedad 1 por 2 dias o menos");
+                            mensaje = "Novedad de ausentismo reportada exitosamente.";
+                            soliciCreada = true;
+                        }
+                    } else {
+                        // Si los dias reportados son más de 2 se deben registrar en dos novedades
+                        // Registro novedad primeros 2 dias
+                        System.out.println("Los días reportados son más de 2.");
+                        if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaAusent, secCodDiagnostico, 2, fechafin, secKioSoliciAusent, formaLiq, porcentajeLiq,cadena, esquema)) {
+
+                            // Registro segunda novedad por los días faltantes
+                            if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaAusent, secCodDiagnostico, diasIncapacidad - 2, fechafin, secKioSoliciAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
+                                mensaje = "Novedad de ausentismo reportada exitosamente.";
+                                soliciCreada = true;
+                            }
+                        } else {
+                            System.out.println("Ha ocurrido un error al momento de crear el registro de la primera novedad");
+                            mensaje = "Ha ocurrido un error y no fue posible reportar la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuniquese con el área de nómina y recursos humanos de su empresa";
+                        }
+                    }*/
 
                     // Registro en tabla KIOESTADOSSOLICIAUSENT
                     if (creaKioEstadoSoliciAusent(seudonimo, nit, secKioSoliciAusent, fechaGeneracion, "ENVIADO", null, cadena, esquema)) {
                         System.out.println("Estado de novedad de ausentismo creado.");
                     } else {
                         mensaje = "Ha ocurrido un error y no fue posible crear la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuníquese con el área de nómina y recursos humanos de su empresa";
-                        soliciCreada = false;
                     }
                 } else {
                     System.out.println("Ha ocurrido un error al momento de crear el registro 1 de la solicitud");
@@ -1420,42 +1447,33 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             setearPerfil(esquema, cadena);
             sqlQuery = "SELECT \n"
                     + "KNSA.secuencia, \n"
-                    + "to_char(KNSA.FECHAFINAUSENTISMO+1,'YYYY-MM-DD') finsiguiente, \n"
+                    + "TO_CHAR(KNSA.FECHAFINAUSENTISMO+1, 'YYYY-MM-DD') finsiguiente, \n"
                     + "CA.DESCRIPCION, \n"
                     + "(select B.CODIGO from DIAGNOSTICOSCATEGORIAS B where B.secuencia = KNSA.diagnosticocategoria) codigo, \n"
                     + "(select  B.DESCRIPCION  from DIAGNOSTICOSCATEGORIAS B where B.secuencia = KNSA.diagnosticocategoria) descripcion, \n"
                     + "TO_CHAR(KNSA.FECHAINICIALAUSENTISMO, 'dd/mm/yyyy') FECHA, \n"
                     + "TO_CHAR(KNSA.FECHAFINAUSENTISMO , 'dd/mm/yyyy') FECHAFIN, \n"
-                    + "KSA.dias ,\n"
-                    + "KNSA.KIONOVEDADPRORROGA,\n"
-                    + "KES.ESTADO\n"
+                    + "KNSA.dias \n"
                     + "FROM \n"
                     + "CAUSASAUSENTISMOS CA, KIONOVEDADESSOLICIAUSENT KNSA, KIOESTADOSSOLICIAUSENT KES, KIOSOLICIAUSENTISMOS KSA \n"
-                    + "WHERE CA.secuencia = KSA.CAUSAREPORTADA \n"
+                    + "WHERE CA.secuencia = KNSA.CAUSAAUSENTISMO \n"
                     + "AND KNSA.KIOSOLICIAUSENTISMO = KSA.SECUENCIA \n"
                     + "and KES.KIOSOLICIAUSENTISMO=KSA.SECUENCIA \n"
                     + "AND KNSA.EMPLEADO = ? \n"
-                    + "AND KSA.CAUSAREPORTADA in (?) \n"
+                    + "AND KNSA.CAUSAAUSENTISMO in (?) \n"
                     + "AND KNSA.FECHAINICIALAUSENTISMO = (SELECT MAX(KNSAI.FECHAINICIALAUSENTISMO) \n"
                     + "FROM KIONOVEDADESSOLICIAUSENT KNSAI \n"
                     + "WHERE KNSAI.SECUENCIA=KNSA.SECUENCIA \n"
                     + "AND KNSA.KIOSOLICIAUSENTISMO=KNSAI.KIOSOLICIAUSENTISMO \n"
-                    //+ "--AND KNSAI.FECHAINICIALAUSENTISMO<=TO_DATE('2021-09-03', 'YYYY-MM-DD')\n"
-                    + ")\n"
+                    //+ "AND KNSAI.FECHAINICIALAUSENTISMO<=TO_DATE(?, 'YYYY-MM-DD')"
+                    + ") \n"
                     + "AND KNSA.SECUENCIA NOT IN (\n"
-                    + "    SELECT a1.KIONOVEDADPRORROGA FROM KIONOVEDADESSOLICIAUSENT a1, KIOSOLICIAUSENTISMOS a2, KIOESTADOSSOLICIAUSENT a3\n"
-                    + "    WHERE A1.KIOSOLICIAUSENTISMO = A2.SECUENCIA\n"
-                    + "    AND A3.KIOSOLICIAUSENTISMO = A2.SECUENCIA\n"
-                    + "    AND A3.FECHAPROCESAMIENTO = (SELECT MAX(A4.FECHAPROCESAMIENTO) FROM KIOESTADOSSOLICIAUSENT A4 WHERE \n"
-                    + "                                A4.KIOSOLICIAUSENTISMO = A2.SECUENCIA)\n"
-                    + "    AND A3.ESTADO IN ('ENVIADO', 'AUTORIZADO', 'LIQUIDADO')\n"
-                    + "    AND a1.KIONOVEDADPRORROGA IS NOT NULL\n"
-                    + "    )\n"
+                    + "    SELECT a1.KIONOVEDADPRORROGA FROM KIONOVEDADESSOLICIAUSENT a1 \n"
+                    + "    WHERE a1.KIONOVEDADPRORROGA IS NOT NULL)"
                     + "AND KES.FECHAPROCESAMIENTO=(SELECT MAX(KESI.FECHAPROCESAMIENTO) \n"
                     + "FROM KIOESTADOSSOLICIAUSENT KESI \n"
-                    + "WHERE KESI.KIOSOLICIAUSENTISMO=KSA.SECUENCIA \n"
-                    + ")\n"
-                    + "AND KES.ESTADO IN ('ENVIADO','AUTORIZADO','LIQUIDADO')";
+                    + "WHERE KESI.SECUENCIA=KES.SECUENCIA \n"
+                    + "AND KES.ESTADO IN ('ENVIADO','AUTORIZADO','LIQUIDADO'))";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, empleado);
             query.setParameter(2, causa);
