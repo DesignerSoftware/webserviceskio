@@ -325,81 +325,89 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     String formaLiq = getCausaFormaLiq(secCausaAusent, cadena, esquema);
                     String porcentajeLiq = getCausaPorcentajeLiq(secCausaAusent, cadena, esquema);
                     String causaOrigen = (String) getCausaOrigenIncapacidad(secCausaAusent, cadena, esquema);
-                    if (causaOrigen.equals("EG")) {
-                        String secCausaEGPrimeros2Dias = getSecCausaPrimerosDias("25", cadena, esquema);
-                        if (diasIncapacidad <= 2) {
-                            // Si los días reportados son 2 o menos se deben registrar en una sola novedad
-                            System.out.println("Los dias reportados son 2 o menos.");
-                            String fechaFin1 = (String) calculaFechafinAusent(fechainicial, dias, seudonimo, secCausaEGPrimeros2Dias, cadena, nit, esquema);
-                            //fechaFin1 = getDateYMD(fechaFin1, cadena, esquema);
-                            System.out.println("Fecha novedad 1: " + fechaFin);
-                            if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaEGPrimeros2Dias, secCodDiagnostico, Integer.parseInt(dias), fechaFin1, secKioSoliciAusent, secKioNovedadAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
-                                System.out.println("registrada novedad 1 por 2 dias o menos");
-                                mensaje = "Novedad de ausentismo reportada exitosamente.";
-                                soliciCreada = true;
-                                getEntityManager(cadena).close();
-                            }
-                        } else {
-                            // Si los dias reportados son más de 2 se deben registrar en dos novedades
-                            // Registro novedad primeros 2 dias
-                            System.out.println("Los días reportados son más de 2.");
-                            String fechaFin1 = (String) calculaFechafinAusent(fechainicial, "2", seudonimo, secCausaEGPrimeros2Dias, cadena, nit, esquema);
-                            if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaEGPrimeros2Dias, secCodDiagnostico, 2, fechaFin1, secKioSoliciAusent, secKioNovedadAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
-                                // Registro segunda novedad por los días faltantes
-                                String fechainicialEG2 = getFechaSugerida3(fechaFin1, "1", cadena, esquema); // fecha inicial 2 es fecha fin +1
-                                int diasNov2 = Integer.parseInt(dias) - 2;
-                                String fechaFin2 = (String) calculaFechafinAusent(fechainicialEG2, String.valueOf(diasNov2), seudonimo, secCausaAusent, cadena, nit, esquema);
-                                if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicialEG2, secTipoAusent, secClaseAusent, secCausaAusent, secCodDiagnostico, diasIncapacidad - 2, fechaFin2, secKioSoliciAusent, "null", formaLiq, porcentajeLiq, cadena, esquema)) {
+                    if (causaOrigen == null) {
+                        System.out.println("es tipo nulo" + causaOrigen);
+                        causaOrigen = "null";
+                    }
+                    System.out.println("causa Origen Insertar:" + causaOrigen);
+                    if (secKioNovedadAusent.equals("null")){
+                        if (causaOrigen.equals("EG")) {
+                            System.out.println("Causa enfermedad general");
+                            String secCausaEGPrimeros2Dias = getSecCausaPrimerosDias("25", cadena, esquema);
+                            if (diasIncapacidad <= 2) {
+                                // Si los días reportados son 2 o menos se deben registrar en una sola novedad
+                                System.out.println("Los dias reportados son 2 o menos.");
+                                String fechaFin1 = (String) calculaFechafinAusent(fechainicial, dias, seudonimo, secCausaEGPrimeros2Dias, cadena, nit, esquema);
+                                //fechaFin1 = getDateYMD(fechaFin1, cadena, esquema);
+                                System.out.println("Fecha novedad 1: " + fechaFin);
+                                if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaEGPrimeros2Dias, secCodDiagnostico, Integer.parseInt(dias), fechaFin1, secKioSoliciAusent, secKioNovedadAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
+                                    System.out.println("registrada novedad 1 por 2 dias o menos");
                                     mensaje = "Novedad de ausentismo reportada exitosamente.";
                                     soliciCreada = true;
                                     getEntityManager(cadena).close();
                                 }
                             } else {
-                                System.out.println("Ha ocurrido un error al momento de crear el registro de la primera novedad");
-                                mensaje = "Ha ocurrido un error y no fue posible reportar la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuniquese con el área de nómina y recursos humanos de su empresa";
+                                // Si los dias reportados son más de 2 se deben registrar en dos novedades
+                                // Registro novedad primeros 2 dias
+                                System.out.println("Los días reportados son más de 2.");
+                                String fechaFin1 = (String) calculaFechafinAusent(fechainicial, "2", seudonimo, secCausaEGPrimeros2Dias, cadena, nit, esquema);
+                                if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaEGPrimeros2Dias, secCodDiagnostico, 2, fechaFin1, secKioSoliciAusent, secKioNovedadAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
+                                    // Registro segunda novedad por los días faltantes
+                                    String fechainicialEG2 = getFechaSugerida3(fechaFin1, "1", cadena, esquema); // fecha inicial 2 es fecha fin +1
+                                    int diasNov2 = Integer.parseInt(dias) - 2;
+                                    String fechaFin2 = (String) calculaFechafinAusent(fechainicialEG2, String.valueOf(diasNov2), seudonimo, secCausaAusent, cadena, nit, esquema);
+                                    if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicialEG2, secTipoAusent, secClaseAusent, secCausaAusent, secCodDiagnostico, diasIncapacidad - 2, fechaFin2, secKioSoliciAusent, "null", formaLiq, porcentajeLiq, cadena, esquema)) {
+                                        mensaje = "Novedad de ausentismo reportada exitosamente.";
+                                        soliciCreada = true;
+                                        getEntityManager(cadena).close();
+                                    }
+                                } else {
+                                    System.out.println("Ha ocurrido un error al momento de crear el registro de la primera novedad");
+                                    mensaje = "Ha ocurrido un error y no fue posible reportar la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuniquese con el área de nómina y recursos humanos de su empresa";
+                                }
                             }
-                        }
-                        // si la causa es accidente de trabajo 
-                    } else if (causaOrigen.equals("AT")) {
-                        String secCausaATPrimerDia = getSecCausaPrimerosDias("39", cadena, esquema);
-                        if (diasIncapacidad <= 1) {
-                            // Si los días reportados son 2 o menos se deben registrar en una sola novedad
-                            System.out.println("Los dias reportados es 1 dia.");
-                            String fechaFin1 = (String) calculaFechafinAusent(fechainicial, dias, seudonimo, secCausaATPrimerDia, cadena, nit, esquema);
-                            //fechaFin1 = getDateYMD(fechaFin1, cadena, esquema);
-                            System.out.println("Fecha novedad 1: " + fechaFin);
-                            if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaATPrimerDia, secCodDiagnostico, Integer.parseInt(dias), fechaFin1, secKioSoliciAusent, secKioNovedadAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
-                                System.out.println("registrada novedad 1 dia");
-                                mensaje = "Novedad de ausentismo reportada exitosamente.";
-                                soliciCreada = true;
-                                getEntityManager(cadena).close();
-                            }
-                        } else {
-                            // Si los dias reportados son más de 1 se deben registrar en dos novedades
-                            // Registro novedad primeros 1 dia1
-                            System.out.println("Los días reportados son más de 1.");
-                            System.out.println(esquema);
-                            String fechaFin1 = (String) calculaFechafinAusent(fechainicial, "1", seudonimo, secCausaATPrimerDia, cadena, nit, esquema);
-                            if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaATPrimerDia, secCodDiagnostico, 1, fechaFin1, secKioSoliciAusent, secKioNovedadAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
-                                // Registro segunda novedad por los días faltantes
-                                String fechainicialEG2 = getFechaSugerida3(fechaFin1, "1", cadena, esquema); // fecha inicial 2 es fecha fin +1
-                                int diasNov2 = Integer.parseInt(dias) - 1;
-                                String fechaFin2 = (String) calculaFechafinAusent(fechainicialEG2, String.valueOf(diasNov2), seudonimo, secCausaAusent, cadena, nit, esquema);
-                                System.out.println(fechaFin2);
+                            // si la causa es accidente de trabajo 
+                        } else if (causaOrigen.equals("AT")) {
+                            System.out.println("Causa enfermedad general");
+                            String secCausaATPrimerDia = getSecCausaPrimerosDias("39", cadena, esquema);
+                            if (diasIncapacidad <= 1) {
+                                // Si los días reportados son 2 o menos se deben registrar en una sola novedad
+                                System.out.println("Los dias reportados es 1 dia.");
+                                String fechaFin1 = (String) calculaFechafinAusent(fechainicial, dias, seudonimo, secCausaATPrimerDia, cadena, nit, esquema);
+                                //fechaFin1 = getDateYMD(fechaFin1, cadena, esquema);
+                                System.out.println("Fecha novedad 1: " + fechaFin);
+                                if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaATPrimerDia, secCodDiagnostico, Integer.parseInt(dias), fechaFin1, secKioSoliciAusent, secKioNovedadAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
+                                    System.out.println("registrada novedad 1 dia");
+                                    mensaje = "Novedad de ausentismo reportada exitosamente.";
+                                    soliciCreada = true;
+                                    getEntityManager(cadena).close();
+                                }
+                            } else {
+                                // Si los dias reportados son más de 1 se deben registrar en dos novedades
+                                // Registro novedad primeros 1 dia1
+                                System.out.println("Los días reportados son más de 1.");
                                 System.out.println(esquema);
-                                System.out.println("se crea novedad por un dia");
-                                if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicialEG2, secTipoAusent, secClaseAusent, secCausaAusent, secCodDiagnostico, diasIncapacidad - 1, fechaFin2, secKioSoliciAusent, "null", formaLiq, porcentajeLiq, cadena, esquema)) {
-                                    System.out.println("se crea novedad por dos dias");
-                                    mensaje = "Novedad de ausentismo reportada exitosamente.";
-                                    soliciCreada = true;
-                                    getEntityManager(cadena).close();
+                                String fechaFin1 = (String) calculaFechafinAusent(fechainicial, "1", seudonimo, secCausaATPrimerDia, cadena, nit, esquema);
+                                if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaATPrimerDia, secCodDiagnostico, 1, fechaFin1, secKioSoliciAusent, secKioNovedadAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
+                                    // Registro segunda novedad por los días faltantes
+                                    String fechainicialEG2 = getFechaSugerida3(fechaFin1, "1", cadena, esquema); // fecha inicial 2 es fecha fin +1
+                                    int diasNov2 = Integer.parseInt(dias) - 1;
+                                    String fechaFin2 = (String) calculaFechafinAusent(fechainicialEG2, String.valueOf(diasNov2), seudonimo, secCausaAusent, cadena, nit, esquema);
+                                    System.out.println(fechaFin2);
+                                    System.out.println(esquema);
+                                    System.out.println("se crea novedad por un dia");
+                                    if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicialEG2, secTipoAusent, secClaseAusent, secCausaAusent, secCodDiagnostico, diasIncapacidad - 1, fechaFin2, secKioSoliciAusent, "null", formaLiq, porcentajeLiq, cadena, esquema)) {
+                                        System.out.println("se crea novedad por dos dias");
+                                        mensaje = "Novedad de ausentismo reportada exitosamente.";
+                                        soliciCreada = true;
+                                        getEntityManager(cadena).close();
+                                    }
+                                } else {
+                                    System.out.println("Ha ocurrido un error al momento de crear el registro de la primera novedad");
+                                    mensaje = "Ha ocurrido un error y no fue posible reportar la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuniquese con el área de nómina y recursos humanos de su empresa";
                                 }
-                            } else {
-                                System.out.println("Ha ocurrido un error al momento de crear el registro de la primera novedad");
-                                mensaje = "Ha ocurrido un error y no fue posible reportar la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuniquese con el área de nómina y recursos humanos de su empresa";
                             }
                         }
-
                     } else {
                         System.out.println("Causa diferente a ENFERMEDAD GENERAL");
                         if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaAusent, secCodDiagnostico, diasIncapacidad, fechafin, secKioSoliciAusent, secKioNovedadAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
@@ -578,12 +586,6 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             query.setParameter(9, fechaFin); // fecha fin pago
             query.setParameter(10, formaLiq); // formaLiquidacion
             query.setParameter(11, porcentajeLiq); // porcentLiq
-            System.out.println("Pruebas de nose2: " + secCodDiagnostico + secCodDiagnostico.length());
-            if (secCodDiagnostico.equals("null")) {
-                System.out.println("si es nulo cd");
-            } else {
-                System.out.println("NO ES NULO");
-            }
             query.setParameter(12, secCodDiagnostico.equals("null") ? null : secCodDiagnostico); // diagnostico
             query.setParameter(13, kioSoliciAusentismo); // kioSoliciAusentismo
             query.setParameter(14, secKioNovedadSoliciAusent.equals("null") ? null : secKioNovedadSoliciAusent); // kioNovedadProrroga
