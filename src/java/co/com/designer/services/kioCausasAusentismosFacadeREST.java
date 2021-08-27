@@ -325,12 +325,26 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     String formaLiq = getCausaFormaLiq(secCausaAusent, cadena, esquema);
                     String porcentajeLiq = getCausaPorcentajeLiq(secCausaAusent, cadena, esquema);
                     String causaOrigen = (String) getCausaOrigenIncapacidad(secCausaAusent, cadena, esquema);
-                    if (causaOrigen == null) {
+                    /*if (causaOrigen == null) {
                         System.out.println("es tipo nulo" + causaOrigen);
                         causaOrigen = "null";
                     }
-                    System.out.println("causa Origen Insertar:" + causaOrigen);
-                    if (secKioNovedadAusent.equals("null")){
+                    if (secKioNovedadAusent.equals("null")) {
+                        System.out.println("es tipo nulo2" + causaOrigen);
+                    }
+                    System.out.println("causa Origen Insertar:" + causaOrigen);*/
+                    if (secKioNovedadAusent.equals("null")) {
+                        System.out.println("Causa diferente a ENFERMEDAD GENERAL");
+                        if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaAusent, secCodDiagnostico, diasIncapacidad, fechafin, secKioSoliciAusent, secKioNovedadAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
+                            mensaje = "Novedad de ausentismo reportada exitosamente.";
+                            soliciCreada = true;
+                            getEntityManager(cadena).close();
+                        } else {
+                            System.out.println("Ha ocurrido un error al momento de crear el registrar la novedad");
+                            mensaje = "Ha ocurrido un error y no fue posible reportar la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuniquese con el área de nómina y recursos humanos de su empresa";
+                        }
+
+                    } else {
                         if (causaOrigen.equals("EG")) {
                             System.out.println("Causa enfermedad general");
                             String secCausaEGPrimeros2Dias = getSecCausaPrimerosDias("25", cadena, esquema);
@@ -407,16 +421,16 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                                     mensaje = "Ha ocurrido un error y no fue posible reportar la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuniquese con el área de nómina y recursos humanos de su empresa";
                                 }
                             }
-                        }
-                    } else {
-                        System.out.println("Causa diferente a ENFERMEDAD GENERAL");
-                        if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaAusent, secCodDiagnostico, diasIncapacidad, fechafin, secKioSoliciAusent, secKioNovedadAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
-                            mensaje = "Novedad de ausentismo reportada exitosamente.";
-                            soliciCreada = true;
-                            getEntityManager(cadena).close();
                         } else {
-                            System.out.println("Ha ocurrido un error al momento de crear el registrar la novedad");
-                            mensaje = "Ha ocurrido un error y no fue posible reportar la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuniquese con el área de nómina y recursos humanos de su empresa";
+                            System.out.println("Causa diferente a ENFERMEDAD GENERAL");
+                            if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaAusent, secCodDiagnostico, diasIncapacidad, fechafin, secKioSoliciAusent, secKioNovedadAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
+                                mensaje = "Novedad de ausentismo reportada exitosamente.";
+                                soliciCreada = true;
+                                getEntityManager(cadena).close();
+                            } else {
+                                System.out.println("Ha ocurrido un error al momento de crear el registrar la novedad");
+                                mensaje = "Ha ocurrido un error y no fue posible reportar la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuniquese con el área de nómina y recursos humanos de su empresa";
+                            }
                         }
                     }
                     /*if (diasIncapacidad <= 2) {

@@ -38,7 +38,6 @@ public class ApplicationConfig extends Application {
         resources.add(co.com.designer.services.VwvacaPendientesEmpleadosFacadeREST.class);
         resources.add(co.com.designer.services.filter.CorsFilter.class);
         resources.add(co.com.designer.services.kioCausasAusentismosFacadeREST.class);
-        
     }
 
 }
