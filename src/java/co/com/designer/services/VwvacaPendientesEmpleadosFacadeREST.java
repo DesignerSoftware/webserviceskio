@@ -157,7 +157,8 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                     + "and e.FECHAPROCESAMIENTO = (select max(ei.FECHAPROCESAMIENTO) \n"
                     + "from KioEstadosSolici ei, kiosolicivacas ksi \n"
                     + "where ei.kioSoliciVaca = ksi.secuencia \n"
-                    + "and ksi.secuencia=ks.secuencia) \n"
+                    + "and ksi.secuencia=ks.secuencia) "
+                    + "and v.inicialcausacion>= empleadocurrent_pkg.fechavigenciatipocontrato(ks.empleado, sysdate) "
                     + "order by e.fechaProcesamiento DESC";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpl);
@@ -461,7 +462,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
         "WHERE \n" +
         "VW.EMPLEADO=E.SECUENCIA AND\n" +
         //"((DIASPENDIENTES > 0) AND (E.CODIGOEMPLEADO = ?))";
-        "((DIASPENDIENTES > 0) AND (E.SECUENCIA = ?))";
+        "((DIASPENDIENTES > 0) AND (E.SECUENCIA = ?)) AND VW.INICIALCAUSACION>=empleadocurrent_pkg.fechavigenciatipocontrato(e.secuencia, sysdate)";
         try {
             BigDecimal secuenciaEmpl = new BigDecimal(secEmpl);
             query = getEntityManager(cadena).createNativeQuery(consulta);
@@ -1648,7 +1649,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response getDiasNovedadesVaca(@QueryParam("nit") String nitEmpresa, @QueryParam("empleado") String empleado,
             @QueryParam("cadena") String cadena) {
-        System.out.println("Parametros getDiasNovedadesVaca(): nit: "+nitEmpresa+", usuario: "+empleado+", cadena: "+cadena);
+        System.out.println("Parametros getDiasNovedadesVaca(): nit: " + nitEmpresa + ", usuario: " + empleado + ", cadena: " + cadena);
         List s = null;
         try {
             String esquema = null;
@@ -1659,69 +1660,91 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
             }
             String secuenciaEmpleado = getSecuenciaEmplPorSeudonimo(empleado, nitEmpresa, cadena, esquema);
             setearPerfil(esquema, cadena);
-            String sqlQuery = "select  \n" +
-"                      tablaTotal.empleado, 'TOTAL' tipo, ROUND(NVL(sum(tablaTotal.dias), 0 ), 2)\n" +
-"                     from\n" +
-"                     (select e.secuencia empleado, sum(n.dias) dias\n" +
-"                     from\n" +
-"                     novedadessistema n, empleados e\n" +
-"                     where e.secuencia=n.empleado\n" +
-"                     and tipo='VACACION'\n" +
-"                     and subtipo in ('TIEMPO', 'DINERO')\n" +
-"                     group by e.secuencia\n" +
-"                     union\n" +
-"                     select e.secuencia empleado,\n" +
-"                    sum(k.diasvacadisfrute)  dias\n" +
-"                     from kioacumvaca k, empleados e\n" +
-"                    where\n" +
-"                    e.secuencia=k.empleado(+)\n" +
-"                    group by e.secuencia\n" +
-"                                         union\n" +
-"                     select e.secuencia empleado,\n" +
-"                    sum(k.diasvacadinero)  dias\n" +
-"                     from kioacumvaca k, empleados e\n" +
-"                    where\n" +
-"                    e.secuencia=k.empleado(+)\n" +
-"                    group by e.secuencia\n" +
-"                    ) tablaTotal, empleados e where tablaTotal.empleado=e.secuencia\n" +
-"                     and e.secuencia=?\n" +
-"                     group by tablaTotal.empleado\n" +
-"                     union    \n" +
-"                     (select tabla.empleado secuenciaEmpl, tabla.tipo tipo, NVL(sum(tabla.dias), 0) dias\n" +
-"                     from \n" +
-"                     (\n" +
-"                     (select e.secuencia empleado, NVL(sum(n.dias), 0) dias, 'DINERO' tipo\n" +
-"                     from\n" +
-"                     novedadessistema n, empleados e\n" +
-"                     where e.secuencia=n.empleado\n" +
-"                     and tipo='VACACION'\n" +
-"                    and subtipo='DINERO'\n" +
-"                     group by e.secuencia\n" +
-"                     union\n" +
-"                     select e.secuencia empleado,\n" +
-"                     NVL(sum(k.diasvacadinero), 0) dias, 'DINERO' tipo\n" +
-"                     from kioacumvaca k, empleados e\n" +
-"                     where\n" +
-"                    e.secuencia=k.empleado(+)\n" +
-"                     group by e.secuencia)\n" +
-"                     union\n" +
-"                     (select e.secuencia empleado, ROUND(NVL(sum(n.dias), 0), 2) dias, 'TIEMPO' tipo\n" +
-"                     from\n" +
-"                    novedadessistema n, empleados e\n" +
-"                     where e.secuencia=n.empleado\n" +
-"                     and tipo='VACACION'\n" +
-"                     and subtipo='TIEMPO'\n" +
-"                     group by e.secuencia\n" +
-"                     union\n" +
-"                     select e.secuencia empleado,\n" +
-"                     ROUND(NVL(sum(k.diasvacadisfrute), 0),2) dias, 'TIEMPO' tipo\n" +
-"                     from kioacumvaca k, empleados e\n" +
-"                     where\n" +
-"                     e.secuencia=k.empleado(+)\n" +
-"                     group by e.secuencia)\n" +
-"                     ) tabla\n" +
-"                     where tabla.empleado=?\n" +
-"                     group by tabla.empleado, tabla.tipo)";
+            String sqlQuery = "SELECT "
+                    + "    tablatotal.empleado, 'TOTAL' tipo, round(nvl(SUM(tablatotal.dias), 0), 2)\n"
+                    + "FROM\n"
+                    + "    (\n"
+                    + "        SELECT\n"
+                    + "            e.secuencia empleado, SUM(n.dias) dias\n"
+                    + "        FROM\n"
+                    + "            novedadessistema n, empleados e, vwvacapendientesempleados v\n"
+                    + "        WHERE\n"
+                    + "            e.secuencia = n.empleado\n"
+                    + "            AND n.tipo = 'VACACION'\n"
+                    + "            AND n.subtipo IN ('TIEMPO', 'DINERO')\n"
+                    + "            AND v.rfvacacion = n.vacacion\n"
+                    + "            AND v.inicialcausacion >= empleadocurrent_pkg.fechavigenciatipocontrato(e.secuencia, sysdate)\n"
+                    + "        GROUP BY e.secuencia\n"
+                    + "        UNION\n"
+                    + "        SELECT\n"
+                    + "            e.secuencia empleado, SUM(k.diasvacadisfrute) dias\n"
+                    + "        FROM\n"
+                    + "            kioacumvaca k, empleados e\n"
+                    + "        WHERE e.secuencia = k.empleado(+)\n"
+                    + "        GROUP BY e.secuencia\n"
+                    + "        UNION\n"
+                    + "        SELECT \n"
+                    + "            e.secuencia empleado, SUM(k.diasvacadinero) dias\n"
+                    + "        FROM\n"
+                    + "            kioacumvaca k, empleados e\n"
+                    + "        WHERE e.secuencia = k.empleado(+)\n"
+                    + "        GROUP BY e.secuencia\n"
+                    + "    ) tablatotal,\n"
+                    + "    empleados e\n"
+                    + "WHERE\n"
+                    + "    tablatotal.empleado = e.secuencia\n"
+                    + "    AND e.secuencia = ? \n"
+                    + "GROUP BY tablatotal.empleado\n"
+                    + "UNION\n"
+                    + "( SELECT tabla.empleado secuenciaempl, tabla.tipo tipo, nvl(SUM(tabla.dias), 0) dias\n"
+                    + "FROM\n"
+                    + "    (\n"
+                    + "        ( SELECT e.secuencia empleado, nvl(SUM(n.dias), 0) dias, 'DINERO' tipo\n"
+                    + "        FROM\n"
+                    + "            novedadessistema n, empleados e, vwvacapendientesempleados v\n"
+                    + "        WHERE\n"
+                    + "            e.secuencia = n.empleado\n"
+                    + "            AND n.tipo = 'VACACION'\n"
+                    + "            AND n.subtipo = 'DINERO'\n"
+                    + "            AND v.rfvacacion = n.vacacion\n"
+                    + "            AND v.inicialcausacion >= empleadocurrent_pkg.fechavigenciatipocontrato(e.secuencia, sysdate)\n"
+                    + "        GROUP BY e.secuencia\n"
+                    + "        UNION\n"
+                    + "        SELECT e.secuencia empleado, nvl(SUM(k.diasvacadinero), 0) dias, 'DINERO' tipo\n"
+                    + "        FROM\n"
+                    + "            kioacumvaca k, empleados e\n"
+                    + "        WHERE\n"
+                    + "            e.secuencia = k.empleado (+)\n"
+                    + "        GROUP BY e.secuencia\n"
+                    + "        )\n"
+                    + "        UNION\n"
+                    + "        ( SELECT\n"
+                    + "            e.secuencia empleado,\n"
+                    + "            round(nvl(SUM(n.dias), 0), 2) dias,\n"
+                    + "            'TIEMPO' tipo\n"
+                    + "        FROM\n"
+                    + "            novedadessistema n, empleados e, vwvacapendientesempleados   v\n"
+                    + "        WHERE\n"
+                    + "            e.secuencia = n.empleado\n"
+                    + "            AND n.tipo = 'VACACION'\n"
+                    + "            AND n.subtipo = 'TIEMPO'\n"
+                    + "            AND v.rfvacacion = n.vacacion\n"
+                    + "            AND v.inicialcausacion >= empleadocurrent_pkg.fechavigenciatipocontrato(e.secuencia, sysdate)\n"
+                    + "        GROUP BY e.secuencia\n"
+                    + "        UNION\n"
+                    + "        SELECT \n"
+                    + "            e.secuencia empleado, round(nvl(SUM(k.diasvacadisfrute), 0), 2) dias, 'TIEMPO' tipo\n"
+                    + "        FROM\n"
+                    + "            kioacumvaca k, empleados e\n"
+                    + "        WHERE\n"
+                    + "            e.secuencia = k.empleado(+)\n"
+                    + "        GROUP BY e.secuencia\n"
+                    + "        )\n"
+                    + "    ) tabla\n"
+                    + "WHERE\n"
+                    + "    tabla.empleado = ? \n"
+                    + "GROUP BY tabla.empleado, tabla.tipo\n"
+                    + ")";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secuenciaEmpleado);
             query.setParameter(2, secuenciaEmpleado);
@@ -1729,10 +1752,10 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
             s.forEach(System.out::println);
             return Response.status(Response.Status.OK).entity(s).build();
         } catch (Exception ex) {
-            System.out.println("Error "+this.getClass().getName()+".getDiasNovedadesVaca: " + ex);
+            System.out.println("Error " + this.getClass().getName() + ".getDiasNovedadesVaca: " + ex);
             return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
         }
-    }    
+    }
     
     /*Crea nuevo registro kioestadosolici al crear nueva solicitud de vacaciones*/
     public boolean creaKioEstadoSolici(

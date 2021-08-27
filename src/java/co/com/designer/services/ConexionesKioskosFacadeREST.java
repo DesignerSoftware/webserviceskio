@@ -350,7 +350,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             retorno = (BigDecimal) query.getSingleResult();
             if (retorno.compareTo(BigDecimal.ZERO) > 0) {
                 resultado = false;
-                mensaje = "Ya existe el usuario";
+                mensaje = "Ya existe el usuario, por favor intente iniciar sesión.";
                 System.out.println("resultado usuarioRegistrado: " + resultado + " Mensaje: " + mensaje);
             } else {
                 String secEmpl = getSecEmplPorDocumentoYEmpresa(documento, nitEmpresa, cadena);

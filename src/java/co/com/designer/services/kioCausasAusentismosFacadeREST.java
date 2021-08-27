@@ -1645,7 +1645,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             System.out.println("CausaFormaLiquidacion 3: " + CausaFormaLiquidacion.toArray()[0]);*/
 
         } catch (Exception e) {
-            System.out.println("Error " + this.getClass().getName() + ".getCausaOrigen(): " + e);
+            System.out.println("Error " + this.getClass().getName() + ".getCausaOrigenIncapacidad(): " + e.getMessage());
             CausaOrigenIncapacidad = null;
         }
         return CausaOrigenIncapacidad;
