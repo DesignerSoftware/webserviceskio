@@ -2,10 +2,15 @@ package co.com.designer.services;
 
 import co.com.designer.kiosko.correo.EnvioCorreo;
 import co.com.designer.kiosko.entidades.ConexionesKioskos;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -943,7 +948,106 @@ public class EmpleadosFacadeREST {
             System.out.println("Error "+this.getClass().getName()+"getEducacionesNoFormales(): " + ex);
             return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
         }
-    }     
+    } 
+    
+    @GET
+    @Path("/obtenerAnexosDocumentos/")
+    public List obtenerAnexosDocumentos(@QueryParam("empleado") String empleado, @QueryParam("cadena") String cadena, @QueryParam("empresa") String nitEmpresa) {
+        System.out.println("Parametros obtenerAnexosDocumentos(): empleado: " + empleado + ", cadena: " + cadena + ", nitEmpresa: " + nitEmpresa);
+        File carpeta = null;
+        String esquema = null;
+        String secEmpresa = null;
+        String secEmpleado = null;
+        List documentos = new ArrayList();
+        String rutaArchivo = getPathDocumentos(nitEmpresa, cadena) /* "E:\\CLIENTES\\CONSTRUCTORA DE MARCAS S.A.S"*/ ;
+        try {
+            esquema = getEsquema(nitEmpresa, cadena);
+            secEmpresa = getSecuenciaPorNitEmpresa(nitEmpresa, cadena);
+            secEmpleado = getSecuenciaEmplPorSeudonimo(empleado, nitEmpresa, cadena);
+            carpeta = new File(rutaArchivo + "\\" + secEmpresa + "\\" +secEmpleado);
+            File[] listado = null;
+            listado = carpeta.listFiles(); 
+            System.out.println(documentos);
+            System.out.println("Length: "+listado.length);
+            if (listado == null || listado.length == 0) {
+                System.out.println("No hay elementos dentro de la carpeta actual");
+            } else {
+                try {
+                    for (int i = 0; i < listado.length; i++) {
+                        System.out.println("i=" + i);
+                        System.out.println("nombre con ext " + listado[i]);
+                        System.out.println("confima ext " + listado[i].getName() + " " + listado[i].getName().endsWith(".pdf"));
+                        if (listado[i].getName().endsWith(".pdf") == true) {
+                            System.out.println(listado[i].getName());
+                            documentos.add(listado[i].getName());
+                            System.out.println(documentos);
+                        } else {
+                            System.out.println("Elemento no registrado");
+                        }
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error al validar extensiones "+e.getMessage());
+                }
+                System.out.println("Fin ejecución for");
+            }
+            System.out.println(documentos);
+        } catch (Exception ex) {
+            System.out.println("Error: "+ex.getMessage());
+        } 
+
+        return documentos;
+    }    
+    @GET
+    @Path("/decargarAnexo/")
+    @Produces({"application/pdf"})
+    public Response decargarAnexo(@QueryParam("usuario") String usuario, @QueryParam("cadena") String cadena, 
+            @QueryParam("empresa") String nitEmpresa, @QueryParam("anexo") String anexo) {
+        System.out.println("Parametros decargarAnexo(): anexo: " + anexo + ", cadena: " + cadena + ", "
+                + "nitEmpresa: " + nitEmpresa + " usuario " + usuario);
+        FileInputStream fis = null;
+        File file = null;
+        String esquema = null;
+        String secEmpresa = null;
+        String secEmpleado = null;
+        esquema = getEsquema(nitEmpresa, cadena);
+        secEmpresa = getSecuenciaPorNitEmpresa(nitEmpresa, cadena);
+        secEmpleado = getSecuenciaEmplPorSeudonimo(usuario, nitEmpresa, cadena);
+        String rutaArchivo = getPathDocumentos(nitEmpresa, cadena) + "\\" + secEmpresa + "\\" + secEmpleado + "\\" /* "E:\\CLIENTES\\CONSTRUCTORA DE MARCAS S.A.S"*/;
+        try {
+            fis = new FileInputStream(new File(rutaArchivo + anexo));
+            file = new File(rutaArchivo + anexo);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(ConexionesKioskosFacadeREST.class.getName()).log(Level.SEVERE, "Anexo no encontrada: " + anexo, ex);
+            System.getProperty("user.dir");
+            System.out.println("Ruta del proyecto: " + this.getClass().getClassLoader().getResource("").getPath());;
+        } finally {
+            try {
+                fis.close();
+            } catch (IOException ex) {
+                Logger.getLogger(ConexionesKioskosFacadeREST.class.getName()).log(Level.SEVERE, "Error cerrando fis " + anexo, ex);
+            }
+        }
+        Response.ResponseBuilder responseBuilder = Response.ok((Object) file);
+        responseBuilder.header("Content-Disposition", "attachment; filename=\"" + anexo + "\"");
+        return responseBuilder.build();
+    }
+    
+    public String getPathDocumentos(String nitEmpresa, String cadena) {
+        System.out.println("Parametros getPathReportes(): cadena: " + cadena);
+        String rutaFoto = "";
+        try {
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
+            String sqlQuery = "SELECT PATHARCHIVO FROM GENERALES WHERE ROWNUM<=1";
+            System.out.println("Query: " + sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            rutaFoto = query.getSingleResult().toString();
+            System.out.println("rutaFotos: " + rutaFoto);
+        } catch (Exception e) {
+            System.out.println("Error: " + this.getClass().getName() + ".getPathReportes(): " + e.getMessage());
+        }
+        return rutaFoto;
+    }
     
     public String getEsquema( String nitEmpresa, String cadena) {
         System.out.println("Parametros getEsquema(): nitempresa: "+nitEmpresa+", cadena: "+cadena);

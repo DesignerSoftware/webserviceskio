@@ -9,7 +9,6 @@ import co.com.designer.kiosko.correo.EnvioCorreo;
 import co.com.designer.kiosko.entidades.KioCausasAusentismos;
 import co.com.designer.kiosko.entidades.DiagnosticosCategorias;
 import co.com.designer.kiosko.entidades.OpcionesKioskosApp;
-import co.com.designer.kiosko.entidades.VwVacaPendientesEmpleados;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -17,24 +16,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.sql.Array;
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ejb.Stateless;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
 import javax.ws.rs.Consumes;
@@ -51,6 +37,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -61,7 +48,8 @@ import javax.persistence.PersistenceException;
 import javax.persistence.Tuple;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.core.Response;
-import org.json.JSONArray;
+import java.util.Arrays;
+import java.io.FileFilter;
 
 /**
  *
@@ -2057,7 +2045,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         responseBuilder.header("Content-Disposition", "attachment; filename=\"" + anexo + "\"");
         return responseBuilder.build();
     }
-
+    
     /*Retorna un objeto con los detalles del ausentismo, recibe el empleado y la secuencia de la solicitud*/
     public List<Object[]> getObjectDetalleAusentismo(String secKioSoliciAusentismo, String nitEmpresa, String cadena) {
         System.out.println("Parametros getObjectDetalleAusentismo(): secKioSoliciAusentismo: " + secKioSoliciAusentismo + ", empresa: " + nitEmpresa + ", cadena: " + cadena);
