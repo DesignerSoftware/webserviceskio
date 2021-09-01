@@ -142,7 +142,7 @@ public class EnvioCorreo {
       Session sesion = Session.getDefaultInstance(propiedad);
       String correoEnvia = "pruebaskiosco534@gmail.com";
       String contraseña = "Nomina01";
-      String destinatario = "thalia.manrike@gmail.com";
+      String destinatario = "prueba@gmail.com";
       String asunto = "intento 2";
       String mensaje = "Mensaje prueba";
       

@@ -343,10 +343,13 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                     + "AND e.empresa = em.secuencia "
                     // + "AND e.codigoempleado = ? "
                     + "AND p.numerodocumento = ? "
-                    + "AND em.nit = ? ";
+                    + "AND em.nit = ? "
+                    + "and empleadocurrent_pkg.tipotrabajadorcorte(e.secuencia, sysdate)='ACTIVO' "
+                    + "AND ck.nitempresa = ? ";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, documento);
             query.setParameter(2, nitEmpresa);
+            query.setParameter(3, nitEmpresa);
             retorno = (BigDecimal) query.getSingleResult();
             if (retorno.compareTo(BigDecimal.ZERO) > 0) {
                 resultado = false;
@@ -1774,7 +1777,10 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             String sqlQuery = "SELECT E.SECUENCIA "
                     + "FROM PERSONAS P, EMPLEADOS E, EMPRESAS EM "
                     + "WHERE "
-                    + "E.PERSONA=P.SECUENCIA AND E.EMPRESA=EM.SECUENCIA AND P.NUMERODOCUMENTO=? AND EMPLEADOCURRENT_PKG.TIPOTRABAJADORCORTE(E.SECUENCIA, SYSDATE)='ACTIVO' ";
+                    + "E.PERSONA=P.SECUENCIA AND E.EMPRESA=EM.SECUENCIA "
+                    + "AND P.NUMERODOCUMENTO=? "
+                    + "AND EM.NIT=? "
+                    + "AND EMPLEADOCURRENT_PKG.TIPOTRABAJADORCORTE(E.SECUENCIA, SYSDATE)='ACTIVO' ";
             System.out.println("Query: "+sqlQuery);
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
 
