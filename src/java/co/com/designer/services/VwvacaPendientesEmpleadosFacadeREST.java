@@ -1465,7 +1465,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                     mensaje+= "Por favor seguir el proceso en: <a style='color: white !important;' target='_blank' href="+urlKio+">"+urlKio+"</a><br><br>"
                     + "Si no puede ingresar, necesitará instalar la última versión de su navegador, la cual podrá descargar de forma gratuita.<br><br>"
                     + "En caso de que haya olvidado su clave podrá generar una nueva haciendo clic en ¿Olvidó su clave? en el módulo Kiosco o a través del link: "
-                    + "<br><a href='" + urlKioOlvidoClave + "'>" + urlKioOlvidoClave + "</a>";
+                    + "<br><a style='color: white !important;' href='" + urlKioOlvidoClave + "'>" + urlKioOlvidoClave + "</a>";
                     
            String fechaInicioDisfrute = getFechaInicioXsecKioEstadoSolici(secKioEstadoSolici, nitEmpresa, cadena);
            System.out.println("url Kiosco: "+urlKio);
@@ -1897,13 +1897,13 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                                             + "La persona a cargo de DAR APROBACIÓN es: " + nombreAutorizaSolici
                                             + "<br>"+
                                             "La solicitud se creó por "+dias+" días, para ser disfrutados desde el "+fechainicial+" hasta el "+fechafin
-                                            + "<br><br>Por favor seguir el proceso en: <a href='" + urlKio + "'>" + urlKio + "</a>"
+                                            + "<br><br>Por favor seguir el proceso en: <a style='color: white !important;' href='" + urlKio + "'>" + urlKio + "</a>"
                                             + "<br><br>"
                                             + "Si no puede ingresar, necesitará instalar la última versión de su navegador, la cual podrá descargar de forma gratuita."
                                             + "<br><br>"
                                             //  + "En caso de que haya olvidado su clave, ingrese a la página de internet, y de clic en ¿Olvidó su clave? y siga los pasos.";
                                             + "En caso de que haya olvidado su clave podrá generar una nueva haciendo clic en ¿Olvidó su clave? en el módulo Kiosco o a través del link: "
-                                            + "<br><a href='" + urlKioOlvidoClave + "'>" + urlKioOlvidoClave + "</a>";
+                                            + "<br><a style='color: white !important;' href='" + urlKioOlvidoClave + "'>" + urlKioOlvidoClave + "</a>";
                                     EnvioCorreo c = new EnvioCorreo();
 
                                     String servidorsmtp = getConfigCorreoServidorSMTP(nit, cadena, esquema);
