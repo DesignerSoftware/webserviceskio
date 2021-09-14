@@ -322,17 +322,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     }
                     System.out.println("causa Origen Insertar:" + causaOrigen);*/
                     if (secKioNovedadAusent.equals("null")) {
-                        System.out.println("Causa diferente a ENFERMEDAD GENERAL");
-                        if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaAusent, secCodDiagnostico, diasIncapacidad, fechafin, secKioSoliciAusent, secKioNovedadAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
-                            mensaje = "Novedad de ausentismo reportada exitosamente.";
-                            soliciCreada = true;
-                            getEntityManager(cadena).close();
-                        } else {
-                            System.out.println("Ha ocurrido un error al momento de crear el registrar la novedad");
-                            mensaje = "Ha ocurrido un error y no fue posible reportar la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuniquese con el área de nómina y recursos humanos de su empresa";
-                        }
-
-                    } else {
+                        System.out.println("No tiene prorroga");
                         if (causaOrigen.equals("EG")) {
                             System.out.println("Causa enfermedad general");
                             String secCausaEGPrimeros2Dias = getSecCausaPrimerosDias("25", cadena, esquema);
@@ -419,6 +409,19 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                                 System.out.println("Ha ocurrido un error al momento de crear el registrar la novedad");
                                 mensaje = "Ha ocurrido un error y no fue posible reportar la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuniquese con el área de nómina y recursos humanos de su empresa";
                             }
+                        }
+                        
+                        
+
+                    } else {
+                        System.out.println("Tiene prorroga");
+                        if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaAusent, secCodDiagnostico, diasIncapacidad, fechafin, secKioSoliciAusent, secKioNovedadAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
+                            mensaje = "Novedad de ausentismo reportada exitosamente.";
+                            soliciCreada = true;
+                            getEntityManager(cadena).close();
+                        } else {
+                            System.out.println("Ha ocurrido un error al momento de crear el registrar la novedad");
+                            mensaje = "Ha ocurrido un error y no fue posible reportar la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuniquese con el área de nómina y recursos humanos de su empresa";
                         }
                     }
                     /*if (diasIncapacidad <= 2) {
@@ -1007,7 +1010,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     + "TO_CHAR(KSA.FECHAINICIO,'DD/MM/YYYY' ) INICIALAUSENT,\n"
                     + "KES.ESTADO, \n"
                     + "KES.MOTIVOPROCESA, \n"
-                    + "KES.NOVEDADSISTEMA, \n"
+                    + "KES.SOAUSENTISMO, \n"
                     + "TO_CHAR(KSA.FECHAFIN,'DD/MM/YYYY') FECHAREGRESO,\n"
                     + "(SELECT DESCRIPCION FROM CAUSASAUSENTISMOS CA WHERE KSA.CAUSAREPORTADA = CA.SECUENCIA) CAUSA,\n"
                     + "KSA.DIAS,\n"
@@ -1087,7 +1090,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     + "TO_CHAR(KES.FECHAPROCESAMIENTO, 'DD/MM/YYYY') FECHAULTMODIF,\n"
                     + "KES.ESTADO, \n"
                     + "KES.MOTIVOPROCESA, \n"
-                    + "KES.NOVEDADSISTEMA, \n"
+                    + "KES.SOAUSENTISMO, \n"
                     + "TO_CHAR(KSA.FECHAFIN,'DD/MM/YYYY') FECHAREGRESO,\n"
                     + "(SELECT DESCRIPCION FROM CAUSASAUSENTISMOS CA WHERE KSA.CAUSAREPORTADA = CA.SECUENCIA) CAUSA,\n"
                     + "KSA.DIAS,\n"
@@ -1227,10 +1230,10 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             Query query = null;
             if (estado.equals("RECHAZADO")) {
                 sqlQuery = "INSERT INTO KIOESTADOSSOLICIAUSENT \n"
-                        + "(KIOSOLICIAUSENTISMO, FECHAPROCESAMIENTO, ESTADO, EMPLEADOEJECUTA, NOVEDADSISTEMA, MOTIVOPROCESA, PERSONAEJECUTA)\n"
+                        + "(KIOSOLICIAUSENTISMO, FECHAPROCESAMIENTO, ESTADO, EMPLEADOEJECUTA, SOAUSENTISMO, MOTIVOPROCESA, PERSONAEJECUTA)\n"
                         + "SELECT\n"
                         + "KIOSOLICIAUSENTISMO, SYSDATE FECHAPROCESAMIENTO, ?, ? EMPLEADOEJECUTA\n"
-                        + ", NOVEDADSISTEMA, ?, ?\n"
+                        + ", SOAUSENTISMO, ?, ?\n"
                         + "FROM KIOESTADOSSOLICIAUSENT\n"
                         + "WHERE SECUENCIA=?";
                 //String esquema = getEsquema(nitEmpresa, cadena);
@@ -1244,10 +1247,10 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                 query.setParameter(5, secKioEstadoSolici);
             } else {
                 sqlQuery = "INSERT INTO KIOESTADOSSOLICIAUSENT \n"
-                        + "(KIOSOLICIAUSENTISMO, FECHAPROCESAMIENTO, ESTADO, EMPLEADOEJECUTA, NOVEDADSISTEMA, PERSONAEJECUTA)\n"
+                        + "(KIOSOLICIAUSENTISMO, FECHAPROCESAMIENTO, ESTADO, EMPLEADOEJECUTA, SOAUSENTISMO, PERSONAEJECUTA)\n"
                         + "SELECT\n"
                         + "KIOSOLICIAUSENTISMO, SYSDATE FECHAPROCESAMIENTO, ?, ? EMPLEADOEJECUTA \n"
-                        + ", NOVEDADSISTEMA, ? \n"
+                        + ", SOAUSENTISMO, ? \n"
                         + "FROM KIOESTADOSSOLICIAUSENT \n"
                         + "WHERE SECUENCIA=?";
                 //String esquema = getEsquema(nitEmpresa, cadena);

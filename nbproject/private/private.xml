@@ -5,7 +5,9 @@
         <group>
             <file>file:/C:/Users/UPC007/Documents/Proyectos/KioskoNuevo/wsreporte/src/java/co/com/designer/services/kioCausasAusentismosFacadeREST.java</file>
             <file>file:/C:/Users/UPC007/Documents/Proyectos/KioskoNuevo/wsreporte/src/java/co/com/designer/services/ApplicationConfig.java</file>
+            <file>file:/C:/Users/UPC007/Documents/Proyectos/KioskoNuevo/wsreporte/src/java/co/com/designer/kiosko/reportes/IniciarReporte.java</file>
             <file>file:/C:/Users/UPC007/Documents/Proyectos/KioskoNuevo/wsreporte/src/conf/persistence.xml</file>
+            <file>file:/C:/Users/UPC007/Documents/Proyectos/KioskoNuevo/wsreporte/src/java/co/com/designer/services/ReportesFacadeREST.java</file>
         </group>
     </open-files>
 </project-private>
