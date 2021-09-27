@@ -959,25 +959,34 @@ public class EmpleadosFacadeREST {
         String secEmpresa = null;
         String secEmpleado = null;
         List documentos = new ArrayList();
-        String rutaArchivo = getPathDocumentos(nitEmpresa, cadena) /* "E:\\CLIENTES\\CONSTRUCTORA DE MARCAS S.A.S"*/ ;
+        String rutaArchivo = getPathDocumentos(nitEmpresa, cadena)/* "E:\\DesignerRHN10\\Basico10\\Reportes\\kiosko\\documentosAnexos"/*"E:\\DesignerRHN10\\Instalacion\\Kiosko\\prueba"/* "E:\\CLIENTES\\CONSTRUCTORA DE MARCAS S.A.S"*/ ;
         try {
             esquema = getEsquema(nitEmpresa, cadena);
             secEmpresa = getSecuenciaPorNitEmpresa(nitEmpresa, cadena);
             secEmpleado = getSecuenciaEmplPorSeudonimo(empleado, nitEmpresa, cadena);
-            carpeta = new File(rutaArchivo + "\\" + secEmpresa + "\\" +secEmpleado);
+            carpeta = new File(rutaArchivo + "\\" + secEmpresa + "\\" +secEmpleado + "\\");
+            System.out.println("carpeta: " + carpeta);
             File[] listado = null;
             listado = carpeta.listFiles(); 
             System.out.println(documentos);
-            System.out.println("Length: "+listado.length);
-            if (listado == null || listado.length == 0) {
+            System.out.println("documentos ");
+            System.out.println("Listado: "+ listado);
+            int totalArchivos = 0;
+            try {
+                totalArchivos =  listado.length;
+            } catch (Exception e) {
+                System.out.println("Error al contar cantidad de archivos : "+e.getMessage());
+            }
+            if (listado == null || totalArchivos <= 0) {
                 System.out.println("No hay elementos dentro de la carpeta actual");
             } else {
                 try {
+                    System.out.println("Cantidad de archivos: "+listado.length);
                     for (int i = 0; i < listado.length; i++) {
                         System.out.println("i=" + i);
                         System.out.println("nombre con ext " + listado[i]);
                         System.out.println("confima ext " + listado[i].getName() + " " + listado[i].getName().endsWith(".pdf"));
-                        if (listado[i].getName().endsWith(".pdf") == true) {
+                        if (listado[i].getName().endsWith(".pdf") == true || listado[i].getName().endsWith(".PDF") == true) {
                             System.out.println(listado[i].getName());
                             documentos.add(listado[i].getName());
                             System.out.println(documentos);
@@ -992,7 +1001,7 @@ public class EmpleadosFacadeREST {
             }
             System.out.println(documentos);
         } catch (Exception ex) {
-            System.out.println("Error: "+ex.getMessage());
+            System.out.println("Error: "+this.getClass().getName()+" "+ex.getMessage());
         } 
 
         return documentos;
@@ -1013,6 +1022,7 @@ public class EmpleadosFacadeREST {
         secEmpresa = getSecuenciaPorNitEmpresa(nitEmpresa, cadena);
         secEmpleado = getSecuenciaEmplPorSeudonimo(usuario, nitEmpresa, cadena);
         String rutaArchivo = getPathDocumentos(nitEmpresa, cadena) + "\\" + secEmpresa + "\\" + secEmpleado + "\\" /* "E:\\CLIENTES\\CONSTRUCTORA DE MARCAS S.A.S"*/;
+        System.out.println("ruta para encontrar anexos " + rutaArchivo);
         try {
             fis = new FileInputStream(new File(rutaArchivo + anexo));
             file = new File(rutaArchivo + anexo);

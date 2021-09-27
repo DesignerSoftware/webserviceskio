@@ -1855,7 +1855,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         }*/
         String mensaje = "Nos permitimos informar que se acaba de reportar un ausentismo en el módulo de Kiosco Nómina Designer. Por favor llevar el caso desde su cuenta de usuario en el portal de Kiosco y continuar con el proceso."
                 + " <br><br> "
-                + "La persona que REPORTÓ LA NOVEDAD es: " + personaCreaSolici
+                + "La persona que REPORTÓ LA NOVEDAD AUSENTISMO es: " + personaCreaSolici
                 + "<br>"
                 // + "La persona a cargo de DAR APROBACIÓN es: " + getApellidoNombreXsecEmpl(secEmplJefe, cadena)
                 + "La persona a cargo de DAR APROBACIÓN es: " + nombreAutorizaSolici
@@ -2067,7 +2067,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     + "NOMBREANEXO, "
                     + "OBSERVACION, "
                     + "CAUSAREPORTADA, "
-                    + "(SELECT P.NOMBRE||' '||P.SEGUNDOAPELLIDO FROM PERSONAS P, EMPLEADOS E WHERE E.PERSONA=P.SECUENCIA "
+                    + "(SELECT P.NOMBRE||' '||P.SEGUNDOAPELLIDO || '' || P.SEGUNDOAPELLIDO FROM PERSONAS P, EMPLEADOS E WHERE E.PERSONA=P.SECUENCIA "
                     + "AND EMPLEADOJEFE = E.SECUENCIA) NOMBREJEFE "
                     + "FROM KIOSOLICIAUSENTISMOS WHERE SECUENCIA=? ";
             System.out.println("Query: " + sqlQuery);
