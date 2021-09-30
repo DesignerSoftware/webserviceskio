@@ -1719,7 +1719,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         try {
             setearPerfil(esquema, cadena);
             sqlQuery = "select TO_CHAR(TO_DATE(kioausentismo_pkg.CALCULAFECHAFINAUSENT("
-                    + "to_date(?, 'dd/mm/yyyy'), ?, ?, ? ,  ?)), 'DD/MM/YYYY') from dual";
+                    + "?, ?, ?, ? ,  ?)), 'DD/MM/YYYY') from dual";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, fechaInicio);
             query.setParameter(2, dias);
