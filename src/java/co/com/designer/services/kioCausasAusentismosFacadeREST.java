@@ -2067,7 +2067,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     + "NOMBREANEXO, "
                     + "OBSERVACION, "
                     + "CAUSAREPORTADA, "
-                    + "(SELECT P.NOMBRE||' '||P.SEGUNDOAPELLIDO || '' || P.SEGUNDOAPELLIDO FROM PERSONAS P, EMPLEADOS E WHERE E.PERSONA=P.SECUENCIA "
+                    + "(SELECT P.NOMBRE||' '|| P.PRIMERAPELLIDO || ' ' || P.SEGUNDOAPELLIDO FROM PERSONAS P, EMPLEADOS E WHERE E.PERSONA=P.SECUENCIA "
                     + "AND EMPLEADOJEFE = E.SECUENCIA) NOMBREJEFE "
                     + "FROM KIOSOLICIAUSENTISMOS WHERE SECUENCIA=? ";
             System.out.println("Query: " + sqlQuery);
