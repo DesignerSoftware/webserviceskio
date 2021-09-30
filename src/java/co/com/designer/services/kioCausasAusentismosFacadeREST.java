@@ -2057,7 +2057,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
             String sqlQuery = "select "
-                    + "(SELECT P.NOMBRE||' '||P.SEGUNDOAPELLIDO FROM PERSONAS P, "
+                    + "(SELECT P.NOMBRE||' '|| P.PRIMERAPELLIDO || ' ' || P.SEGUNDOAPELLIDO FROM PERSONAS P, "
                     + "EMPLEADOS E WHERE P.SECUENCIA=E.PERSONA "
                     + "AND E.SECUENCIA=EMPLEADO) NOMBREEMPLEADO, "
                     + "TO_CHAR(FECHAGENERACION, 'DD/MM/YYYY') FECHAGENERACION, "
