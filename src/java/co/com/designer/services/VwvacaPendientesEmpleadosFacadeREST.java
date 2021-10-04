@@ -90,7 +90,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
             if (esquema != null && !esquema.isEmpty()) {
                 rol = rol + esquema.toUpperCase();
             }
-            System.out.println("setearPerfil(cadena)");
+            System.out.println("setearPerfil(esquema, cadenaPersistencia)");
             String sqlQuery = "SET ROLE " + rol + " IDENTIFIED BY RLKSK ";
             Query query = getEntityManager(cadenaPersistencia).createNativeQuery(sqlQuery);
             query.executeUpdate();
@@ -1814,7 +1814,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
         boolean soliciValida = false;
         String esquema = null;
         try {
-            esquema = getEsquema(esquema, cadena);
+            esquema = getEsquema(nit, cadena);
         } catch (Exception e) {
             System.out.println("Error: No se pudo consultar esquema. "+e.getMessage());
         }
@@ -2177,6 +2177,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
     }   
    
     public Date getFechaUltimoPago(String seudonimo, String nitEmpresa, String cadena, String esquema) throws Exception {
+        System.out.println("Parametros getFechaUltimoPago(): seudonimo: "+seudonimo+", nit: "+nitEmpresa+", cadena: "+cadena+", esquema: "+esquema);
         BigDecimal res = null;
         try {
             //String esquema = getEsquema(nitEmpresa, cadena);
