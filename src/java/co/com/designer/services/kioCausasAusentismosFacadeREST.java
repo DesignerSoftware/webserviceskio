@@ -335,8 +335,15 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                                 if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaEGPrimeros2Dias, secCodDiagnostico, Integer.parseInt(dias), fechaFin1, secKioSoliciAusent, secKioNovedadAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
                                     System.out.println("registrada novedad 1 por 2 dias o menos");
                                     mensaje = "Novedad de ausentismo reportada exitosamente.";
-                                    soliciCreada = true;
-                                    getEntityManager(cadena).close();
+                                    
+                                    // Registro en tabla KIOESTADOSSOLICIAUSENT
+                                        if (creaKioEstadoSoliciAusent(seudonimo, nit, secKioSoliciAusent, fechaGeneracion, "ENVIADO", null, cadena, esquema)) {
+                                            soliciCreada = true;
+                                            System.out.println("Estado de novedad de ausentismo creado.");
+                                            getEntityManager(cadena).close();
+                                        } else {
+                                            mensaje = "Ha ocurrido un error y no fue posible crear la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuníquese con el área de nómina y recursos humanos de su empresa";
+                                        }
                                 }
                             } else {
                                 // Si los dias reportados son más de 2 se deben registrar en dos novedades
@@ -350,8 +357,15 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                                     String fechaFin2 = (String) calculaFechafinAusent(fechainicialEG2, String.valueOf(diasNov2), seudonimo, secCausaAusent, cadena, nit, esquema);
                                     if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicialEG2, secTipoAusent, secClaseAusent, secCausaAusent, secCodDiagnostico, diasIncapacidad - 2, fechaFin2, secKioSoliciAusent, "null", formaLiq, porcentajeLiq, cadena, esquema)) {
                                         mensaje = "Novedad de ausentismo reportada exitosamente.";
-                                        soliciCreada = true;
-                                        getEntityManager(cadena).close();
+                                   
+                                    // Registro en tabla KIOESTADOSSOLICIAUSENT
+                                        if (creaKioEstadoSoliciAusent(seudonimo, nit, secKioSoliciAusent, fechaGeneracion, "ENVIADO", null, cadena, esquema)) {
+                                            soliciCreada = true;
+                                            System.out.println("Estado de novedad de ausentismo creado.");
+                                            getEntityManager(cadena).close();
+                                        } else {
+                                            mensaje = "Ha ocurrido un error y no fue posible crear la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuníquese con el área de nómina y recursos humanos de su empresa";
+                                        }
                                     }
                                 } else {
                                     System.out.println("Ha ocurrido un error al momento de crear el registro de la primera novedad");
@@ -371,8 +385,15 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                                 if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaATPrimerDia, secCodDiagnostico, Integer.parseInt(dias), fechaFin1, secKioSoliciAusent, secKioNovedadAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
                                     System.out.println("registrada novedad 1 dia");
                                     mensaje = "Novedad de ausentismo reportada exitosamente.";
-                                    soliciCreada = true;
-                                    getEntityManager(cadena).close();
+
+                                    // Registro en tabla KIOESTADOSSOLICIAUSENT
+                                    if (creaKioEstadoSoliciAusent(seudonimo, nit, secKioSoliciAusent, fechaGeneracion, "ENVIADO", null, cadena, esquema)) {
+                                        soliciCreada = true;
+                                        System.out.println("Estado de novedad de ausentismo creado.");
+                                        getEntityManager(cadena).close();
+                                    } else {
+                                        mensaje = "Ha ocurrido un error y no fue posible crear la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuníquese con el área de nómina y recursos humanos de su empresa";
+                                    }
                                 }
                             } else {
                                 // Si los dias reportados son más de 1 se deben registrar en dos novedades
@@ -391,8 +412,15 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                                     if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicialEG2, secTipoAusent, secClaseAusent, secCausaAusent, secCodDiagnostico, diasIncapacidad - 1, fechaFin2, secKioSoliciAusent, "null", formaLiq, porcentajeLiq, cadena, esquema)) {
                                         System.out.println("se crea novedad por dos dias");
                                         mensaje = "Novedad de ausentismo reportada exitosamente.";
-                                        soliciCreada = true;
-                                        getEntityManager(cadena).close();
+                                    // Registro en tabla KIOESTADOSSOLICIAUSENT
+                                        if (creaKioEstadoSoliciAusent(seudonimo, nit, secKioSoliciAusent, fechaGeneracion, "ENVIADO", null, cadena, esquema)) {
+                                            soliciCreada = true;
+                                            System.out.println("Estado de novedad de ausentismo creado.");
+                                            getEntityManager(cadena).close();
+                                        } else {
+                                            mensaje = "Ha ocurrido un error y no fue posible crear la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuníquese con el área de nómina y recursos humanos de su empresa";
+                                        }
+
                                     }
                                 } else {
                                     System.out.println("Ha ocurrido un error al momento de crear el registro de la primera novedad");
@@ -403,22 +431,32 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                             System.out.println("Causa diferente a ENFERMEDAD GENERAL");
                             if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaAusent, secCodDiagnostico, diasIncapacidad, fechafin, secKioSoliciAusent, secKioNovedadAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
                                 mensaje = "Novedad de ausentismo reportada exitosamente.";
-                                soliciCreada = true;
-                                getEntityManager(cadena).close();
+                                    // Registro en tabla KIOESTADOSSOLICIAUSENT
+                                        if (creaKioEstadoSoliciAusent(seudonimo, nit, secKioSoliciAusent, fechaGeneracion, "ENVIADO", null, cadena, esquema)) {
+                                            soliciCreada = true;
+                                            System.out.println("Estado de novedad de ausentismo creado.");
+                                            getEntityManager(cadena).close();
+                                        } else {
+                                            mensaje = "Ha ocurrido un error y no fue posible crear la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuníquese con el área de nómina y recursos humanos de su empresa";
+                                        }
                             } else {
                                 System.out.println("Ha ocurrido un error al momento de crear el registrar la novedad");
                                 mensaje = "Ha ocurrido un error y no fue posible reportar la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuniquese con el área de nómina y recursos humanos de su empresa";
                             }
-                        }
-                        
-                        
+                        }        
 
                     } else {
                         System.out.println("Tiene prorroga");
                         if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaAusent, secCodDiagnostico, diasIncapacidad, fechafin, secKioSoliciAusent, secKioNovedadAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
                             mensaje = "Novedad de ausentismo reportada exitosamente.";
-                            soliciCreada = true;
-                            getEntityManager(cadena).close();
+                            // Registro en tabla KIOESTADOSSOLICIAUSENT
+                                if (creaKioEstadoSoliciAusent(seudonimo, nit, secKioSoliciAusent, fechaGeneracion, "ENVIADO", null, cadena, esquema)) {
+                                    soliciCreada = true;
+                                    System.out.println("Estado de novedad de ausentismo creado.");
+                                    getEntityManager(cadena).close();
+                                } else {
+                                    mensaje = "Ha ocurrido un error y no fue posible crear la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuníquese con el área de nómina y recursos humanos de su empresa";
+                                }
                         } else {
                             System.out.println("Ha ocurrido un error al momento de crear el registrar la novedad");
                             mensaje = "Ha ocurrido un error y no fue posible reportar la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuniquese con el área de nómina y recursos humanos de su empresa";
@@ -453,12 +491,6 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                         }
                     }*/
 
-                    // Registro en tabla KIOESTADOSSOLICIAUSENT
-                    if (creaKioEstadoSoliciAusent(seudonimo, nit, secKioSoliciAusent, fechaGeneracion, "ENVIADO", null, cadena, esquema)) {
-                        System.out.println("Estado de novedad de ausentismo creado.");
-                    } else {
-                        mensaje = "Ha ocurrido un error y no fue posible crear la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuníquese con el área de nómina y recursos humanos de su empresa";
-                    }
                 } else {
                     System.out.println("Ha ocurrido un error al momento de crear el registro 1 de la solicitud");
                     mensaje = "Ha ocurrido un error y no fue posible crear la novedad, por favor inténtelo de nuevo más tarde. Si el problema persiste comuníquese con el área de nómina y recursos humanos de su empresa";
@@ -503,7 +535,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                         + "FECHAINICIO, FECHAFIN, DIAS, OBSERVACION, CAUSAREPORTADA) "
                         + "VALUES "
                         + "(?,  USER, ?, 'S', TO_DATE(?, 'ddmmyyyy HH24miss'), ?,"
-                        + "?, ?, ?, ?, ?)";
+                        + "TO_DATE(?, 'DD/MM/YYYY'), TO_DATE(?, 'DD/MM/YYYY'), ?, ?, ?)";
                 Query query = getEntityManager(cadena).createNativeQuery(sql);
                 query.setParameter(1, secEmpleado);
                 query.setParameter(2, secEmplJefe);
@@ -1757,6 +1789,8 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         } catch (IOException ioe) {
             ioe.printStackTrace();
             System.out.println("Error: " + this.getClass().getName() + ".cargarAnexo()" + ioe.getMessage());
+        } catch (Exception e) {
+            System.out.println("Ha ocurrido un error "+this.getClass().getName()+".cargarAnexo() "+e.getMessage());
         }
         return Response.ok("Fichero subido a " + uploadFilePath).build();
     }
@@ -1777,7 +1811,9 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             outputStream.flush();
         } catch (IOException ioe) {
             ioe.printStackTrace();
-        } finally {
+        } catch (Exception e) {
+            System.out.println("Error "+this.getClass().getName()+".writeToFileServer() "+e.getMessage());
+        }finally {
             outputStream.close();
         }
         return qualifiedUploadFilePath;
