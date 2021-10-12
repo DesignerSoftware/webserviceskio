@@ -1,7 +1,7 @@
 package co.com.designer.services;
 
 //import co.com.designer.kiosko.entidades.ConexionesKioskos;
-import co.com.designer.kiosko.correo.EnvioCorreo;
+import co.com.designer.kiosko.generales.EnvioCorreo;
 import co.com.designer.kiosko.reportes.IniciarReporte;
 import java.io.File;
 import java.io.FileInputStream;

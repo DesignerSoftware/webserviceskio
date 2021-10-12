@@ -1,6 +1,6 @@
 package co.com.designer.services;
 
-import co.com.designer.kiosko.correo.EnvioCorreo;
+import co.com.designer.kiosko.generales.EnvioCorreo;
 import co.com.designer.kiosko.entidades.VwVacaPendientesEmpleados;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -2072,10 +2072,10 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
             //String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
             sqlQuery = "SELECT P.EMAIL "
-                    + " FROM CONEXIONESKIOSKOS CK, EMPLEADOS E, PERSONAS P "
-                    + " WHERE CK.EMPLEADO=E.SECUENCIA "
-                    + " AND P.SECUENCIA=E.PERSONA "
-                    + " AND CK.EMPLEADO=?";
+                    + " FROM EMPLEADOS E, PERSONAS P "
+                    + " WHERE  "
+                    + " P.SECUENCIA=E.PERSONA "
+                    + " AND E.SECUENCIA=?";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpl);
             System.out.println("getCorreoXsecEmpl(): "+correo);

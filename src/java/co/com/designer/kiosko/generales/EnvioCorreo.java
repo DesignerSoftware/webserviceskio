@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package co.com.designer.kiosko.correo;
+package co.com.designer.kiosko.generales;
 
 import java.util.Calendar;
 import java.util.Iterator;
@@ -364,6 +364,7 @@ public class EnvioCorreo {
 // Send the actual HTML message, as big as you like
             Transport.send(message);
             System.out.println("Mail sent successfully!!!");
+            System.gc();
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
