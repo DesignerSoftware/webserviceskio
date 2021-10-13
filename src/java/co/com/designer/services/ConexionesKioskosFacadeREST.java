@@ -559,9 +559,15 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         FileInputStream fis = null;
         File file = null;
         String RUTAFOTO = getPathFoto(nitEmpresa, cadena);
+        String documento = null;
         try {
-            if (imagen.equals("null") || imagen.equals("") || imagen == null) {
-                imagen = getDocumentoPorSeudonimo(usuario, nitEmpresa, cadena)+".jpg";
+            if (imagen.contains("null") || imagen.equals("") || imagen == null) {
+                documento = getDocumentoPorSeudonimo(usuario, nitEmpresa, cadena);
+                if (imagen!=null) {
+                    imagen=documento+".jpg";
+                } else {
+                    imagen = "sinFoto.jpg";
+                }
             }
         } catch (Exception e) {
             imagen = "sinFoto.jpg";
