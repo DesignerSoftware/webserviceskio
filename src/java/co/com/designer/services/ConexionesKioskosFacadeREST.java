@@ -1,6 +1,6 @@
 package co.com.designer.services;
 
-import co.com.designer.kiosko.correo.EnvioCorreo;
+import co.com.designer.kiosko.generales.*;
 import co.com.designer.kiosko.entidades.ConexionesKioskos;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -1191,13 +1191,16 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         JsonObject json;
         String cadenaToken = "";
         String grupoEmpresarial = "";
-
+        Encriptacion enc = new Encriptacion();
+        String passwordEncriptacion = "Manager01";
+        String jwtOriginal = enc.decrypt(jwt,passwordEncriptacion);
+        System.out.println("original " + jwtOriginal);
         try {
-            usuario = (String) Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwt).getBody().getSubject();
-            nit = (String) Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwt).getBody().get("empresa");
-            documento = (String) Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwt).getBody().get("documento");
-            cadenaToken = (String) Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwt).getBody().get("cadena");
-            grupoEmpresarial = (String) Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwt).getBody().get("grupo");
+            usuario = (String) Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwtOriginal).getBody().getSubject();
+            nit = (String) Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwtOriginal).getBody().get("empresa");
+            documento = (String) Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwtOriginal).getBody().get("documento");
+            cadenaToken = (String) Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwtOriginal).getBody().get("cadena");
+            grupoEmpresarial = (String) Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwtOriginal).getBody().get("grupo");
             System.out.println("Información extraida token validaCuenta: usuario: " + usuario + ", nit: " + nit + ", documento: " + documento + ", cadenaToken: " + cadena + ", grupoEmpr: " + grupoEmpresarial);
 
             try {
@@ -1208,11 +1211,11 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                         System.out.println("Token existe en bd");
 
                         //String passwordEncriptacion = "Manager01*"+usuario+nit;
-                        String passwordEncriptacion = "Manager01";
+                        
                         Jwts.parser()
                                 .setSigningKey(passwordEncriptacion.getBytes("UTF-8"))
                                 .parseClaimsJws(
-                                        jwt
+                                        jwtOriginal
                                 );
 
                         //OK, we can trust this JWT
@@ -1641,7 +1644,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             Date fechaCreacion= new Date(tiempo);
             Date fechaExpiracion= new Date(tiempo+3600000); //2160000
             //java.sql.Date fechaExpiracion =  (Date) java.sql.Date.from(ZonedDateTime.now().plusMinutes(60).toInstant());
-            String jwt=Jwts.builder()
+            String jwtCompleto=Jwts.builder()
                     .signWith(SignatureAlgorithm.HS256, passwordEncript.getBytes("UTF-8"))
                     .setSubject(usuario)
                     .setIssuedAt(fechaCreacion)
@@ -1653,9 +1656,11 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                     .claim("cadena", cadena)
                     .claim("grupo", grupo)
                     .compact();
-                    System.out.println("Token generado: "+jwt);
-                        
-                        
+                    System.out.println("Token generado: "+jwtCompleto);
+             
+            Encriptacion e = new Encriptacion();
+            String jwt = e.encrypt(jwtCompleto, passwordEncript);
+            System.out.println("Token encriptado: "+jwt);
             EnvioCorreo p=new EnvioCorreo();
             creaRegistro = registraToken(usuario, nit, jwt, "VALIDACUENTA", fechaCreacion, fechaExpiracion, cadena);
             if (creaRegistro) {
@@ -1668,7 +1673,6 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                        getConfigCorreo(nit, "STARTTLS", cadena),getConfigCorreo(nit, "REMITENTE", cadena), getConfigCorreo(nit, "CLAVE", cadena), 
                        getCorreoConexioneskioskos(usuario, nit, cadena), getNombrePersona(usuario,nit, cadena), usuario, jwt, urlKiosco, nit, cadena);
             }
-                        
             JsonObject json=Json.createObjectBuilder()
                     .add("JWT", jwt)
                     .add("tokenRegistrado", creaRegistro)

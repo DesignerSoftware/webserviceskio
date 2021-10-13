@@ -55,13 +55,15 @@ public class CadenasKioskosFacadeREST {
     @GET
     @Path("{grupo}")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public Response getCadenas(@PathParam("grupo") String grupo) {
+    public Response getCadenas(@PathParam("grupo") String grupo, @QueryParam("dominio") String dominio) {
         List s = null;
-        System.out.println("Parametros: Grupo: " + grupo);
+        System.out.println("Parametros: Grupo: " + grupo + ", Dominio: " + dominio);
         try {
-            String sqlQuery = "SELECT CODIGO, DESCRIPCION, NITEMPRESA, GRUPO, CADENA, EMPLNOMINA, ESQUEMA, ESTADO, OBSERVACION FROM CADENASKIOSKOSAPP WHERE GRUPO=?";
+            String sqlQuery = "SELECT CODIGO, DESCRIPCION, NITEMPRESA, GRUPO, CADENA, EMPLNOMINA, ESQUEMA, ESTADO, OBSERVACION "
+                    + "FROM CADENASKIOSKOSAPP WHERE GRUPO=? and ? LIKE '%'||DOMINIO||'%'";
             Query query = getEntityManager().createNativeQuery(sqlQuery);
             query.setParameter(1, grupo);
+            query.setParameter(2, dominio);
             s = query.getResultList();
             System.out.println("1" + s.get(0));
             s.forEach(System.out::println);

@@ -5,7 +5,7 @@
  */
 package co.com.designer.services;
 
-import co.com.designer.kiosko.correo.EnvioCorreo;
+import co.com.designer.kiosko.generales.EnvioCorreo;
 import co.com.designer.kiosko.entidades.KioCausasAusentismos;
 import co.com.designer.kiosko.entidades.DiagnosticosCategorias;
 import co.com.designer.kiosko.entidades.OpcionesKioskosApp;
