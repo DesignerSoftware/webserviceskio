@@ -198,13 +198,13 @@ public class EnvioCorreo {
     
    public void pruebaEnvio2(String servidorsmtp, String puerto, String remitente, String clave,
             String autenticado, String destinatario, String rutaReporte,
-            String nombreReporte, String asunto, String mensaje, String rutaImagenes, String grupo, String urlKiosco){
+            String nombreReporte, String asunto, String mensaje, String rutaImagenes, String grupo, String urlKiosco) {
 
-       //String servidorsmtp="smtp.designer.com.co"; 
-       /*String servidorsmtp="smtp.gmail.com"; 
+        //String servidorsmtp="smtp.designer.com.co"; 
+        /*String servidorsmtp="smtp.gmail.com"; 
        String puerto="587"; */
-       //String remitente="kioskodesigner@designer.com.co"; 
-       /*String remitente="pruebaskiosco534@gmail.com"; 
+        //String remitente="kioskodesigner@designer.com.co"; 
+        /*String remitente="pruebaskiosco534@gmail.com"; 
        String clave="Nomina01";
        String autenticado="S"; 
        String destinatario="tmanrique@nomina.com.co"; 
@@ -218,23 +218,21 @@ public class EnvioCorreo {
                         + " se generó el reporte " + nombreReporte
                         + " en el módulo de Kiosco Nómina Designer. "
                         + "La persona que GENERÓ el reporte es: "+nombreUsuario;*/
-      /*Properties propiedad = new Properties();
+ /*Properties propiedad = new Properties();
       propiedad.put("mail.smtp.host", servidorsmtp);
       propiedad.setProperty("mail.smtp.starttls.enable", "true");
       propiedad.setProperty("mail.smtp.port", puerto);
       propiedad.setProperty("mail.smtp.user", remitente);
       propiedad.setProperty("mail.smtp.auth", "true");*/
-      //String rutaImagenes= "D:\\DesignerRHN10\\Basico10\\fotos_empleados\\";
+        //String rutaImagenes= "D:\\DesignerRHN10\\Basico10\\fotos_empleados\\";
+        Properties propiedad = new Properties();
+        propiedad.put("mail.smtp.host", servidorsmtp);
+        propiedad.setProperty("mail.smtp.starttls.enable", "true");
+        propiedad.setProperty("mail.smtp.port", puerto);
+        propiedad.setProperty("mail.smtp.user", remitente);
+        propiedad.setProperty("mail.smtp.auth", autenticado.equals("S") ? "true" : "false");
 
-       
-      Properties propiedad = new Properties();
-      propiedad.put("mail.smtp.host", servidorsmtp);
-      propiedad.setProperty("mail.smtp.starttls.enable", "true");
-      propiedad.setProperty("mail.smtp.port", puerto);
-      propiedad.setProperty("mail.smtp.user", remitente);
-      propiedad.setProperty("mail.smtp.auth", autenticado.equals("S") ? "true" : "false");
-      
-      Session sesion = Session.getDefaultInstance(propiedad);
+        Session sesion = Session.getDefaultInstance(propiedad);
 
         Session session = Session.getInstance(propiedad,
                 new javax.mail.Authenticator() {
@@ -253,9 +251,12 @@ public class EnvioCorreo {
             MimeMultipart multipart = new MimeMultipart("related");
 // first part (the html)
             BodyPart messageBodyPart = new MimeBodyPart();
-            String htmlText
-                    = "<div\n"
-                    + "        style=\"padding:10%;color:white;background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url(https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/imgcorreoreporte.jpg/);min-height:100%;background-size:cover\" !important;>\n"
+            String htmlText 
+                    
+                    = 
+                    "<div style=\"background: #00223c;\">\n"
+                    + "<div\n"
+                    + "        style=\"padding:10%;color:white; background: #00223c;background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url(https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/imgcorreoreporte.jpg/);  min-height:100%;background-size:cover\" !important;>\n"
                     + "        <table style=\"max-width:90%;padding:10%;margin:0 auto;border-collapse:collapse\">\n"
                     + "            <tbody>\n"
                     + "                <tr >\n"
@@ -264,8 +265,9 @@ public class EnvioCorreo {
                     + "                            <a style='color: white !important;' href="+urlKiosco+" target=\"_blank\"\n"
                     + "                                data-saferedirecturl="+urlKiosco+">\n"
                     + "\n"
-                    + "                                <img width=\"80px\" style=\"display:block;margin:auto auto 0px auto\"\n"
+                    + "                                <img width=\"80px\" height=\"80px\" style=\"display:block;margin:auto auto 0px auto\"\n"
                     + "                                    src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/kioscologopro.png\">\n"
+                    //+ "                                    src=\"https://designer.ci2.co:8181/wsreporte/webresources/conexioneskioskos/obtenerLogo/LogoCI2Grande.png?nit=830056149&cadena=DEFAULT1\">\n"
                     + "                            </a>\n"
                     + "                        </div>\n"
                     + "                    </td>\n"
@@ -293,7 +295,7 @@ public class EnvioCorreo {
                     + "                                <br>                                                                \n"
                     + "                                    <ul style=\"width: 100%; height: 20px; text-align: center; padding: 10px 0 0 0 !important;\">\n"
                     + "                <li style=\"background: #3b5998; display:inline;\"><a href=\"https://www.facebook.com/nominads\" target=\"_blank\"\n"
-                    + "                    > <img src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/21113922.png\" style=\"width: 19px; height: 19px;  \n"
+                    + "                    > <img width=\"19px\" height=\"19px\" src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/21113922.png\" style=\"width: 19px; height: 19px;  \n"
                     + "                     color: #fff;\n"
                     + "                     background: #000;\n"
                     + "                     padding: 10px 15px;\n"
@@ -301,7 +303,7 @@ public class EnvioCorreo {
                     + "                     \n"
                     + "                     background: #3b5998;\"></a></li>"
                     + "                                        <li style=\"background: #00abf0; display:inline;\"><a href=\"https://twitter.com/NominaDesigner\" target=\"_blank\"\n"
-                    + "                                            class=\"icon-twitter\"> <img src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733635.png\" style=\"width: 19px; height: 19px;\n"
+                    + "                                            class=\"icon-twitter\"> <img width=\"19px\" height=\"19px\" src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733635.png\" style=\"width: 19px; height: 19px;\n"
                     + "                                            color: #fff;\n"
                     + "                                            background: #000;\n"
                     + "                                            padding: 10px 15px;\n"
@@ -311,7 +313,7 @@ public class EnvioCorreo {
                     + "                                            transition: all 300ms ease;\n"
                     + "                                            background: #00abf0;\"></a></li>\n"
                     + "                                        <li style=\"background: #0ad2ec; display:inline;\"><a href=\"https://www.nomina.com.co/\" target=\"_blank\"\n"
-                    + "                                                class=\"icon-nomina\"> <img src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/3522533.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
+                    + "                                                class=\"icon-nomina\"> <img width=\"19px\" height=\"19px\" src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/3522533.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
                     + "                                                color: #fff;\n"
                     + "                                                background: #000;\n"
                     + "                                                padding: 10px 15px;\n"
@@ -321,7 +323,7 @@ public class EnvioCorreo {
                     + "                                                transition: all 300ms ease;\n"
                     + "                                                background: #0ad2ec;\"></a></li>\n"
                     + "                                        <li style=\"background: #ce1010; display:inline;\"><a href=\"https://www.youtube.com/user/nominads\" target=\"_blank\"\n"
-                    + "                                                    class=\"icon-youtube\"> <img src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733646.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
+                    + "                                                    class=\"icon-youtube\"> <img width=\"19px\" height=\"19px\" src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733646.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
                     + "                                                    color: #fff;\n"
                     + "                                                    background: #000;\n"
                     + "                                                    padding: 10px 15px;\n"
@@ -337,10 +339,23 @@ public class EnvioCorreo {
                     + "                        </tr>\n"
                     + "            </tbody>\n"
                     + "        </table>\n"
-                    + "    </div>"; 
+                    + "    </div>"
+                    + " </div>"
+                    /*+ " <br>"
+                    + "  <p style=\"color: #55a532;\" >Imprimir en caso de ser estrictamente necesario, el medio ambiente se lo agradecerá. Ayudemos a evitar el calentamiento global.</p>\n" 
+                    + " <br>"
+                    + "   <p> Confidencialidad: CI2 S.A  es una empresa consiente de la importancia de la información en cuanto a su "
+                    + "disponibilidad, Integridad y confidencialidad, por ello busca su protección a través de sus directrices de gestión "
+                    + "de seguridad de la información. Los datos contenidos en  este correo electrónico de CI2 S.A  y en todos sus archivos "
+                    + "anexos, es confidencial y/o privilegiada y sólo puede ser utilizada por la(s) persona(s) a la(s) cual(es) está dirigida. "
+                    + "Si usted no es el destinatario autorizado, cualquier modificación, retención, difusión, distribución o copia total o "
+                    + "parcial de este mensaje y/o de la información contenida en el mismo y/o en sus archivos anexos está prohibida y son "
+                    + "sancionadas por la ley. Si por error recibe este mensaje, le ofrecemos disculpas, sírvase borrarlo de inmediato, "
+                    + "notificarle de su error a la persona que lo envió y abstenerse de divulgar su contenido y anexos. </p>"*/
+                    ;
             messageBodyPart.setContent(htmlText, "text/html");
 // add it
-            multipart.addBodyPart(messageBodyPart);     
+            multipart.addBodyPart(messageBodyPart);
 // second part (the image)
             messageBodyPart = new MimeBodyPart();
             //DataSource fds = new FileDataSource("C:\\DesignerRHN12\\Basico12\\fotos_empleados\\headerlogocorreoKiosko.png");
@@ -350,15 +365,15 @@ public class EnvioCorreo {
             messageBodyPart.setHeader("Content-ID", "<image>");
 // add image to the multipart
             multipart.addBodyPart(messageBodyPart);
-            
+
             BodyPart adjunto = new MimeBodyPart();
-            System.out.println("Ruta del reporte a enviar: "+rutaReporte);
+            System.out.println("Ruta del reporte a enviar: " + rutaReporte);
             adjunto.setDataHandler(new DataHandler(new FileDataSource(rutaReporte)));
             adjunto.setFileName(nombreReporte); // opcional
-            
+
             // Juntar el texto y la imagen adjunta
             multipart.addBodyPart(adjunto);
-            
+
 // put everything together
             message.setContent(multipart);
 // Send the actual HTML message, as big as you like
@@ -366,17 +381,17 @@ public class EnvioCorreo {
             System.out.println("Mail sent successfully!!!");
             System.gc();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.out.println("No se ha enviado correo desde reprotes" + e.getMessage());
         }
-    }    
-    
-    public boolean enviarNuevaClave(String servidorsmtp, String puerto, String autenticado, String starttls, String remitente, String clave, String destinatario, 
+    }
+
+    public boolean enviarNuevaClave(String servidorsmtp, String puerto, String autenticado, String starttls, String remitente, String clave, String destinatario,
             String nombreUsuario, String nuevaClave, String urlKiosco, String rutaImagenes, String nitEmpresa, String cadena) {
         boolean envioCorreo = false;
         Properties props = new Properties();
         props.put("mail.smtp.host", servidorsmtp);
-        props.put("mail.smtp.socketFactory.port", puerto);
-        props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        //props.put("mail.smtp.socketFactory.port", puerto);
+        //props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
         props.put("mail.smtp.auth", autenticado.equals("S") ? "true" : "false");
         props.put("mail.smtp.starttls.enable", starttls.equals("S") ? "true" : "false");
         props.put("mail.smtp.port", puerto);
@@ -425,7 +440,7 @@ public class EnvioCorreo {
             message.setContent(multipart);
 // Send the actual HTML message, as big as you like
             Transport.send(message);
-            System.out.println("Mail sent successfully!!! "+destinatario);
+            System.out.println("Mail sent successfully!!! " + destinatario);
             envioCorreo = true;
         } catch (MessagingException e) {
             envioCorreo = false;
@@ -433,50 +448,48 @@ public class EnvioCorreo {
         }
         return envioCorreo;
     }
-    
-    
+
     public String getPathFoto(String nitEmpresa, String cadena) {
-        String rutaFoto="";
+        String rutaFoto = "";
         try {
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT PATHFOTO FROM GENERALESKIOSKO WHERE ROWNUM<=1";
-            System.out.println("Query: "+sqlQuery);
+            System.out.println("Query: " + sqlQuery);
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
-            rutaFoto =  query.getSingleResult().toString();
-            System.out.println("rutaFotos: "+rutaFoto);
+            rutaFoto = query.getSingleResult().toString();
+            System.out.println("rutaFotos: " + rutaFoto);
         } catch (Exception e) {
-            System.out.println("Error: getPathFoto: "+e.getMessage());
+            System.out.println("Error: getPathFoto: " + e.getMessage());
         }
         return rutaFoto;
-    }   
-    
+    }
+
     public String getPathReportes(String nitEmpresa, String cadena) {
-        String rutaReportes="";
+        String rutaReportes = "";
         try {
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT PATHREPORTES FROM GENERALESKIOSKO WHERE ROWNUM<=1";
-            System.out.println("Query: "+sqlQuery);
+            System.out.println("Query: " + sqlQuery);
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
-            rutaReportes =  query.getSingleResult().toString();
-            System.out.println("rutaFotos: "+rutaReportes);
+            rutaReportes = query.getSingleResult().toString();
+            System.out.println("rutaFotos: " + rutaReportes);
         } catch (Exception e) {
-            System.out.println("Error: getPathReportes(): "+e.getMessage());
+            System.out.println("Error: getPathReportes(): " + e.getMessage());
         }
         return rutaReportes;
-    }       
-    
-    
+    }
+
     public boolean enviarEnlaceValidacionCuenta(String servidorsmtp, String puerto, String autenticado, String starttls, String remitente, String clave, String destinatario, String nombreUsuario, String seudonimo,
             String jwt, String urlKiosco, String nitEmpresa, String cadena) {
         boolean envioCorreo = false;
         Properties props = new Properties();
         props.put("mail.smtp.host", servidorsmtp);
-        props.put("mail.smtp.socketFactory.port", puerto);
-        props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        //props.put("mail.smtp.socketFactory.port", puerto);
+        //props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
         props.put("mail.smtp.auth", autenticado.equals("S") ? "true" : "false");
-        props.put("mail.smtp.starttls.enable", starttls.equals("S") ? "true" : "false");        
+        props.put("mail.smtp.starttls.enable", starttls.equals("S") ? "true" : "false");
         props.put("mail.smtp.port", puerto);
         final String user;
         final String password = "***********";
@@ -503,7 +516,7 @@ public class EnvioCorreo {
                     + "<img src=\'cid:image\'>"
                     + "<H1>¡Bienvenid@ " + nombreUsuario + "!</H1>"
                     + "\n"
-                    + "<p style='font-size: 15px'>Recuerda que tu usuario para ingresar a Kiosco es: <b>"+seudonimo+"</b> </p>"
+                    + "<p style='font-size: 15px'>Recuerda que tu usuario para ingresar a Kiosco es: <b>" + seudonimo + "</b> </p>"
                     + "<p style='font-size: 20px'>Puedes confirmar tu cuenta a través del siguiente enlace:</p>"
                     + "\n"
                     + "<br>"
@@ -530,16 +543,16 @@ public class EnvioCorreo {
             message.setContent(multipart);
 // Send the actual HTML message, as big as you like
             Transport.send(message);
-            System.out.println("Mail sent successfully!!! "+destinatario);
+            System.out.println("Mail sent successfully!!! " + destinatario);
             envioCorreo = true;
         } catch (MessagingException e) {
             envioCorreo = false;
-            throw new RuntimeException(e);
+            throw new RuntimeException("no se pudo enviar correo: " + e);
         }
         return envioCorreo;
     }
-        
-       /* public boolean enviarCorreo(String cfc, String destinatario, String asunto, String mensaje, String pathAdjunto) {
+
+    /* public boolean enviarCorreo(String cfc, String destinatario, String asunto, String mensaje, String pathAdjunto) {
 //        try {
         boolean resEnvio = false;
         // Propiedades de la conexión
@@ -578,9 +591,8 @@ public class EnvioCorreo {
                 adjunto.setDataHandler(new DataHandler(archivo));
                 adjunto.setFileName(archivo.getFile().getName());
             }*/
-
-            //Estructura del contenido (Texto y Adjnto)
-            /*MimeMultipart multiParte = new MimeMultipart();
+    //Estructura del contenido (Texto y Adjnto)
+    /*MimeMultipart multiParte = new MimeMultipart();
             multiParte.addBodyPart(texto);
 
             if (adjunto != null) {
@@ -623,23 +635,21 @@ public class EnvioCorreo {
         return resEnvio;
     }
         
-     */ 
-    
-    
+     */
  /*    public boolean enviarCorreoVacaciones(String servidorsmtp, String puerto, String autenticado, String starttls, String remitente, String clave, String destinatario, 
         String nombreUsuario, String asunto, String mensaje, String nit) {*/
-/*    public boolean enviarCorreoVacaciones(String destinatario,
+ /*    public boolean enviarCorreoVacaciones(String destinatario,
         String asunto, String mensaje, String urlKiosco, String nit) {*/
     public boolean enviarCorreoVacaciones(String servidorsmtp, String puerto, String autenticado,
             String starttls, String remitente, String clave, String destinatario,
             String asunto, String mensaje, String urlKiosco, String nit, String cadena) {
-        System.out.println("Parametros enviarCorreoVacaciones(): servidorsmto: "+servidorsmtp+", puerto: "+puerto+", autenticado: "+autenticado+", starttls: "+starttls+""
-                + "\n remitente: "+remitente+", clave: "+clave+", destinatario: "+destinatario+", asunto: "+asunto+", nit: "+nit+", cadena: "+cadena);
+        System.out.println("Parametros enviarCorreoVacaciones(): servidorsmto: " + servidorsmtp + ", puerto: " + puerto + ", autenticado: " + autenticado + ", starttls: " + starttls + ""
+                + "\n remitente: " + remitente + ", clave: " + clave + ", destinatario: " + destinatario + ", asunto: " + asunto + ", nit: " + nit + ", cadena: " + cadena);
         boolean envioCorreo = false;
         Properties props = new Properties();
         props.put("mail.smtp.host", servidorsmtp);
-        props.put("mail.smtp.socketFactory.port", puerto);
-        props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        //props.put("mail.smtp.socketFactory.port", puerto);
+        //props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
         // props.put("mail.smtp.auth", autenticado == "S" ? "true" : "false");
         props.put("mail.smtp.auth", autenticado.equals("S") ? "true" : "false");
         props.put("mail.smtp.starttls.enable", starttls.equals("S") ? "true" : "false");
@@ -663,26 +673,28 @@ public class EnvioCorreo {
             BodyPart messageBodyPart = new MimeBodyPart();
             String htmlText
                     = "<style>"
-                    + " a:link { color: white !important; } \n" +
-                      "a:visited { color: white !important; } \n" +
-                      "a:hover { background: yellow !important; } \n" +
-                      "a:active { color: white !important; } "
-                    + ".ii a[href] {\n" +
-                    "    color: #ccc !important;\n" +
-                    "} "
+                    + " a:link { color: white !important; } \n"
+                    + "a:visited { color: white !important; } \n"
+                    + "a:hover { background: yellow !important; } \n"
+                    + "a:active { color: white !important; } "
+                    + ".ii a[href] {\n"
+                    + "    color: #ccc !important;\n"
+                    + "} "
                     + "</style>"
+                    + "<div style=\"background: #00223c;\">\n"
                     + "<div\n"
-                    + "        style=\"padding:10%;color:white;background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url(https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/imgcorreoreporte.jpg/);min-height:100%;background-size:cover\" !important;>\n"
+                    + "        style=\"padding:10%;color:white; background: #00223c;background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url(https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/imgcorreoreporte.jpg/);  min-height:100%;background-size:cover\">\n"
                     + "        <table style=\"max-width:90%;padding:10%;margin:0 auto;border-collapse:collapse\">\n"
                     + "            <tbody>\n"
                     + "                <tr >\n"
                     + "                    <td style=\"text-align:center;padding:0\">\n"
                     + "                        <div style=\"text-align:center\">\n"
-                    + "                            <a href='"+urlKiosco+"' target=\"_blank\"\n"
-                    + "                                data-saferedirecturl="+urlKiosco+">\n"
+                    + "                            <a href='" + urlKiosco + "' target=\"_blank\"\n"
+                    + "                                data-saferedirecturl=" + urlKiosco + ">\n"
                     + "\n"
-                    + "                                <img width=\"80px\" style=\"display:block;margin:auto auto 0px auto\"\n"
+                    + "                                <img width=\"80px\"  height=\"80px\" style=\"display:block;margin:auto auto 0px auto\"\n"
                     + "                                    src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/kioscologopro.png\">\n"
+                    //+ "                                    src=\"https://designer.ci2.co:8181/wsreporte/webresources/conexioneskioskos/obtenerLogo/LogoCI2Grande.png?nit=830056149&cadena=DEFAULT1\">\n"
                     + "                            </a>\n"
                     + "                        </div>\n"
                     + "                    </td>\n"
@@ -703,14 +715,14 @@ public class EnvioCorreo {
                     + "                                adjuntos.<br></h4>\n"*/
                     + "                            <div style=\"width:100%;text-align:center\">\n"
                     + "                                <a style=\"text-decoration:none;border-radius:5px;padding:11px 23px;margin-bottom:4%;color:white;background-color:#3498db\"\n"
-                    + "                                    href="+urlKiosco+" target=\"_blank\"\n"
-                    + "                                    data-saferedirecturl="+urlKiosco+">Ir\n"
+                    + "                                    href=" + urlKiosco + " target=\"_blank\"\n"
+                    + "                                    data-saferedirecturl=" + urlKiosco + ">Ir\n"
                     + "                                    a Kiosco</a>\n"
                     + "                                <br>                                                                \n"
                     + "                                <br>                                                                \n"
                     + "                                    <ul style=\"width: 100%; height: 20px; text-align: center; padding: 10px 0 0 0 !important;\">\n"
                     + "                <li style=\"background: #3b5998; display:inline;\"><a href=\"https://www.facebook.com/nominads\" target=\"_blank\"\n"
-                    + "                    > <img src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/21113922.png\" style=\"width: 19px; height: 19px;  \n"
+                    + "                    > <img width=\"19px\" height=\"19px\"  src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/21113922.png\" style=\"width: 19px; height: 19px;  \n"
                     + "                     color: #fff;\n"
                     + "                     background: #000;\n"
                     + "                     padding: 10px 15px;\n"
@@ -718,7 +730,7 @@ public class EnvioCorreo {
                     + "                     \n"
                     + "                     background: #3b5998;\"></a></li>"
                     + "                                        <li style=\"background: #00abf0; display:inline;\"><a href=\"https://twitter.com/NominaDesigner\" target=\"_blank\"\n"
-                    + "                                            class=\"icon-twitter\"> <img src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733635.png\" style=\"width: 19px; height: 19px;\n"
+                    + "                                            class=\"icon-twitter\"> <img width=\"19px\" height=\"19px\"  src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733635.png\" style=\"width: 19px; height: 19px;\n"
                     + "                                            color: #fff;\n"
                     + "                                            background: #000;\n"
                     + "                                            padding: 10px 15px;\n"
@@ -728,7 +740,7 @@ public class EnvioCorreo {
                     + "                                            transition: all 300ms ease;\n"
                     + "                                            background: #00abf0;\"></a></li>\n"
                     + "                                        <li style=\"background: #0ad2ec; display:inline;\"><a href=\"https://www.nomina.com.co/\" target=\"_blank\"\n"
-                    + "                                                class=\"icon-nomina\"> <img src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/3522533.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
+                    + "                                                class=\"icon-nomina\"> <img width=\"19px\" height=\"19px\"  src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/3522533.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
                     + "                                                color: #fff;\n"
                     + "                                                background: #000;\n"
                     + "                                                padding: 10px 15px;\n"
@@ -738,7 +750,7 @@ public class EnvioCorreo {
                     + "                                                transition: all 300ms ease;\n"
                     + "                                                background: #0ad2ec;\"></a></li>\n"
                     + "                                        <li style=\"background: #ce1010; display:inline;\"><a href=\"https://www.youtube.com/user/nominads\" target=\"_blank\"\n"
-                    + "                                                    class=\"icon-youtube\"> <img src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733646.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
+                    + "                                                    class=\"icon-youtube\"> <img width=\"19px\" height=\"19px\"  src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733646.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
                     + "                                                    color: #fff;\n"
                     + "                                                    background: #000;\n"
                     + "                                                    padding: 10px 15px;\n"
@@ -754,7 +766,20 @@ public class EnvioCorreo {
                     + "                        </tr>\n"
                     + "            </tbody>\n"
                     + "        </table>\n"
-                    + "    </div>";
+                    + "    </div>"
+                    + " </div>"
+                    /*+ " <br>"
+                    + "  <p style=\"color: #55a532;\" >Imprimir en caso de ser estrictamente necesario, el medio ambiente se lo agradecerá. Ayudemos a evitar el calentamiento global.</p>\n" 
+                    + " <br>"
+                    + "   <p> Confidencialidad: CI2 S.A  es una empresa consiente de la importancia de la información en cuanto a su "
+                    + "disponibilidad, Integridad y confidencialidad, por ello busca su protección a través de sus directrices de gestión "
+                    + "de seguridad de la información. Los datos contenidos en  este correo electrónico de CI2 S.A  y en todos sus archivos "
+                    + "anexos, es confidencial y/o privilegiada y sólo puede ser utilizada por la(s) persona(s) a la(s) cual(es) está dirigida. "
+                    + "Si usted no es el destinatario autorizado, cualquier modificación, retención, difusión, distribución o copia total o "
+                    + "parcial de este mensaje y/o de la información contenida en el mismo y/o en sus archivos anexos está prohibida y son "
+                    + "sancionadas por la ley. Si por error recibe este mensaje, le ofrecemos disculpas, sírvase borrarlo de inmediato, "
+                    + "notificarle de su error a la persona que lo envió y abstenerse de divulgar su contenido y anexos. </p>"*/
+                    ;
             messageBodyPart.setContent(htmlText, "text/html");
 // add it
             multipart.addBodyPart(messageBodyPart);
@@ -771,7 +796,7 @@ public class EnvioCorreo {
             message.setContent(multipart);
 // Send the actual HTML message, as big as you like
             Transport.send(message);
-            System.out.println("Mail sent successfully!!! "+destinatario);
+            System.out.println("Mail sent successfully!!! " + destinatario);
             envioCorreo = true;
         } catch (MessagingException e) {
             envioCorreo = false;
@@ -779,17 +804,17 @@ public class EnvioCorreo {
         }
         return envioCorreo;
     }
-    
+
     public boolean enviarCorreoAusentismos(String servidorsmtp, String puerto, String autenticado,
             String starttls, String remitente, String clave, String destinatario,
             String asunto, String mensaje, String nombreAnexo, String urlKiosco, String nit, String cadena) {
-        System.out.println("Parametros enviarCorreoVacaciones(): servidorsmto: "+servidorsmtp+", puerto: "+puerto+", autenticado: "+autenticado+", starttls: "+starttls+""
-                + "\n remitente: "+remitente+", clave: "+clave+", destinatario: "+destinatario+", asunto: "+asunto+", nit: "+nit+", cadena: "+cadena);
+        System.out.println("Parametros enviarCorreoVacaciones(): servidorsmto: " + servidorsmtp + ", puerto: " + puerto + ", autenticado: " + autenticado + ", starttls: " + starttls + ""
+                + "\n remitente: " + remitente + ", clave: " + clave + ", destinatario: " + destinatario + ", asunto: " + asunto + ", nit: " + nit + ", cadena: " + cadena);
         boolean envioCorreo = false;
         Properties props = new Properties();
         props.put("mail.smtp.host", servidorsmtp);
-        props.put("mail.smtp.socketFactory.port", puerto);
-        props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        //props.put("mail.smtp.socketFactory.port", puerto);
+        //props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
         // props.put("mail.smtp.auth", autenticado == "S" ? "true" : "false");
         props.put("mail.smtp.auth", autenticado.equals("S") ? "true" : "false");
         props.put("mail.smtp.starttls.enable", starttls.equals("S") ? "true" : "false");
@@ -813,26 +838,28 @@ public class EnvioCorreo {
             BodyPart messageBodyPart = new MimeBodyPart();
             String htmlText
                     = "<style>"
-                    + " a:link { color: white !important; } \n" +
-                      "a:visited { color: white !important; } \n" +
-                      "a:hover { background: yellow !important; } \n" +
-                      "a:active { color: white !important; } "
-                    + ".ii a[href] {\n" +
-                    "    color: #ccc !important;\n" +
-                    "} "
+                    + " a:link { color: white !important; } \n"
+                    + "a:visited { color: white !important; } \n"
+                    + "a:hover { background: yellow !important; } \n"
+                    + "a:active { color: white !important; } "
+                    + ".ii a[href] {\n"
+                    + "    color: #ccc !important;\n"
+                    + "} "
                     + "</style>"
+                    + "<div style=\"background: #00223c;\">\n"
                     + "<div\n"
-                    + "        style=\"padding:10%;color:white;background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url(https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/imgcorreoreporte.jpg/);min-height:100%;background-size:cover\" !important;>\n"
+                    + "        style=\"padding:10%;color:white; background: #00223c;background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url(https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/imgcorreoreporte.jpg/); min-height:100%;background-size:cover\">\n"
                     + "        <table style=\"max-width:90%;padding:10%;margin:0 auto;border-collapse:collapse\">\n"
                     + "            <tbody>\n"
                     + "                <tr >\n"
                     + "                    <td style=\"text-align:center;padding:0\">\n"
                     + "                        <div style=\"text-align:center\">\n"
-                    + "                            <a href='"+urlKiosco+"' target=\"_blank\"\n"
-                    + "                                data-saferedirecturl="+urlKiosco+">\n"
+                    + "                            <a href='" + urlKiosco + "' target=\"_blank\"\n"
+                    + "                                data-saferedirecturl=" + urlKiosco + ">\n"
                     + "\n"
-                    + "                                <img width=\"80px\" style=\"display:block;margin:auto auto 0px auto\"\n"
+                    + "                                <img width=\"80px\" height=\"80px\" style=\"display:block;margin:auto auto 0px auto\"\n"
                     + "                                    src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/kioscologopro.png\">\n"
+                    //+ "                                    src=\"https://designer.ci2.co:8181/wsreporte/webresources/conexioneskioskos/obtenerLogo/LogoCI2Grande.png?nit=830056149&cadena=DEFAULT1\">\n"
                     + "                            </a>\n"
                     + "                        </div>\n"
                     + "                    </td>\n"
@@ -845,9 +872,9 @@ public class EnvioCorreo {
                     + "                            <br>\n"
                     + "                            <h4 style=\"color:#ffffff !important; margin:2px;text-align:center\">\n" + mensaje
                     + "                                </h4>\n"
-                                                + ((nombreAnexo == null || nombreAnexo.equals("null")) ? "" : "<h4 style=\"color:#ffffff !important; text-align:center;margin-top:10px\">"
-                                                + "Adjunto a este correo encontrará el documento anexo a la novedad de ausentismo.")
-                                                + " </h4>\n"                   
+                    + ((nombreAnexo == null || nombreAnexo.equals("null")) ? "" : "<h4 style=\"color:#ffffff !important; text-align:center;margin-top:10px\">"
+                    + "Adjunto a este correo encontrará el documento anexo a la novedad de ausentismo.")
+                    + " </h4>\n"
                     + "                            <h4 style=\"color:#ffffff !important; text-align:center;margin-top:10px\">\n"
                     + "                                Este correo se ha enviado automáticamente desde Kiosco Nómina Designer.</h4>\n"
                     + "                            <h4>\n"
@@ -855,14 +882,14 @@ public class EnvioCorreo {
                     + "                                adjuntos.<br></h4>\n"*/
                     + "                            <div style=\"width:100%;text-align:center\">\n"
                     + "                                <a style=\"text-decoration:none;border-radius:5px;padding:11px 23px;margin-bottom:4%;color:white;background-color:#3498db\"\n"
-                    + "                                    href="+urlKiosco+" target=\"_blank\"\n"
-                    + "                                    data-saferedirecturl="+urlKiosco+">Ir\n"
+                    + "                                    href=" + urlKiosco + " target=\"_blank\"\n"
+                    + "                                    data-saferedirecturl=" + urlKiosco + ">Ir\n"
                     + "                                    a Kiosco</a>\n"
                     + "                                <br>                                                                \n"
                     + "                                <br>                                                                \n"
                     + "                                    <ul style=\"width: 100%; height: 20px; text-align: center; padding: 10px 0 0 0 !important;\">\n"
                     + "                <li style=\"background: #3b5998; display:inline;\"><a href=\"https://www.facebook.com/nominads\" target=\"_blank\"\n"
-                    + "                    > <img src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/21113922.png\" style=\"width: 19px; height: 19px;  \n"
+                    + "                    > <img width=\"19px\" height=\"19px\"  src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/21113922.png\" style=\"width: 19px; height: 19px;  \n"
                     + "                     color: #fff;\n"
                     + "                     background: #000;\n"
                     + "                     padding: 10px 15px;\n"
@@ -870,7 +897,7 @@ public class EnvioCorreo {
                     + "                     \n"
                     + "                     background: #3b5998;\"></a></li>"
                     + "                                        <li style=\"background: #00abf0; display:inline;\"><a href=\"https://twitter.com/NominaDesigner\" target=\"_blank\"\n"
-                    + "                                            class=\"icon-twitter\"> <img src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733635.png\" style=\"width: 19px; height: 19px;\n"
+                    + "                                            class=\"icon-twitter\"> <img width=\"19px\" height=\"19px\"  src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733635.png\" style=\"width: 19px; height: 19px;\n"
                     + "                                            color: #fff;\n"
                     + "                                            background: #000;\n"
                     + "                                            padding: 10px 15px;\n"
@@ -880,7 +907,7 @@ public class EnvioCorreo {
                     + "                                            transition: all 300ms ease;\n"
                     + "                                            background: #00abf0;\"></a></li>\n"
                     + "                                        <li style=\"background: #0ad2ec; display:inline;\"><a href=\"https://www.nomina.com.co/\" target=\"_blank\"\n"
-                    + "                                                class=\"icon-nomina\"> <img src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/3522533.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
+                    + "                                                class=\"icon-nomina\"> <img width=\"19px\" height=\"19px\"  src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/3522533.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
                     + "                                                color: #fff;\n"
                     + "                                                background: #000;\n"
                     + "                                                padding: 10px 15px;\n"
@@ -890,7 +917,7 @@ public class EnvioCorreo {
                     + "                                                transition: all 300ms ease;\n"
                     + "                                                background: #0ad2ec;\"></a></li>\n"
                     + "                                        <li style=\"background: #ce1010; display:inline;\"><a href=\"https://www.youtube.com/user/nominads\" target=\"_blank\"\n"
-                    + "                                                    class=\"icon-youtube\"> <img src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733646.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
+                    + "                                                    class=\"icon-youtube\"> <img width=\"19px\" height=\"19px\" src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733646.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
                     + "                                                    color: #fff;\n"
                     + "                                                    background: #000;\n"
                     + "                                                    padding: 10px 15px;\n"
@@ -906,7 +933,20 @@ public class EnvioCorreo {
                     + "                        </tr>\n"
                     + "            </tbody>\n"
                     + "        </table>\n"
-                    + "    </div>";
+                    + "    </div>"
+                    + "</div>"
+                    /*+ " <br>"
+                    + "  <p style=\"color: #55a532;\" >Imprimir en caso de ser estrictamente necesario, el medio ambiente se lo agradecerá. Ayudemos a evitar el calentamiento global.</p>\n" 
+                    + " <br>"
+                    + "   <p> Confidencialidad: CI2 S.A  es una empresa consiente de la importancia de la información en cuanto a su "
+                    + "disponibilidad, Integridad y confidencialidad, por ello busca su protección a través de sus directrices de gestión "
+                    + "de seguridad de la información. Los datos contenidos en  este correo electrónico de CI2 S.A  y en todos sus archivos "
+                    + "anexos, es confidencial y/o privilegiada y sólo puede ser utilizada por la(s) persona(s) a la(s) cual(es) está dirigida. "
+                    + "Si usted no es el destinatario autorizado, cualquier modificación, retención, difusión, distribución o copia total o "
+                    + "parcial de este mensaje y/o de la información contenida en el mismo y/o en sus archivos anexos está prohibida y son "
+                    + "sancionadas por la ley. Si por error recibe este mensaje, le ofrecemos disculpas, sírvase borrarlo de inmediato, "
+                    + "notificarle de su error a la persona que lo envió y abstenerse de divulgar su contenido y anexos. </p>"*/
+                    ;
             messageBodyPart.setContent(htmlText, "text/html");
 // add it
             multipart.addBodyPart(messageBodyPart);
@@ -917,7 +957,7 @@ public class EnvioCorreo {
             DataSource fds = new FileDataSource(rutaImagenes + "headerlogocorreoKiosko.png");
             messageBodyPart.setDataHandler(new DataHandler(fds));
             messageBodyPart.setHeader("Content-ID", "<image>");
-            
+
             if (nombreAnexo != null) {
                 String pathReportes = getPathReportes(nit, cadena);
                 BodyPart adjunto = new MimeBodyPart();
@@ -927,85 +967,81 @@ public class EnvioCorreo {
                 multipart.addBodyPart(adjunto);
             }
 
-            
 // put everything together
             message.setContent(multipart);
-            
-            
+
 // add image to the multipart
             multipart.addBodyPart(messageBodyPart);
 // put everything together
             message.setContent(multipart);
-            
-            
+
             // prueba adjuntar archivo
-            
 // Send the actual HTML message, as big as you like
             Transport.send(message);
-            System.out.println("Mail sent successfully!!! "+destinatario);
+            System.out.println("Mail sent successfully!!! " + destinatario);
             envioCorreo = true;
         } catch (MessagingException e) {
             envioCorreo = false;
             throw new RuntimeException(e);
         }
         return envioCorreo;
-    }    
-      
+    }
+
     public String getConfigCorreo(String nitEmpresa, String valor, String cadena) {
         System.out.println("getPathArchivosPlanos()");
-        String servidorsmtp="smtp.designer.com.co";
+        String servidorsmtp = "smtp.designer.com.co";
         try {
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT "+valor+" FROM CONFICORREOKIOSKO WHERE EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?)";
-            System.out.println("Query: "+sqlQuery);
+            String sqlQuery = "SELECT " + valor + " FROM CONFICORREOKIOSKO WHERE EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?)";
+            System.out.println("Query: " + sqlQuery);
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
-            servidorsmtp =  query.getSingleResult().toString();
-            System.out.println(valor+": "+servidorsmtp);
+            servidorsmtp = query.getSingleResult().toString();
+            System.out.println(valor + ": " + servidorsmtp);
         } catch (Exception e) {
-            System.out.println("Error: "+this.getClass().getName()+".getConfigCorreo(): " +e.getMessage());
+            System.out.println("Error: " + this.getClass().getName() + ".getConfigCorreo(): " + e.getMessage());
         }
         return servidorsmtp;
-    }    
-    
+    }
+
     public String getConfigCorreoServidorSMTP(String nitEmpresa, String cadena) {
         System.out.println("getConfigCorreoServidorSMTP()");
-        String servidorsmtp="smtp.designer.com.co";
+        String servidorsmtp = "smtp.designer.com.co";
         try {
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT SERVIDORSMTP FROM CONFICORREOKIOSKO WHERE EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?)";
-            System.out.println("Query: "+sqlQuery);
+            System.out.println("Query: " + sqlQuery);
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
-            servidorsmtp =  query.getSingleResult().toString();
-            System.out.println("Servidor smtp: "+servidorsmtp);
+            servidorsmtp = query.getSingleResult().toString();
+            System.out.println("Servidor smtp: " + servidorsmtp);
         } catch (Exception e) {
-            System.out.println("Error: getConfigCorreoServidorSMTP: "+e.getMessage());
+            System.out.println("Error: getConfigCorreoServidorSMTP: " + e.getMessage());
         }
         return servidorsmtp;
     }
-    
+
     public String getCorreoSoporteKiosco(String nitEmpresa, String cadena) {
         System.out.println("getConfigCorreoServidorSMTP()");
-        String emailSoporte="";
+        String emailSoporte = "";
         try {
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT EMAILCONTACTO FROM KIOPERSONALIZACIONES WHERE "
                     + "EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?) AND ROWNUM<=1";
-            System.out.println("Query: "+sqlQuery);
+            System.out.println("Query: " + sqlQuery);
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
-            emailSoporte =  query.getSingleResult().toString();
-            System.out.println("Email soporte: "+emailSoporte);
+            emailSoporte = query.getSingleResult().toString();
+            System.out.println("Email soporte: " + emailSoporte);
         } catch (Exception e) {
-            System.out.println("Error: getCorreoSoporteKiosco: "+e.getMessage());
+            System.out.println("Error: getCorreoSoporteKiosco: " + e.getMessage());
         }
         return emailSoporte;
-    }     
-    
+    }
+
     /*Correo novedad de corrección de información que se envia a RRHH o Auditoria Módulo Vacaciones(No se incluye botón de Ir a Kiosco) */
     public boolean enviarCorreoInformativo(
             String asunto, String saludo, String mensaje, String nit, String urlKiosco, String cadena, String correoDestinatarioMain, String correoCC) {
@@ -1017,12 +1053,12 @@ public class EnvioCorreo {
         String remitente = getConfigCorreo(nit, "REMITENTE", cadena);
         String clave = getConfigCorreo(nit, "CLAVE", cadena);
         //String destinatario = getCorreoSoporteKiosco(nit, cadena);
-        System.out.println("Datos enviarCorreoInformativo: "+servidorsmtp+", puerto: "+puerto+", autenticado: "+autenticado+", starttls: "+starttls+", remitente: "+remitente+", clave: "+clave);
+        System.out.println("Datos enviarCorreoInformativo: " + servidorsmtp + ", puerto: " + puerto + ", autenticado: " + autenticado + ", starttls: " + starttls + ", remitente: " + remitente + ", clave: " + clave);
         boolean envioCorreo = false;
         Properties props = new Properties();
         props.put("mail.smtp.host", servidorsmtp);
-        props.put("mail.smtp.socketFactory.port", puerto);
-        props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        //props.put("mail.smtp.socketFactory.port", puerto);
+        //props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
         // props.put("mail.smtp.auth", autenticado == "S" ? "true" : "false");
         props.put("mail.smtp.auth", autenticado.equals("S") ? "true" : "false");
         props.put("mail.smtp.starttls.enable", starttls.equals("S") ? "true" : "false");
@@ -1038,12 +1074,12 @@ public class EnvioCorreo {
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(remitente));
             //message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(destinatario));
-            message.addRecipients(Message.RecipientType.TO, 
-            InternetAddress.parse(correoDestinatarioMain));
+            message.addRecipients(Message.RecipientType.TO,
+                    InternetAddress.parse(correoDestinatarioMain));
             /*message.addRecipients(Message.RecipientType.TO, InternetAddress.parse(correoDestinatarioMain));
             message.addRecipients(Message.RecipientType.TO, InternetAddress.parse("mateoc@nomina.com.co"));
             message.addRecipients(Message.RecipientType.TO, InternetAddress.parse("mateocoronadocardona@gmail.com"));*/
-           // if (correoUsuario != null) {
+            // if (correoUsuario != null) {
             if (correoCC != null) {
                 message.addRecipients(Message.RecipientType.CC, InternetAddress.parse(correoCC));
             }
@@ -1054,18 +1090,30 @@ public class EnvioCorreo {
 // first part (the html)
             BodyPart messageBodyPart = new MimeBodyPart();
             String htmlText
-                    = "<div\n"
-                   + "        style=\"padding:10%;color:white;background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url(https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/imgcorreoreporte.jpg/);min-height:100%;background-size:cover\" !important;>\n"
+                    = "\"<style>\"\n"
+                    + "                      \" a:link { color: white !important; } \n"
+                    + "                      \"a:visited { color: white !important; }\n"
+                    + "                      \"a:hover { background: yellow !important; } \n"
+                    + "                      \"span.im { color: white !important; } \n"
+                    + "                      \"a:active { color: white !important; } "
+                    + "                      \".ii a[href] { "
+                    + "                      \"    color: #ccc !important; \n"
+                    + "                      \"} "
+                    + "                      \"</style>\""
+                    + "<div style=\"background: #00223c;\">\n"
+                    + "<div\n"
+                    + "        style=\"padding:10%;color:white ; background: #00223c; background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url(https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/imgcorreoreporte.jpg/); min-height:100%;background-size:cover\">\n"
                     + "        <table style=\"max-width:90%;padding:10%;margin:0 auto;border-collapse:collapse\">\n"
                     + "            <tbody>\n"
                     + "                <tr >\n"
                     + "                    <td style=\"text-align:center;padding:0\">\n"
                     + "                        <div style=\"text-align:center\">\n"
-                    + "                            <a href='"+urlKiosco+"' target=\"_blank\"\n"
+                    + "                            <a href='" + urlKiosco + "' target=\"_blank\"\n"
                     + "                                >\n"
                     + "\n"
-                    + "                                <img width=\"80px\" style=\"display:block;margin:auto auto 0px auto\"\n"
+                    + "                                <img width=\"80px\" height=\"80px\"  style=\"display:block;margin:auto auto 0px auto;\"\n"
                     + "                                    src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/kioscologopro.png\">\n"
+                    //+ "                                    src=\"https://designer.ci2.co:8181/wsreporte/webresources/conexioneskioskos/obtenerLogo/LogoCI2Grande.png?nit=830056149&cadena=DEFAULT1\">\n"
                     + "                            </a>\n"
                     + "                        </div>\n"
                     + "                    </td>\n"
@@ -1074,10 +1122,9 @@ public class EnvioCorreo {
                     + "                <tr style=\"padding-bottom:2%\">\n"
                     + "                    <td>\n"
                     + "                        <div style=\"margin:2% 4% 4% auto;text-align:justify;font-family:sans-serif\">\n"
-                    + "                            <h2 style=\"color:#ffffff !important; margin:0 0 5px;text-align:center\">"+saludo+"</h2>\n"
+                    + "                            <h2 style=\"color:#ffffff !important; margin:0 0 5px;text-align:center\">" + saludo + "</h2>\n"
                     + "                            <br><br>\n"
-                    + "                            <h4 style=\"color:#ffffff !important; margin:2px;text-align:center;\">\n" + mensaje
-                    + "                                </h4>\n"
+                    + "                            <h4 style=\"color:#ffffff !important; margin:2px;text-align:center;\">\n" + mensaje + "</h4>\n"
                     + "                                <br><br> "
                     + "                            <h4 style=\"color:#ffffff !important; text-align:center;margin-top:10px\">\n"
                     + "                                Este correo se ha enviado automáticamente desde Kiosco Nómina Designer.</h4>\n"
@@ -1088,45 +1135,45 @@ public class EnvioCorreo {
                     + "                            <div style=\"width:100%;text-align:center\">\n"
                     + "                                <br>                                                                \n"
                     + "                                <br>                                                                \n"
-                    + "                                    <ul style=\"width: 100%; height: 20px; text-align: center; padding: 10px 0 0 0 !important;\">\n"
-                    + "                <li style=\"background: #3b5998; display:inline;\"><a href=\"https://www.facebook.com/nominads\" target=\"_blank\"\n"
-                    + "                    > <img src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/21113922.png\" style=\"width: 19px; height: 19px;  \n"
-                    + "                     color: #fff;\n"
-                    + "                     background: #000;\n"
-                    + "                     padding: 10px 15px;\n"
-                    + "                     text-decoration: none;\n"
+                    + "                                    <ul style=\"width: 100% !important; height: 20px !important; text-align: center !important; padding: 10px 0 0 0 !important;\">\n"
+                    + "                <li style=\"background: #3b5998 !important; display:inline !important;\"><a href=\"https://www.facebook.com/nominads\" target=\"_blank\"\n"
+                    + "                    > <img width=\"19px\" height=\"19px\"  src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/21113922.png\" style=\"width: 19px !important; height: 19px !important;  \n"
+                    + "                     color: #fff !important;\n"
+                    + "                     background: #000 !important;\n"
+                    + "                     padding: 10px 15px !important;\n"
+                    + "                     text-decoration: none !important;\n"
                     + "                     \n"
-                    + "                     background: #3b5998;\"></a></li>"
-                    + "                                        <li style=\"background: #00abf0; display:inline;\"><a href=\"https://twitter.com/NominaDesigner\" target=\"_blank\"\n"
-                    + "                                            class=\"icon-twitter\"> <img src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733635.png\" style=\"width: 19px; height: 19px;\n"
-                    + "                                            color: #fff;\n"
-                    + "                                            background: #000;\n"
-                    + "                                            padding: 10px 15px;\n"
-                    + "                                            text-decoration: none;\n"
-                    + "                                            -webkit-transition: all 300ms ease;\n"
-                    + "                                            -o-transition: all 300ms ease;\n"
-                    + "                                            transition: all 300ms ease;\n"
-                    + "                                            background: #00abf0;\"></a></li>\n"
-                    + "                                        <li style=\"background: #0ad2ec; display:inline;\"><a href=\"https://www.nomina.com.co/\" target=\"_blank\"\n"
-                    + "                                                class=\"icon-nomina\"> <img src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/3522533.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
-                    + "                                                color: #fff;\n"
-                    + "                                                background: #000;\n"
-                    + "                                                padding: 10px 15px;\n"
-                    + "                                                text-decoration: none;\n"
-                    + "                                                -webkit-transition: all 300ms ease;\n"
-                    + "                                                -o-transition: all 300ms ease;\n"
-                    + "                                                transition: all 300ms ease;\n"
-                    + "                                                background: #0ad2ec;\"></a></li>\n"
-                    + "                                        <li style=\"background: #ce1010; display:inline;\"><a href=\"https://www.youtube.com/user/nominads\" target=\"_blank\"\n"
-                    + "                                                    class=\"icon-youtube\"> <img src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733646.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
-                    + "                                                    color: #fff;\n"
-                    + "                                                    background: #000;\n"
-                    + "                                                    padding: 10px 15px;\n"
-                    + "                                                    text-decoration: none;\n"
-                    + "                                                    -webkit-transition: all 300ms ease;\n"
-                    + "                                                    -o-transition: all 300ms ease;\n"
-                    + "                                                    transition: all 300ms ease;\n"
-                    + "                                                    background: #ce1010;\"></a></li>        \n"
+                    + "                     background: #3b5998 !important;\"></a></li>"
+                    + "                                        <li style=\"background: #00abf0 !important; display:inline !important;\"><a href=\"https://twitter.com/NominaDesigner\" target=\"_blank\"\n"
+                    + "                                            class=\"icon-twitter\"> <img width=\"19px\" height=\"19px\"  src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733635.png\" style=\"width: 19px !important; height: 19px !important;\n"
+                    + "                                            color: #fff !important;\n"
+                    + "                                            background: #000 !important;\n"
+                    + "                                            padding: 10px 15px !important;\n"
+                    + "                                            text-decoration: none !important;\n"
+                    + "                                            -webkit-transition: all 300ms ease !important;\n"
+                    + "                                            -o-transition: all 300ms ease !important;\n"
+                    + "                                            transition: all 300ms ease !important;\n"
+                    + "                                            background: #00abf0 !important;\"></a></li>\n"
+                    + "                                        <li style=\"background: #0ad2ec !important; display:inline !important;\"><a href=\"https://www.nomina.com.co/\" target=\"_blank\"\n"
+                    + "                                                class=\"icon-nomina\"> <img width=\"19px\" height=\"19px\"  src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/3522533.png\" style=\"width: 19px !important; height: 19px !important; display: inline-block !important;\n"
+                    + "                                                color: #fff !important;\n"
+                    + "                                                background: #000 !important;\n"
+                    + "                                                padding: 10px 15px !important;\n"
+                    + "                                                text-decoration: none !important;\n"
+                    + "                                                -webkit-transition: all 300ms ease !important;\n"
+                    + "                                                -o-transition: all 300ms ease !important;\n"
+                    + "                                                transition: all 300ms ease !important;\n"
+                    + "                                                background: #0ad2ec !important;\"></a></li>\n"
+                    + "                                        <li style=\"background: #ce1010 !important; display:inline !important; \"><a href=\"https://www.youtube.com/user/nominads\" target=\"_blank\"\n"
+                    + "                                                    class=\"icon-youtube\"> <img width=\"19px\" height=\"19px\"  src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733646.png\" style=\"width: 19px !important; height: 19px !important; display: inline-block !important;\n"
+                    + "                                                    color: #fff !important;\n"
+                    + "                                                    background: #000 !important;\n"
+                    + "                                                    padding: 10px 15px !important;\n"
+                    + "                                                    text-decoration: none !important;\n"
+                    + "                                                    -webkit-transition: all 300ms ease !important;\n"
+                    + "                                                    -o-transition: all 300ms ease !important;\n"
+                    + "                                                    transition: all 300ms ease !important;\n"
+                    + "                                                    background: #ce1010 !important;\"></a></li>        \n"
                     + "                                       \n"
                     + "                                    </ul>\n"
                     + "                                \n"
@@ -1134,7 +1181,20 @@ public class EnvioCorreo {
                     + "                        </tr>\n"
                     + "            </tbody>\n"
                     + "        </table>\n"
-                    + "    </div>";
+                    + "    </div>"
+                    + " </div>"
+                    /*+ " <br>"
+                    + "  <p style=\"color: #55a532;\" >Imprimir en caso de ser estrictamente necesario, el medio ambiente se lo agradecerá. Ayudemos a evitar el calentamiento global.</p>\n" 
+                    + " <br>"
+                    + "   <p> Confidencialidad: CI2 S.A  es una empresa consiente de la importancia de la información en cuanto a su "
+                    + "disponibilidad, Integridad y confidencialidad, por ello busca su protección a través de sus directrices de gestión "
+                    + "de seguridad de la información. Los datos contenidos en  este correo electrónico de CI2 S.A  y en todos sus archivos "
+                    + "anexos, es confidencial y/o privilegiada y sólo puede ser utilizada por la(s) persona(s) a la(s) cual(es) está dirigida. "
+                    + "Si usted no es el destinatario autorizado, cualquier modificación, retención, difusión, distribución o copia total o "
+                    + "parcial de este mensaje y/o de la información contenida en el mismo y/o en sus archivos anexos está prohibida y son "
+                    + "sancionadas por la ley. Si por error recibe este mensaje, le ofrecemos disculpas, sírvase borrarlo de inmediato, "
+                    + "notificarle de su error a la persona que lo envió y abstenerse de divulgar su contenido y anexos. </p>"*/
+                    ;
             messageBodyPart.setContent(htmlText, "text/html");
 // add it
             multipart.addBodyPart(messageBodyPart);
@@ -1142,7 +1202,7 @@ public class EnvioCorreo {
             messageBodyPart = new MimeBodyPart();
             //DataSource fds = new FileDataSource("C:\\DesignerRHN12\\Basico12\\fotos_empleados\\headerlogocorreoKiosko.png");
             String rutaImagenes = getPathFoto(nit, cadena);
-            System.out.println("RutaImagenes: "+rutaImagenes+"headerlogocorreoKiosko.png");
+            System.out.println("RutaImagenes: " + rutaImagenes + "headerlogocorreoKiosko.png");
             DataSource fds = new FileDataSource(rutaImagenes + "headerlogocorreoKiosko.png");
             messageBodyPart.setDataHandler(new DataHandler(fds));
             messageBodyPart.setHeader("Content-ID", "<image>");
@@ -1152,9 +1212,9 @@ public class EnvioCorreo {
             message.setContent(multipart);
 // Send the actual HTML message, as big as you like
             Transport.send(message);
-            System.out.println("Mail sent successfully!!! To:"+correoDestinatarioMain);
-            if (correoCC!=null) {
-                System.out.println("Mail sent successfully!!! Copia correo enviada a "+correoCC);
+            System.out.println("Mail sent successfully!!! To:" + correoDestinatarioMain);
+            if (correoCC != null) {
+                System.out.println("Mail sent successfully!!! Copia correo enviada a " + correoCC);
             }
             envioCorreo = true;
         } catch (MessagingException e) {
@@ -1163,17 +1223,17 @@ public class EnvioCorreo {
         }
         return envioCorreo;
     }
-    
+
     public static void main(String[] args) {
         /*new EnvioCorreo().enviarCorreo("", "thalia.manrike@gmail.com", "Prueba 2", 
                 "Esto es un correo de prueba", "");*/
-     //new EnvioCorreo().pruebaEnvio3();
+        //new EnvioCorreo().pruebaEnvio3();
 //       new EnvioCorreo().pruebaEnvio2();
-       //new EnvioCorreo().pruebaEnvio();
+        //new EnvioCorreo().pruebaEnvio();
     }
-    
-    public String getEsquema( String nitEmpresa, String cadena) {
-        System.out.println("Parametros getEsquema(): nitempresa: "+nitEmpresa+", cadena: "+cadena);
+
+    public String getEsquema(String nitEmpresa, String cadena) {
+        System.out.println("Parametros getEsquema(): nitempresa: " + nitEmpresa + ", cadena: " + cadena);
         String esquema = null;
         String sqlQuery;
         try {
@@ -1182,11 +1242,11 @@ public class EnvioCorreo {
             query.setParameter(1, nitEmpresa);
             query.setParameter(2, cadena);
             esquema = query.getSingleResult().toString();
-            System.out.println("Esquema: "+esquema);
+            System.out.println("Esquema: " + esquema);
         } catch (Exception e) {
-            System.out.println("Error "+this.getClass().getName()+".getEsquema(): " + e);
-        } 
+            System.out.println("Error " + this.getClass().getName() + ".getEsquema(): " + e);
+        }
         return esquema;
-    } 
-      
+    }
+
 }

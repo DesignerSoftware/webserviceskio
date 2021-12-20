@@ -2,9 +2,16 @@ package co.com.designer.services;
 
 import co.com.designer.kiosko.generales.EnvioCorreo;
 import co.com.designer.kiosko.entidades.ConexionesKioskos;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.Writer;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -19,6 +26,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
+import javax.imageio.ImageIO;
+import javax.json.Json;
+import javax.json.JsonObject;
 import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
 import javax.persistence.PersistenceException;
@@ -748,6 +758,33 @@ public class EmpleadosFacadeREST {
         return obj.toString();
     }
     
+    @GET
+    @Path("/validaFechaInicioAusentismo")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String validaFechaInicioSoliciAusentismo(@QueryParam("seudonimo") String seudonimo, @QueryParam("nitempresa") String nitEmpresa, 
+            @QueryParam("fechainicio") String fechainicialdisfrute, @QueryParam("cadena") String cadena) {
+        String mensaje = "";
+        boolean valido = true;
+        try { 
+            BigDecimal codigoJornada = consultarCodigoJornada(seudonimo, nitEmpresa, fechainicialdisfrute, cadena);
+            if (!validaFechaPago(seudonimo, nitEmpresa, fechainicialdisfrute, cadena)) {
+                mensaje+= "La fecha seleccionada es inferior a la última fecha de pago.";
+                valido = false;
+            }            
+        } catch (Exception ex) {
+            Logger.getLogger(EmpleadosFacadeREST.class.getName()).log(Level.SEVERE, null, ex);
+            mensaje =  "Ha ocurrido un error, por favor intentalo de nuevo más tarde.";
+        }
+        JSONObject obj = new JSONObject();
+        try {
+            obj.put("valido", valido);
+            obj.put("mensaje", mensaje);
+        } catch (JSONException ex) {
+            Logger.getLogger(EmpleadosFacadeREST.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return obj.toString();
+    }
+    
     public String getApellidoNombreXsecEmpl(String secEmpl, String nitEmpresa, String cadena) {
         System.out.println("getApellidoNombreXsecEmpl() secuenciaEmpl: "+secEmpl);
         String nombre = null;
@@ -1042,6 +1079,176 @@ public class EmpleadosFacadeREST {
         return responseBuilder.build();
     }
     
+    @GET
+    @Path("generaQR")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response generaQR(@QueryParam("documento") String documento, @QueryParam("celular") String celular, @QueryParam("correo") String correo, 
+            @QueryParam("nomEmpresa") String empresa, @QueryParam("cargo") String cargo,
+            @QueryParam("nit") String nitEmpresa, @QueryParam("cadena") String cadena) {
+        System.out.println("generaQR() path: empleado: " + documento + " nitEmpresa: " + nitEmpresa + " cadena: " + cadena
+        + " celular: " + celular + " correo: " + correo + " cargo: " + cargo);
+        boolean QR = false;
+        try {
+            boolean result = obtenerAnexo(documento, nitEmpresa, cadena);
+            System.out.println("resultado : " + result);
+            if (result) {
+                System.out.println("toca crea el QR");
+                QR = newQR(documento, celular, correo, empresa, cargo, nitEmpresa, cadena);
+                return Response.status(Response.Status.CREATED).entity(QR)
+                .build();
+            }else{
+                System.out.println("no toca crea el QR");
+            }
+        } catch (Exception e) {
+            System.out.println("hubo un error al momento de generar el codigo QR: " + e);
+        }
+        
+        return Response.status(Response.Status.CREATED).entity(QR)
+                .build();
+    }
+    
+    public boolean newQR(String documento, String celular, String correo, 
+            String empresa, String cargo, 
+            String nitEmpresa, String cadena) throws Exception {
+        int qr_image_width = 200;
+        int qr_image_height = 200;
+        String IMAGE_FORMAT = "png";
+        String secEmpleado = getSecuenciaEmplPorSeudonimo(documento, nitEmpresa, cadena);
+        String IMG_PATH = "C:\\Users\\UPC007\\Downloads\\qrcode6.png";
+        BufferedImage image;
+        String pathReprotes = getPathReportes(nitEmpresa, cadena);
+        System.out.println("Path Img: " + pathReprotes);
+        String nomArchivo = documento + "QR.png";
+        String pathQR = pathReprotes + nomArchivo;
+        String nombre = getNombreApellidoXsecEmpleado(secEmpleado, nitEmpresa, cadena);
+        //String celular = getNumeroCelular(documento, nitEmpresa, cadena);
+        //String correo = getCorreoConexioneskioskos(documento, nitEmpresa, cadena);
+        //String empresa = get(documento, nitEmpresa, cadena);
+        String data = nombre +" \n"
+                + "Número: "+ celular +" \n"
+                + "Correo: "+ correo + " \n"
+                + "Empresa: " + empresa +" \n"
+                + "Cargo: " + cargo + " \n ";
+
+        // Encode URL in QR format
+        BitMatrix matrix = null;
+        Writer writer = new QRCodeWriter();
+        try {
+            matrix = writer.encode(data, BarcodeFormat.QR_CODE, qr_image_width, qr_image_height);
+        } catch (WriterException e) {
+            e.printStackTrace(System.err);
+        }
+
+        // Create buffered image to draw to
+        image = new BufferedImage(qr_image_width, qr_image_height, BufferedImage.TYPE_INT_RGB);
+
+        // Iterate through the matrix and draw the pixels to the image
+        for (int y = 0; y < qr_image_height; y++) {
+            for (int x = 0; x < qr_image_width; x++) {
+                int grayValue = (matrix.get(x, y) ? 0 : 1) & 0xff;
+                image.setRGB(x, y, (grayValue == 0 ? 0 : 0xFFFFFF));
+            }
+        }
+
+        // Write the image to a file
+        FileOutputStream qrCode = new FileOutputStream(pathQR);
+        if (ImageIO.write(image, IMAGE_FORMAT, qrCode)) {
+            qrCode.close();
+            return true;
+        } else {
+            qrCode.close();
+            return false;
+        }
+    }
+    
+    public boolean obtenerAnexo(String documento, String nitEmpresa, String cadena) throws IOException, Exception {
+        FileInputStream fis = null;
+        File file = null;
+        String msj = "";
+        boolean valida = false;
+        //String RUTAFOTO = "C:/Users/UPC007/Downloads/" + "qrcode6.png";
+        String RUTAFOTO = getPathReportes(nitEmpresa, cadena) + documento + "QR.png";
+        try {
+            fis = new FileInputStream(new File(RUTAFOTO));
+            file = new File(RUTAFOTO);
+            System.out.println("file.exists(): " + file.exists());
+            System.out.println(file);
+            //System.out.println("file.exists(): " + file.delete());
+            if (file.exists()) {
+                fis.close();
+                msj = "Archivo encontrado";
+                System.out.println("El archivo existe");
+                if (!file.delete()) {
+                    System.out.println("Error no se ha podido eliminar el  archivo");
+                    System.err.println(
+                            "I cannot find '" + file + "' ('" + file.getAbsolutePath() + "')");
+                    msj = "Archivo no encontrado";
+                    System.out.println("msj");
+                    valida = false;
+                    return valida;
+                } else {
+                    System.out.println("Se ha eliminado el archivo exitosamente");
+                    msj = "Archivo eliminado correctamente y creado de nuevo";
+                    System.out.println("msj");
+                    //newQR(documento, nitEmpresa, cadena);
+                    valida = true;
+                    return valida;
+                }
+
+            } else {
+                msj = "No exite se crea nuevo";
+                System.out.println("msj");
+                //newQR(documento, nitEmpresa, cadena);
+                valida = true;
+                return valida;
+            }
+        
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger("Anexo no encontrado: " + ex);
+            msj = "Archivo no encontrado";
+            System.out.println("msj");
+            System.getProperty("user.dir");
+            System.out.println(msj);
+            valida = true;
+            return valida;
+            
+        }      
+    }
+       
+    @GET
+    @Path("exiteFoto")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response exiteFoto(@QueryParam("documento") String documento, @QueryParam("nit") String nitEmpresa, @QueryParam("cadena") String cadena) throws IOException, Exception {
+        System.out.println("exiteFoto() path: empleado: " + documento + " nitEmpresa: " + nitEmpresa + " cadena: " + cadena);
+        FileInputStream fis = null;
+        File file = null;
+        boolean foto = false;
+        String rutaFOTO = getPathReportes(nitEmpresa, cadena) + documento + ".jpg";
+        try {
+            fis = new FileInputStream(new File(rutaFOTO));
+            file = new File(rutaFOTO);
+            System.out.println("file.exists(): " + file.exists());
+            System.out.println(file);
+            //System.out.println("file.exists(): " + file.delete());
+            if (file.exists()) {
+                System.out.println("Archivo encontrado");
+                foto = true;
+                
+            } else {
+                System.out.println("No exite se crea nuevo");
+                foto = false;
+            }
+            fis.close();  
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger("Anexo no encontrado: " + ex);
+            System.getProperty("user.dir");
+            foto = false;            
+        }
+        
+        return Response.status(Response.Status.CREATED).entity(foto)
+                .build();
+    }
+    
     public String getPathDocumentos(String nitEmpresa, String cadena) {
         System.out.println("Parametros getPathReportes(): cadena: " + cadena);
         String rutaFoto = "";
@@ -1075,5 +1282,36 @@ public class EmpleadosFacadeREST {
         } 
         return esquema;
     }       
+    public String getPathReportes(String nitEmpresa, String cadena) {
+        System.out.println("getPathReportes()");
+        String rutaFoto="E:\\DesignerRHN10\\Basico10\\Reportes\\kiosko\\";
+        try {
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
+            String sqlQuery = "SELECT PATHFOTO FROM GENERALESKIOSKO WHERE ROWNUM<=1";
+            System.out.println("Query: "+sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            rutaFoto =  query.getSingleResult().toString();
+            System.out.println("rutaReportes: "+rutaFoto);
+        } catch (Exception e) {
+            System.out.println("Error: "+this.getClass().getName()+".getPathReportes: "+e.getMessage());
+        }
+        return rutaFoto;
+    }
+    public String getNombreApellidoXsecEmpleado(String secEmpelado, String nitEmpresa, String cadena) {
+        String nombre = "";
+        try {
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
+            String sqlQuery = "SELECT P.NOMBRE || ' ' || P.PRIMERAPELLIDO FROM PERSONAS P, EMPLEADOS E WHERE E.PERSONA = P.SECUENCIA \n" +
+                               "AND E.SECUENCIA = ?";
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, secEmpelado);
+            nombre =  query.getSingleResult().toString();
+        } catch (Exception e) {
+            System.out.println("Error: "+this.getClass().getName()+".getPathReportes: "+e.getMessage());
+        }
+        return nombre;
+    }
     
 }

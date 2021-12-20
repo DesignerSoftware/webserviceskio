@@ -499,7 +499,35 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
         System.out.println("Parametros consultarPeriodoMasAntiguo(): seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
         List<VwVacaPendientesEmpleados> retorno = null;
         String secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena, esquema);
-        String consulta = "select vw.* \n"
+        /*String consulta = "select vw.* \n"
+                + "from VwVacaPendientesEmpleados vw \n"
+                + "where vw.empleado = ? \n"
+                + "and vw.inicialCausacion = ( \n"
+                + "    select min( vwi.inicialcausacion ) \n"
+                + "    from ( \n"
+                + "    SELECT N.VACACION, SUM(N.DIAS) SUMADIAS \n"
+                + "    FROM KIONOVEDADESSOLICI N, KIOSOLICIVACAS S, KIOESTADOSSOLICI E \n"
+                + "    WHERE N.SECUENCIA = S.KIONOVEDADSOLICI \n"
+                + "    AND S.SECUENCIA = E.KIOSOLICIVACA \n"
+                + "    AND E.ESTADO IN ('GUARDADO', 'ENVIADO', 'AUTORIZADO', 'LIQUIDADO' ) \n"
+                + "    AND E.SECUENCIA = (SELECT MAX(EI.SECUENCIA) \n"
+                + "    FROM KIOESTADOSSOLICI EI \n"
+                + "    WHERE EI.KIOSOLICIVACA = E.KIOSOLICIVACA) \n"
+                + "    AND NOT EXISTS (SELECT 'x' \n"
+                + "      FROM SOLUCIONESNODOS SN, SOLUCIONESFORMULAS SF, DETALLESNOVEDADESSISTEMA DNS \n"
+                + "      WHERE SN.SECUENCIA = SF.solucionnodo \n"
+                + "      AND SF.novedad = DNS.novedad \n"
+                + "      AND DNS.novedadsistema=E.NOVEDADSISTEMA) \n"
+                + "      GROUP BY N.VACACION \n"
+                + "    ) t, VwVacaPendientesEmpleados VWI \n"
+                + "    where vwi.inicialCausacion >= empleadocurrent_pkg.fechatipocontrato(vwi.empleado, sysdate) \n"
+                + "    AND VWI.EMPLEADO = vw.empleado \n"
+                //+ "    AND (VWI.DIASPENDIENTES - NVL(T.SUMADIAS,0)) <> 0 \n"
+                + "    AND (VWI.DIASPENDIENTES - NVL(T.SUMADIAS,0)) > 0 \n"
+                + "    AND VWI.rfvacacion = t.VACACION(+) \n"
+                + ") ";*/
+        String consulta = "select vw.rfvacacion rfvacaion, \n"
+                + " to_char(vw.inicialcausacion, 'dd/mm/yyyy') || ' a ' || to_char(vw.finalcausacion, 'dd/mm/yyyy') periosidad \n"
                 + "from VwVacaPendientesEmpleados vw \n"
                 + "where vw.empleado = ? \n"
                 + "and vw.inicialCausacion = ( \n"
@@ -527,7 +555,8 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                 + "    AND VWI.rfvacacion = t.VACACION(+) \n"
                 + ") ";
         try {
-            Query query = getEntityManager(cadena).createNativeQuery(consulta, VwVacaPendientesEmpleados.class);
+            //Query query = getEntityManager(cadena).createNativeQuery(consulta, VwVacaPendientesEmpleados.class);
+            Query query = getEntityManager(cadena).createNativeQuery(consulta);
             query.setParameter(1, secEmpl);
             retorno = query.getResultList();
         } catch (Exception e) {
@@ -1513,48 +1542,52 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                     }
 
                     // Enviar correo de autoria
-                    /*boolean auditProcesarJefe = consultaAuditoria("SOLICITUDVACACIONES", "33", nitEmpresa, cadena).compareTo(BigDecimal.ZERO) > 0;
-                    boolean auditProcesarAutorizador =consultaAuditoria("SOLICITUDVACACIONES", "35", nitEmpresa, cadena).compareTo(BigDecimal.ZERO) > 0;
-                    if (auditProcesarJefe || auditProcesarAutorizador) {
-                        System.out.println("Si debe llevar auditoria procesar solicitud Vacaciones");
-                        String sqlQueryAud = "select email from kioconfigmodulos where codigoopcion=? and nitempresa=?";
-                        //Query query2 = getEntityManager(cadena).createNativeQuery(sqlQuery);
-                        System.out.println("Query2: " + sqlQuery);
-                        Query query2 = getEntityManager(cadena).createNativeQuery(sqlQuery);
-                        if (secPerAutoriza!=null) {
-                          query2.setParameter(1, "35");  
-                            System.out.println("codigoOpcion 35");                          
+                    if (estado.equals("AUTORIZADO")){
+                        boolean auditProcesarJefe = consultaAuditoria("SOLICITUDVACACIONES", "33", nitEmpresa, cadena).compareTo(BigDecimal.ZERO) > 0;
+                        boolean auditProcesarAutorizador =consultaAuditoria("SOLICITUDVACACIONES", "35", nitEmpresa, cadena).compareTo(BigDecimal.ZERO) > 0;
+                        System.out.println("auditoria para solicitudes de vacas procesar 1 " + auditProcesarJefe);
+                        System.out.println("auditoria para solicitudes de vacas procesar 2 " + auditProcesarAutorizador);
+                        if (auditProcesarJefe || auditProcesarAutorizador) {
+                            System.out.println("Si debe llevar auditoria procesar solicitud Vacaciones");
+                            String sqlQueryAud = "select email from kioconfigmodulos where codigoopcion=? and nitempresa=?";
+                            //Query query2 = getEntityManager(cadena).createNativeQuery(sqlQuery);
+                            System.out.println("Query2: " + sqlQueryAud);
+                            Query query2 = getEntityManager(cadena).createNativeQuery(sqlQueryAud);
+                            if (auditProcesarJefe) {
+                              query2.setParameter(1, "33");  
+                                System.out.println("codigoOpcion 33");                          
+                            } else {
+                              query2.setParameter(1, "35"); 
+                                System.out.println("codigoOpcion 35");
+                            }
+                            query2.setParameter(2, nitEmpresa);
+                            List lista = query2.getResultList();
+                            Iterator<String> it = lista.iterator();
+                            System.out.println("obtener " + lista.get(0));
+                            System.out.println("size: " + lista.size());
+                            // String mensajeAuditoria = "Nos permitimos informar que " + personaCreaSolici
+                               // + " generó la SOLICITUD DE VACACIONES el " + fechaCorreo + " a las " + horaGeneracion + " en el módulo de Kiosco Nómina Designer.";
+                          String mensajeAuditoria="Nos permitimos informar que se acaba de "+estadoVerbo+" una solicitud de vacaciones";
+                        if (estado.equals("RECHAZADO") || estado.equals("AUTORIZADO")){
+                            mensajeAuditoria+=" creada para "+ getApellidoNombreXsecEmpl(secEmplSolicita, nitEmpresa, cadena, esquema);
+                        }
+                        //mensajeAuditoria+=" en el módulo de Kiosco Nómina Designer. Por favor llevar el caso desde su cuenta de usuario en el portal de Kiosco y continuar con el proceso."
+                        mensajeAuditoria+=" en el módulo de Kiosco Nómina Designer. Por favor continuar con el proceso desde el aplicativo designer para generar la novedad de nomina."
+                        + "<br><br>"
+                        + "La persona que "+estadoPasado.toUpperCase()+" LA SOLICITUD es: "+getApellidoNombreXsecEmpl(secEmplSolicita, nitEmpresa, cadena, esquema)+"<br>";
+                            while (it.hasNext()) {
+                                String correoenviar = it.next();
+                                System.out.println("correo auditoria: " + correoenviar);
+                                //c.pruebaEnvio2("smtp.gmail.com","587","pruebaskiosco534@gmail.com","Nomina01", "S", correoenviar,
+                                // c.enviarCorreoVacaciones(servidorsmtp, puerto, autenticado, starttls, remitente, clave, correoenviar, 
+                            //"Auditoria: Nueva Solicitud de vacaciones Kiosco. "+fechaCorreo, mensajeAuditoria, urlKio, nit);
+                                c.enviarCorreoInformativo("Auditoria: Se ha "+estadoPasado+" una Solicitud de vacaciones Kiosco. " + fecha,
+                                        "Estimado usuario: ", mensajeAuditoria, nitEmpresa, urlKio, cadena, correoenviar, null);
+                            }
                         } else {
-                          query2.setParameter(1, "33"); 
-                            System.out.println("codigoOpcion 33");
+                            System.out.println("No lleva auditoria Vacaciones");
                         }
-                        query2.setParameter(2, nitEmpresa);
-                        List lista = query2.getResultList();
-                        Iterator<String> it = lista.iterator();
-                        System.out.println("obtener " + lista.get(0));
-                        System.out.println("size: " + lista.size());
-                        // String mensajeAuditoria = "Nos permitimos informar que " + personaCreaSolici
-                           // + " generó la SOLICITUD DE VACACIONES el " + fechaCorreo + " a las " + horaGeneracion + " en el módulo de Kiosco Nómina Designer.";
-                      String mensajeAuditoria="Nos permitimos informar que se acaba de "+estadoVerbo+" una solicitud de vacaciones";
-                    if (estado.equals("RECHAZADO") || estado.equals("AUTORIZADO")){
-                        mensaje+=" creada para "+getApellidoNombreXsecEmpl(secEmplSolicita, nitEmpresa, cadena);
                     }
-                    mensajeAuditoria+=" en el módulo de Kiosco Nómina Designer. Por favor llevar el caso desde su cuenta de usuario en el portal de Kiosco y continuar con el proceso."
-                    + "<br><br>"
-                    + "La persona que "+estadoPasado.toUpperCase()+" LA SOLICITUD es: "+getApellidoNombreXsecEmpl(secEmplEjecuta, nitEmpresa, cadena)+"<br>";
-                        while (it.hasNext()) {
-                            String correoenviar = it.next();
-                            System.out.println("correo auditoria: " + correoenviar);
-                            //c.pruebaEnvio2("smtp.gmail.com","587","pruebaskiosco534@gmail.com","Nomina01", "S", correoenviar,
-                            // c.enviarCorreoVacaciones(servidorsmtp, puerto, autenticado, starttls, remitente, clave, correoenviar, 
-                        "Auditoria: Nueva Solicitud de vacaciones Kiosco. "+fechaCorreo, mensajeAuditoria, urlKio, nit);
-                            c.enviarCorreoInformativo("Auditoria: Se ha "+estadoPasado+" una Solicitud de vacaciones Kiosco. " + fecha,
-                                    "Estimado usuario: ", mensajeAuditoria, nitEmpresa, urlKio, cadena, correoenviar, null);
-                        }
-                    } else {
-                        System.out.println("No lleva auditoria Vacaciones");
-                    }*/
-
                 }
                 
                
@@ -1888,6 +1921,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                                 if (creaKioEstadoSolici(seudonimo, nit, secKioSoliciVacas, fechaGeneracion, "ENVIADO", null, cadena, esquema)) {
                                     System.out.println("SOLICITUD DE VACACIONES CREADA EXITOSAMENTE!!!");
                                     soliciCreada = true;
+                                    String Periosidad = getPeriodoVacas(secEmpl, RFVACACION, cadena, esquema);                                    
                                     mensaje = "Solicitud creada exitosamente.";
                                     String mensajeCorreo = "Nos permitimos informar que se acaba de crear una solicitud de vacaciones en el módulo de Kiosco Nómina Designer. Por favor llevar el caso desde su cuenta de usuario en el portal de Kiosco y continuar con el proceso."
                                             + " <br><br> "
@@ -1897,6 +1931,8 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                                             + "La persona a cargo de DAR APROBACIÓN es: " + nombreAutorizaSolici
                                             + "<br>"+
                                             "La solicitud se creó por "+dias+" días, para ser disfrutados desde el "+fechainicial+" hasta el "+fechafin
+                                            + "<br>"+
+                                            "Del periodo: " + Periosidad
                                             + "<br><br>Por favor seguir el proceso en: <a style='color: white !important;' href='" + urlKio + "'>" + urlKio + "</a>"
                                             + "<br><br>"
                                             + "Si no puede ingresar, necesitará instalar la última versión de su navegador, la cual podrá descargar de forma gratuita."
@@ -2513,6 +2549,26 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
             System.err.println("JSONException: " + ex.getMessage());
         }
         return "";
-    }    
-    
+    }
+
+    public String getPeriodoVacas( String secEmpleado, String refVacas ,String cadena, String esquema) {
+       String periodo=null;
+        try {
+            //String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
+            String sqlQuery = "SELECT  "
+                    + "TO_CHAR(v.INICIALCAUSACION, 'dd/mm/yyyy')||' al '||TO_CHAR(v.FINALCAUSACION, 'dd/mm/yyyy') periocidad\n"
+                    + "FROM VwVacaPendientesEmpleados v\n" 
+                    + "where empleado = ? and rfvacacion = ?";
+            //System.out.println("Query: "+sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, secEmpleado);
+            query.setParameter(2, refVacas);
+            periodo =  query.getSingleResult().toString();
+            System.out.println("periodo causado: "+periodo);
+        } catch (Exception e) {
+            System.out.println("Error: "+this.getClass().getName()+".getSecuenciaPorNitEmpresa: "+e.getMessage());
+        }
+        return periodo;
+   }
 }
