@@ -988,6 +988,44 @@ public class EmpleadosFacadeREST {
     } 
     
     @GET
+    @Path("/getNotificaciones")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response getNotificaciones(@QueryParam("usuario") String seudonimo,@QueryParam("tipoNotificacion") String tipoNotificacion, @QueryParam("empresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
+        System.out.println("parametros getNotificaciones(): usuario: "+seudonimo+" tipoNotificacion: "+tipoNotificacion+" nitEmpresa: "+nitEmpresa+ " cadena "+cadena);
+        List s = null;
+        String secEmpl = null;
+        try {
+            secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
+        } catch (Exception e) {
+            System.out.println("Error al consultar secuencia del empleado");
+        }
+        try {
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
+            String sqlQuery = "SELECT \n" +
+                            "COUNT(*)\n" +
+                            "FROM \n" +
+                            "KIOESTADOSSOLICI KES, \n" +
+                            "KIOSOLICIVACAS KS, \n" +
+                            "KIONOVEDADESSOLICI KNS,\n" +
+                            "EMPLEADOS JEFE\n" +
+                            "WHERE \n" +
+                            "KES.ESTADO = 'ENVIADO' AND KS.EMPLEADOJEFE =?\n" +
+                            "AND KES.SECUENCIA = (SELECT MAX(t3.SECUENCIA) FROM KIOSOLICIVACAS t4, KIOESTADOSSOLICI t3 \n" +
+                            "WHERE t4.SECUENCIA = KS.SECUENCIA AND t4.SECUENCIA = t3.KIOSOLICIVACA\n" +
+                            "AND KS.SECUENCIA = KES.KIOSOLICIVACA) \n" +
+                            "AND KS.KIONOVEDADSOLICI=KNS.SECUENCIA\n" +
+                            "AND KS.EMPLEADOJEFE=JEFE.SECUENCIA";
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, secEmpl);
+            s = query.getResultList();
+        } catch (Exception ex) {
+            return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
+        }
+        return Response.status(Response.Status.OK).entity(s).build();
+    }
+    
+    @GET
     @Path("/obtenerAnexosDocumentos/")
     public List obtenerAnexosDocumentos(@QueryParam("empleado") String empleado, @QueryParam("cadena") String cadena, @QueryParam("empresa") String nitEmpresa) {
         System.out.println("Parametros obtenerAnexosDocumentos(): empleado: " + empleado + ", cadena: " + cadena + ", nitEmpresa: " + nitEmpresa);

@@ -264,7 +264,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
         " t1.codigoempleado documento, REPLACE(TRIM(P.PRIMERAPELLIDO||' '||P.SEGUNDOAPELLIDO||' '||P.NOMBRE), '  ', ' ') NOMBRE,\n" +
         " t0.SECUENCIA, \n" +
         " TO_CHAR(t0.FECHAPROCESAMIENTO, 'DD/MM/YYYY HH:MI:SS') SOLICITUD, \n" +
-        " TO_CHAR(KNS.FECHAINICIALDISFRUTE,'DD/MM/YYYY' ) INICIALDISFRUTEM," + 
+        " TO_CHAR(KNS.FECHAINICIALDISFRUTE,'DD/MM/YYYY' ) INICIALDISFRUTEM," +   
         " TO_CHAR(T0.FECHAPROCESAMIENTO, 'DD/MM/YYYY HH:MI:SS') FECHAULTMODIF,\n" +
         " t0.ESTADO, \n" +
         " t0.MOTIVOPROCESA, t0.NOVEDADSISTEMA, t0.EMPLEADOEJECUTA, t0.PERSONAEJECUTA, t0.KIOSOLICIVACA,\n" +
@@ -1383,9 +1383,12 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response setNuevoEstadoSolici(@QueryParam("secuencia") String secKioEstadoSolici, @QueryParam("motivo") String motivo,
             @QueryParam("seudonimo") String seudonimo, @QueryParam("nitempresa") String nitEmpresa, @QueryParam("estado") String estado, 
-            @QueryParam("cadena") String cadena, @QueryParam("grupo") String grupoEmpr, @QueryParam("urlKiosco") String urlKiosco) {
+            @QueryParam("cadena") String cadena, @QueryParam("grupo") String grupoEmpr, @QueryParam("urlKiosco") String urlKiosco,
+            @QueryParam("fechaInicio") String fechaInicio, @QueryParam("fechaFin") String fechaFin, @QueryParam("dias") String dias,
+            @QueryParam("periodo") String periodo) {
         System.out.println("nuevoEstadoSolici()");
-        System.out.println("parametros: secuencia: " + secKioEstadoSolici + ", motivo " + motivo + ", empleado " + seudonimo + ", estado: " + estado + ", cadena " + cadena+", nit: "+nitEmpresa+", urlKiosco: "+urlKiosco+", grupoEmpresarial: "+grupoEmpr);
+        System.out.println("parametros: secuencia: " + secKioEstadoSolici + ", motivo " + motivo + ", empleado " + seudonimo + ", estado: " + estado + ", cadena " + cadena+", nit: "+nitEmpresa+", urlKiosco: "+urlKiosco+", grupoEmpresarial: "+grupoEmpr
+        + "fecha inicio " + fechaInicio+", fechaFin: "+fechaFin+", dias: "+dias+", periodo: "+periodo);
         List s = null;
         int res = 0;
         String urlKio = urlKiosco + "#/login/" + grupoEmpr;
@@ -1574,7 +1577,12 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                         //mensajeAuditoria+=" en el módulo de Kiosco Nómina Designer. Por favor llevar el caso desde su cuenta de usuario en el portal de Kiosco y continuar con el proceso."
                         mensajeAuditoria+=" en el módulo de Kiosco Nómina Designer. Por favor continuar con el proceso desde el aplicativo designer para generar la novedad de nomina."
                         + "<br><br>"
-                        + "La persona que "+estadoPasado.toUpperCase()+" LA SOLICITUD es: "+getApellidoNombreXsecEmpl(secEmplSolicita, nitEmpresa, cadena, esquema)+"<br>";
+                        + "La persona que "+estadoPasado.toUpperCase()+" LA SOLICITUD es: "+ nombreAutorizaSolici//getApellidoNombreXsecEmpl(secEmplSolicita, nitEmpresa, cadena, esquema)+"<br>";
+                        + "<br>" 
+                        + "La solicitud se creó por "+dias+" días, para ser disfrutados desde el "+fechaInicio+" hasta el "+fechaFin
+                        + "<br>"
+                        + " Del periodo: " + periodo
+                        + "<br>";
                             while (it.hasNext()) {
                                 String correoenviar = it.next();
                                 System.out.println("correo auditoria: " + correoenviar);

@@ -1219,6 +1219,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
 
         List s = null;
         int res = 0;
+        String fechaGeneracion = new SimpleDateFormat("ddMMyyyy HHmmss").format(new Date());
         String urlKio = urlKiosco + "#/login/" + grupoEmpr;
         String urlKioOlvidoClave = urlKiosco + "#/olvidoClave/" + grupoEmpr;
         String esquema = null;
@@ -1264,40 +1265,42 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                 sqlQuery = "INSERT INTO KIOESTADOSSOLICIAUSENT \n"
                         + "(KIOSOLICIAUSENTISMO, FECHAPROCESAMIENTO, ESTADO, EMPLEADOEJECUTA, SOAUSENTISMO, MOTIVOPROCESA, PERSONAEJECUTA)\n"
                         + "SELECT\n"
-                        + "KIOSOLICIAUSENTISMO, SYSDATE FECHAPROCESAMIENTO, ?, ? EMPLEADOEJECUTA\n"
+                        + "KIOSOLICIAUSENTISMO, TO_DATE(?, 'ddmmyyyy HH24miss') , ?, ? EMPLEADOEJECUTA\n"
                         + ", SOAUSENTISMO, ?, ?\n"
                         + "FROM KIOESTADOSSOLICIAUSENT\n"
                         + "WHERE SECUENCIA=?";
                 //String esquema = getEsquema(nitEmpresa, cadena);
                 setearPerfil(esquema, cadena);
                 query = getEntityManager(cadena).createNativeQuery(sqlQuery);
-                query.setParameter(1, estado);
-                query.setParameter(2, secEmplEjecuta);
-                query.setParameter(3, motivo);
-                query.setParameter(4, secPerAutoriza); // null
+                query.setParameter(1, fechaGeneracion);
+                query.setParameter(2, estado);
+                query.setParameter(3, secEmplEjecuta);
+                query.setParameter(4, motivo);
+                query.setParameter(5, secPerAutoriza); // null
                 // query.setParameter(4, secPerAutoriza);
-                query.setParameter(5, secKioEstadoSolici);
+                query.setParameter(6, secKioEstadoSolici);
             } else {
                 sqlQuery = "INSERT INTO KIOESTADOSSOLICIAUSENT \n"
                         + "(KIOSOLICIAUSENTISMO, FECHAPROCESAMIENTO, ESTADO, EMPLEADOEJECUTA, SOAUSENTISMO, PERSONAEJECUTA)\n"
                         + "SELECT\n"
-                        + "KIOSOLICIAUSENTISMO, SYSDATE FECHAPROCESAMIENTO, ?, ? EMPLEADOEJECUTA \n"
+                        + "KIOSOLICIAUSENTISMO, TO_DATE(?, 'ddmmyyyy HH24miss'), ?, ? EMPLEADOEJECUTA \n"
                         + ", SOAUSENTISMO, ? \n"
                         + "FROM KIOESTADOSSOLICIAUSENT \n"
                         + "WHERE SECUENCIA=?";
                 //String esquema = getEsquema(nitEmpresa, cadena);
                 setearPerfil(esquema, cadena);
                 query = getEntityManager(cadena).createNativeQuery(sqlQuery);
-                query.setParameter(1, estado);
-                query.setParameter(2, secEmplEjecuta);
+                query.setParameter(1, fechaGeneracion);
+                query.setParameter(2, estado);
+                query.setParameter(3, secEmplEjecuta);
                 if (estado.equals("CANCELADO")) {
-                    query.setParameter(3, null);
+                    query.setParameter(4, null);
                     System.out.println("La solicitud está siendo CANCELADA");
                 } else {
-                    query.setParameter(3, secPerAutoriza);
+                    query.setParameter(4, secPerAutoriza);
                 }
                 // query.setParameter(4, secPerAutoriza);
-                query.setParameter(4, secKioEstadoSolici);
+                query.setParameter(5, secKioEstadoSolici);
             }
             res = query.executeUpdate();
             EnvioCorreo c = new EnvioCorreo();
