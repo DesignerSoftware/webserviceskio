@@ -326,13 +326,15 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                         if (causaOrigen.equals("EG")) {
                             System.out.println("Causa enfermedad general");
                             String secCausaEGPrimeros2Dias = getSecCausaPrimerosDias("25", cadena, esquema);
+                            String formaLiqEGPrimeros2Dias = getCausaFormaLiq(secCausaEGPrimeros2Dias, cadena, esquema);
+                            String porcentajeLiqEGPrimeros2Dias = getCausaPorcentajeLiq(secCausaEGPrimeros2Dias, cadena, esquema);
                             if (diasIncapacidad <= 2) {
                                 // Si los días reportados son 2 o menos se deben registrar en una sola novedad
                                 System.out.println("Los dias reportados son 2 o menos.");
                                 String fechaFin1 = (String) calculaFechafinAusent(fechainicial, dias, seudonimo, secCausaEGPrimeros2Dias, cadena, nit, esquema);
                                 //fechaFin1 = getDateYMD(fechaFin1, cadena, esquema);
                                 System.out.println("Fecha novedad 1: " + fechaFin);
-                                if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaEGPrimeros2Dias, secCodDiagnostico, Integer.parseInt(dias), fechaFin1, secKioSoliciAusent, secKioNovedadAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
+                                if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaEGPrimeros2Dias, secCodDiagnostico, Integer.parseInt(dias), fechaFin1, secKioSoliciAusent, secKioNovedadAusent, formaLiqEGPrimeros2Dias, porcentajeLiqEGPrimeros2Dias, cadena, esquema)) {
                                     System.out.println("registrada novedad 1 por 2 dias o menos");
                                     mensaje = "Novedad de ausentismo reportada exitosamente.";
 
@@ -350,7 +352,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                                 // Registro novedad primeros 2 dias
                                 System.out.println("Los días reportados son más de 2.");
                                 String fechaFin1 = (String) calculaFechafinAusent(fechainicial, "2", seudonimo, secCausaEGPrimeros2Dias, cadena, nit, esquema);
-                                if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaEGPrimeros2Dias, secCodDiagnostico, 2, fechaFin1, secKioSoliciAusent, secKioNovedadAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
+                                if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaEGPrimeros2Dias, secCodDiagnostico, 2, fechaFin1, secKioSoliciAusent, secKioNovedadAusent, formaLiqEGPrimeros2Dias, porcentajeLiqEGPrimeros2Dias, cadena, esquema)) {
                                     // Registro segunda novedad por los días faltantes
                                     String fechainicialEG2 = getFechaSugerida3(fechaFin1, "1", cadena, esquema); // fecha inicial 2 es fecha fin +1
                                     int diasNov2 = Integer.parseInt(dias) - 2;
@@ -376,13 +378,15 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                         } else if (causaOrigen.equals("AT")) {
                             System.out.println("Causa enfermedad general");
                             String secCausaATPrimerDia = getSecCausaPrimerosDias("39", cadena, esquema);
+                            String formaLiqATPrimerDia = getCausaFormaLiq(secCausaATPrimerDia, cadena, esquema);
+                            String porcentajeLiqATPrimerDia = getCausaPorcentajeLiq(secCausaATPrimerDia, cadena, esquema);
                             if (diasIncapacidad <= 1) {
                                 // Si los días reportados son 2 o menos se deben registrar en una sola novedad
                                 System.out.println("Los dias reportados es 1 dia.");
                                 String fechaFin1 = (String) calculaFechafinAusent(fechainicial, dias, seudonimo, secCausaATPrimerDia, cadena, nit, esquema);
                                 //fechaFin1 = getDateYMD(fechaFin1, cadena, esquema);
                                 System.out.println("Fecha novedad 1: " + fechaFin);
-                                if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaATPrimerDia, secCodDiagnostico, Integer.parseInt(dias), fechaFin1, secKioSoliciAusent, secKioNovedadAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
+                                if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaATPrimerDia, secCodDiagnostico, Integer.parseInt(dias), fechaFin1, secKioSoliciAusent, secKioNovedadAusent, formaLiqATPrimerDia, porcentajeLiqATPrimerDia, cadena, esquema)) {
                                     System.out.println("registrada novedad 1 dia");
                                     mensaje = "Novedad de ausentismo reportada exitosamente.";
 
@@ -401,7 +405,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                                 System.out.println("Los días reportados son más de 1.");
                                 System.out.println(esquema);
                                 String fechaFin1 = (String) calculaFechafinAusent(fechainicial, "1", seudonimo, secCausaATPrimerDia, cadena, nit, esquema);
-                                if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaATPrimerDia, secCodDiagnostico, 1, fechaFin1, secKioSoliciAusent, secKioNovedadAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
+                                if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaATPrimerDia, secCodDiagnostico, 1, fechaFin1, secKioSoliciAusent, secKioNovedadAusent, formaLiqATPrimerDia, porcentajeLiqATPrimerDia, cadena, esquema)) {
                                     // Registro segunda novedad por los días faltantes
                                     String fechainicialEG2 = getFechaSugerida3(fechaFin1, "1", cadena, esquema); // fecha inicial 2 es fecha fin +1
                                     int diasNov2 = Integer.parseInt(dias) - 1;

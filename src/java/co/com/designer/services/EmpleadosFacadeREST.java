@@ -990,8 +990,8 @@ public class EmpleadosFacadeREST {
     @GET
     @Path("/getNotificaciones")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public Response getNotificaciones(@QueryParam("usuario") String seudonimo,@QueryParam("tipoNotificacion") String tipoNotificacion, @QueryParam("empresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
-        System.out.println("parametros getNotificaciones(): usuario: "+seudonimo+" tipoNotificacion: "+tipoNotificacion+" nitEmpresa: "+nitEmpresa+ " cadena "+cadena);
+        public Response getNotificaciones(@QueryParam("usuario") String seudonimo,@QueryParam("tipoNotificacion") String tipoNotificacion, @QueryParam("empresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
+        //System.out.println("parametros getNotificaciones(): usuario: "+seudonimo+" tipoNotificacion: "+tipoNotificacion+" nitEmpresa: "+nitEmpresa+ " cadena "+cadena);
         List s = null;
         String secEmpl = null;
         try {
@@ -1002,7 +1002,9 @@ public class EmpleadosFacadeREST {
         try {
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT \n" +
+            String sqlQuery ="";
+            if (tipoNotificacion.equals("VACACION")){
+                sqlQuery = "SELECT \n" +
                             "COUNT(*)\n" +
                             "FROM \n" +
                             "KIOESTADOSSOLICI KES, \n" +
@@ -1016,6 +1018,35 @@ public class EmpleadosFacadeREST {
                             "AND KS.SECUENCIA = KES.KIOSOLICIVACA) \n" +
                             "AND KS.KIONOVEDADSOLICI=KNS.SECUENCIA\n" +
                             "AND KS.EMPLEADOJEFE=JEFE.SECUENCIA";
+            
+            }else if(tipoNotificacion.equals("AUSENTISMO")){
+            
+                sqlQuery = "SELECT COUNT (*)\n" +
+                            "FROM \n" +
+                            "KIOESTADOSSOLICIAUSENT KES,\n" +
+                            "KIOSOLICIAUSENTISMOS KSA,   \n" +
+                            "KIONOVEDADESSOLICIAUSENT KNSA,\n" +
+                            "EMPLEADOS JEFE\n" +
+                            "WHERE \n" +
+                            "KES.ESTADO = 'ENVIADO' \n" +
+                            "AND KSA.EMPLEADOJEFE = ?\n" +
+                            "AND KSA.SECUENCIA = KES.KIOSOLICIAUSENTISMO \n" +
+                            "AND KSA.SECUENCIA=KNSA.KIOSOLICIAUSENTISMO\n" +
+                            "AND KNSA.FECHAINICIALAUSENTISMO = (select MIN(ei.FECHAINICIALAUSENTISMO) \n" +
+                            "from KIONOVEDADESSOLICIAUSENT ei, KIOSOLICIAUSENTISMOS ksi \n" +
+                            "where ei.KIOSOLICIAUSENTISMO = ksi.secuencia \n" +
+                            "and ksi.secuencia=KSA.secuencia)\n" +
+                            "and KES.FECHAPROCESAMIENTO = (select max(ei.FECHAPROCESAMIENTO) \n" +
+                            "from KIOESTADOSSOLICIAUSENT ei, KIOSOLICIAUSENTISMOS ksi \n" +
+                            "where ei.KIOSOLICIAUSENTISMO = ksi.secuencia \n" +
+                            "and ksi.secuencia=KSA.secuencia)\n" +
+                            "AND KES.FECHAPROCESAMIENTO = (SELECT MAX(t3.FECHAPROCESAMIENTO) FROM KIOSOLICIAUSENTISMOS t4, KIOESTADOSSOLICIAUSENT t3 \n" +
+                            "WHERE t4.SECUENCIA = KSA.SECUENCIA AND t4.SECUENCIA = t3.KIOSOLICIAUSENTISMO)\n" +
+                            "AND KSA.EMPLEADOJEFE=JEFE.SECUENCIA  \n";
+            }
+            
+            
+            
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpl);
             s = query.getResultList();
@@ -1023,7 +1054,7 @@ public class EmpleadosFacadeREST {
             return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
         }
         return Response.status(Response.Status.OK).entity(s).build();
-    }
+    }  
     
     @GET
     @Path("/obtenerAnexosDocumentos/")

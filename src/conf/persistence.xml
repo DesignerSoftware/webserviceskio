@@ -65,6 +65,27 @@
         </properties>
           
     </persistence-unit>
+        <persistence-unit name="DEFAULT2" transaction-type="JTA">
+            
+        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+            
+        <jta-data-source>jdbc/rhnmab</jta-data-source>
+            
+        <class>co.com.designer.kiosko.entidades.ConexionesKioskos</class>
+            
+        <exclude-unlisted-classes>false</exclude-unlisted-classes>
+            
+        <validation-mode>NONE</validation-mode>
+            
+        <properties>
+                  
+            <property name="eclipselink.canonicalmodel.subpackage" value="five"/>
+                  
+            <property name="eclipselink.logging.level" value="FINE"/>
+                
+        </properties>
+          
+    </persistence-unit>
     <!--   
     <persistence-unit name="DEFAULT34" transaction-type="JTA">
             
