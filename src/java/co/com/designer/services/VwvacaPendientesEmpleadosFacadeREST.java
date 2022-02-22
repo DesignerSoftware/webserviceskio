@@ -1407,7 +1407,8 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
             String secPerAutoriza = null;
             String nombreAutorizaSolici = "";
             String correoAutorizaSolici = null;
-            String fecha = new SimpleDateFormat("dd/MM/yyyy").format(new Date());
+            //String fecha = new SimpleDateFormat("dd/MM/yyyy").format(new Date());
+            String fecha = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss").format(new Date());
             if (motivo==null || motivo=="") {
                 motivo = " ";
             }
@@ -1513,7 +1514,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                     if (c.enviarCorreoVacaciones(
                             servidorsmtp, puerto, autenticado, starttls, remitente, clave,
                             getCorreoXsecEmpl(secEmplSolicita, nitEmpresa, cadena, esquema),
-                            "Solicitud de vacaciones Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de vacaciones: " + fechaInicioDisfrute,
+                            "Solicitud de VACACIONES Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de VACACIONES: " + fechaInicioDisfrute,
                             mensaje, urlKio, nitEmpresa, cadena)) {
                         System.out.println("Correo enviado a la persona que ejecuta");
                     }
@@ -1521,7 +1522,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                             servidorsmtp, puerto, autenticado, starttls, remitente, clave,
                             //getCorreoXsecEmpl(secEmplJefe, cadena),
                             correoAutorizaSolici,
-                            "Solicitud de vacaciones Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de vacaciones: " + fechaInicioDisfrute,
+                            "Solicitud de VACACIONES Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de VACACIONES: " + fechaInicioDisfrute,
                             mensaje, urlKio, nitEmpresa, cadena)) {
                         System.out.println("Correo enviado al empleado que solicita asociado");
                     }*/
@@ -1531,7 +1532,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                     if (c.enviarCorreoVacaciones(
                             servidorsmtp, puerto, autenticado, starttls, remitente, clave,
                             getCorreoXsecEmpl(secEmplSolicita, nitEmpresa, cadena, esquema),
-                            "Solicitud de vacaciones Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de vacaciones: " + fechaInicioDisfrute,
+                            "Solicitud de VACACIONES Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de VACACIONES: " + fechaInicioDisfrute,
                             mensaje, urlKio, nitEmpresa, cadena)) {
                         System.out.println("Correo enviada a la persona que ejecuta");
                     }
@@ -1539,7 +1540,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                     if (c.enviarCorreoVacaciones(
                             servidorsmtp, puerto, autenticado, starttls, remitente, clave,
                             correoAutorizaSolici,
-                            "Solicitud de vacaciones Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de vacaciones: " + fechaInicioDisfrute,
+                            "Solicitud de VACACIONES Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de VACACIONES: " + fechaInicioDisfrute,
                             mensaje, urlKio, nitEmpresa, cadena)) {
                         System.out.println("Correo enviado al empleado que solicita asociado " + correoAutorizaSolici);
                     }
@@ -1960,7 +1961,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                                     if (c.enviarCorreoVacaciones(
                                             servidorsmtp, puerto, autenticado, starttls, remitente, clave,
                                             getCorreoXsecEmpl(secEmpl, nit, cadena, esquema),
-                                            "Solicitud de vacaciones Kiosco - Nueva solicitud: " + fechaCorreo + ". Inicio de vacaciones: " + fechainicial,
+                                            "Solicitud de VACACIONES Kiosco - Nueva solicitud: " + fechaCorreo + ". Inicio de VACACIONES: " + fechainicial,
                                             mensajeCorreo, urlKio, nit, cadena)) {
                                         System.out.println("Correo enviado al empleado.");
                                     }
@@ -1969,7 +1970,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                                     if (c.enviarCorreoVacaciones(
                                             servidorsmtp, puerto, autenticado, starttls, remitente, clave,
                                             correoAutorizaSolici,
-                                            "Solicitud de vacaciones Kiosco - Nueva solicitud: " + fechaCorreo + ". Inicio de vacaciones: " + fechainicial,
+                                            "Solicitud de VACACIONES Kiosco - Nueva solicitud: " + fechaCorreo + ". Inicio de VACACIONES: " + fechainicial,
                                             mensajeCorreo, urlKio, nit, cadena)) {
                                         System.out.println("Correo enviado al jefe.");
                                     }
@@ -2004,7 +2005,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                                                 System.out.println("codigoopcion: " + "31");
                                                 /*c.enviarCorreoVacaciones(servidorsmtp, puerto, autenticado, starttls, remitente, clave, correoenviar, 
                                             "Auditoria: Nueva Solicitud de vacaciones Kiosco. "+fechaCorreo, mensajeAuditoria, urlKio, nit);*/
-                                                c.enviarCorreoInformativo("Auditoria: Nueva Solicitud de vacaciones Kiosco. " + fechaCorreo,
+                                                c.enviarCorreoInformativo("Auditoria: Nueva Solicitud de VACACIONES Kiosco. " + fechaCorreo,
                                                         "Estimado usuario: ", mensajeAuditoria, nit, urlKio, cadena, correoenviar, null);
                                             }
                                         } else {

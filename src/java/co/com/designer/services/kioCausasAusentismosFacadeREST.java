@@ -260,13 +260,15 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             @QueryParam("anexoadjunto") String anexoAdjunto,
             @QueryParam("cadena") String cadena,
             @QueryParam("urlKiosco") String urlKiosco,
-            @QueryParam("grupo") String grupoEmpr, @QueryParam("fechafin") String fechafin) {
+            @QueryParam("grupo") String grupoEmpr,
+            @QueryParam("fechafin") String fechafin,
+            @QueryParam("codigoCausa") String codigoCausa) {
         System.out.println("Token recibido crearNovedadAusentismo: " + token);
         System.out.println("parametros: crearNovedadAusentismo{ seudonimo: " + seudonimo + ", nitempresa: " + nit + ","
                 + "\n fechainicio: " + fechainicial + ", fechaFin: " + fechaFin + ", dias: " + dias
                 + " causa: " + secCausaAusent + ", diagnostico: " + secCodDiagnostico + ", clase: " + secClaseAusent + ", tipo: " + secTipoAusent
                 + "\n prorroga: " + secKioNovedadAusent + ", observacion: " + observacion
-                + ", cadena: " + cadena + ", grupo: " + grupoEmpr);
+                + ", cadena: " + cadena + ", grupo: " + grupoEmpr + ", codigoCausa: " + codigoCausa);
         System.out.println("link Kiosco: " + urlKiosco);
         System.out.println("grupoEmpresarial: " + grupoEmpr);
         boolean soliciCreada = false;
@@ -275,7 +277,8 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         String nombreAnexo = null; // nombre con el que debe guardarse el campo del documento anexo
         String secKioSoliciAusent = null;
         try {
-            esquema = getEsquema(esquema, cadena);
+            //esquema = getEsquema(esquema, cadena);
+            esquema = getEsquema(nit, cadena);
         } catch (Exception e) {
             System.out.println("Error: No se pudo consultar esquema. " + e.getMessage());
         }
@@ -432,23 +435,42 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                                 }
                             }
                         } else {
-                            System.out.println("Causa diferente a ENFERMEDAD GENERAL");
-                            if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaAusent, secCodDiagnostico, diasIncapacidad, fechafin, secKioSoliciAusent, secKioNovedadAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
-                                mensaje = "Novedad de ausentismo reportada exitosamente.";
-                                // Registro en tabla KIOESTADOSSOLICIAUSENT
-                                if (creaKioEstadoSoliciAusent(seudonimo, nit, secKioSoliciAusent, fechaGeneracion, "ENVIADO", null, cadena, esquema)) {
-                                    soliciCreada = true;
-                                    System.out.println("Estado de novedad de ausentismo creado.");
-                                    getEntityManager(cadena).close();
+                            // si es dia de la familia 
+                            if (codigoCausa.equals("54")) {
+                                String tipoCausaFamilia = getSecTipoCausa("2", cadena, esquema);
+                                System.out.println("es solicitud de causa de dia familia");
+                                if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, tipoCausaFamilia, secClaseAusent, secCausaAusent, secCodDiagnostico, diasIncapacidad, fechafin, secKioSoliciAusent, secKioNovedadAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
+                                    mensaje = "Novedad de ausentismo reportada exitosamente.";
+                                    // Registro en tabla KIOESTADOSSOLICIAUSENT
+                                    if (creaKioEstadoSoliciAusent(seudonimo, nit, secKioSoliciAusent, fechaGeneracion, "ENVIADO", null, cadena, esquema)) {
+                                        soliciCreada = true;
+                                        System.out.println("Estado de novedad de ausentismo creado.");
+                                        getEntityManager(cadena).close();
+                                    } else {
+                                        mensaje = "Ha ocurrido un error y no fue posible crear la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuníquese con el área de nómina y recursos humanos de su empresa";
+                                    }
                                 } else {
-                                    mensaje = "Ha ocurrido un error y no fue posible crear la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuníquese con el área de nómina y recursos humanos de su empresa";
+                                    System.out.println("Ha ocurrido un error al momento de crear el registrar la novedad");
+                                    mensaje = "Ha ocurrido un error y no fue posible reportar la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuniquese con el área de nómina y recursos humanos de su empresa";
                                 }
                             } else {
-                                System.out.println("Ha ocurrido un error al momento de crear el registrar la novedad");
-                                mensaje = "Ha ocurrido un error y no fue posible reportar la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuniquese con el área de nómina y recursos humanos de su empresa";
+                                System.out.println("Causa diferente a ENFERMEDAD GENERAL");
+                                if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaAusent, secCodDiagnostico, diasIncapacidad, fechafin, secKioSoliciAusent, secKioNovedadAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
+                                    mensaje = "Novedad de ausentismo reportada exitosamente.";
+                                    // Registro en tabla KIOESTADOSSOLICIAUSENT
+                                    if (creaKioEstadoSoliciAusent(seudonimo, nit, secKioSoliciAusent, fechaGeneracion, "ENVIADO", null, cadena, esquema)) {
+                                        soliciCreada = true;
+                                        System.out.println("Estado de novedad de ausentismo creado.");
+                                        getEntityManager(cadena).close();
+                                    } else {
+                                        mensaje = "Ha ocurrido un error y no fue posible crear la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuníquese con el área de nómina y recursos humanos de su empresa";
+                                    }
+                                } else {
+                                    System.out.println("Ha ocurrido un error al momento de crear el registrar la novedad");
+                                    mensaje = "Ha ocurrido un error y no fue posible reportar la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuniquese con el área de nómina y recursos humanos de su empresa";
+                                }
                             }
                         }
-
                     } else {
                         System.out.println("Tiene prorroga");
                         if (creaKioNovedadSoliciAusent(seudonimo, nit, fechainicial, secTipoAusent, secClaseAusent, secCausaAusent, secCodDiagnostico, diasIncapacidad, fechafin, secKioSoliciAusent, secKioNovedadAusent, formaLiq, porcentajeLiq, cadena, esquema)) {
@@ -1344,7 +1366,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     if (c.enviarCorreoVacaciones(
                             servidorsmtp, puerto, autenticado, starttls, remitente, clave,
                             getCorreoXsecEmpl(secEmplSolicita, nitEmpresa, cadena, esquema),
-                            "Solicitud de ausentismo Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de ausentismo: " + fechaInicioAusent,
+                            "Solicitud de AUSENTISMO Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de AUSENTISMO: " + fechaInicioAusent,
                             mensaje, urlKio, nitEmpresa, cadena)) {
                         System.out.println("Correo enviado a la persona que ejecuta");
                     }
@@ -1364,7 +1386,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     if (c.enviarCorreoVacaciones(
                             servidorsmtp, puerto, autenticado, starttls, remitente, clave,
                             getCorreoXsecEmpl(secEmplSolicita, nitEmpresa, cadena, esquema),
-                            "Solicitud de ausentismo Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de ausentismo: " + fechaInicioAusent,
+                            "Solicitud de AUSENTISMO Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de AUSENTISMO: " + fechaInicioAusent,
                             mensaje, urlKio, nitEmpresa, cadena)) {
                         System.out.println("Correo enviada a la persona que ejecuta");
                     }
@@ -1372,7 +1394,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     if (c.enviarCorreoVacaciones(
                             servidorsmtp, puerto, autenticado, starttls, remitente, clave,
                             correoAutorizaSolici,
-                            "Solicitud de ausentismo Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de ausentismo: " + fechaInicioAusent,
+                            "Solicitud de AUSENTISMO Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de AUSENTISMO: " + fechaInicioAusent,
                             mensaje, urlKio, nitEmpresa, cadena)) {
                         System.out.println("Correo enviado al empleado que solicita asociado " + correoAutorizaSolici);
                     }
@@ -1975,7 +1997,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                         System.out.println("codigoopcion: " + "41");
                         /*c.enviarCorreoVacaciones(servidorsmtp, puerto, autenticado, starttls, remitente, clave, correoenviar, 
                                             "Auditoria: Nueva Solicitud de vacaciones Kiosco. "+fechaCorreo, mensajeAuditoria, urlKio, nit);*/
-                        e.enviarCorreoInformativo("Auditoria: Nueva novedad de ausentismo Kiosco. " + fechaCorreo,
+                        e.enviarCorreoInformativo("Auditoria: Nueva novedad de AUSENTISMO Kiosco. " + fechaCorreo,
                                 "Estimado usuario: ", mensajeAuditoria, nitEmpresa, urlKio, cadena, correoenviar, null);
                     }
                 } else {
@@ -2306,5 +2328,28 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             System.out.println("Error " + this.getClass().getName() + ".getEsquema(): " + e);
         }
         return esquema;
+    }
+
+    // 20220201 consultar tipo y clase de dia de la familia
+    public String getSecTipoCausa(String codigoCausa, String cadena, String esquema) {
+        System.out.println("Parametros getSecTipoCausa(): codigoCausa: " + codigoCausa);
+        String secClase = null;
+        String sqlQuery;
+        try {
+            setearPerfil(esquema, cadena);
+            /*
+            2 - PERMISOS
+            6 - LICENSIA 
+            */
+            sqlQuery = "SELECT SECUENCIA FROM TIPOSAUSENTISMOS WHERE CODIGO=? ";
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, codigoCausa);
+            secClase = query.getSingleResult().toString();
+            System.out.println("secClase: " + secClase);
+        } catch (Exception e) {
+            System.out.println("Error " + this.getClass().getName() + ".getCausaPorcentajeLiq(): " + e);
+            secClase = "";
+        }
+        return secClase;
     }
 }
