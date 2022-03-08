@@ -276,7 +276,7 @@ public class EmpleadosFacadeREST {
                               "from hvexperienciaslaborales ex,hvhojasdevida hv, personas p, motivosretiros mo, \n" +
                               "sectoreseconomicos sec, empleados e \n" +
                               "where ex.hojadevida = hv.secuencia \n" +
-                              "and e.codigoempleado = p.numerodocumento \n" +
+                              "and e.persona = p.secuencia \n" +
                               "and hv.persona = p.secuencia \n" +
                               "and ex.motivoretiro = mo.secuencia(+) \n" +
                               "and ex.sectoreconomico = sec.secuencia(+) \n" +
