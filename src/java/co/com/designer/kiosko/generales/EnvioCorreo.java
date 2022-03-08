@@ -278,7 +278,7 @@ public class EnvioCorreo {
                     + "                        <div style=\"margin:2% 4% 4% auto;text-align:justify;font-family:sans-serif\">\n"
                     + "                            <h2 style=\"color:white;margin:0 0 5px;text-align:center\">Estimado usuario(a):</h2>\n"
                     + "                            <br>\n"
-                    + "                            <h4 style=\"margin:2px;text-align:center\">\n" + mensaje
+                    + "                            <h4 style=\"margin:2px;text-align:center;color:#ffffff;\">\n" + mensaje
                     + "                                </h4>\n"
                     + "                            <h4 style=\"color:#ffffff;text-align:center;margin-top:10px\">\n"
                     + "                                Este reporte se ha generado automáticamente desde Kiosco Nómina Designer.</h4>\n"
@@ -705,7 +705,7 @@ public class EnvioCorreo {
                     + "                        <div style=\"margin:2% 4% 4% auto;text-align:justify;font-family:sans-serif\">\n"
                     + "                            <h2 style=\"margin:0 0 5px;text-align:center\">Estimado usuario(a):</h2>\n"
                     + "                            <br>\n"
-                    + "                            <h4 style=\"margin:2px;text-align:center\">\n" + mensaje
+                    + "                            <h4 style=\"margin:2px;text-align:center; color:#ffffff;\">\n" + mensaje
                     + "                                </h4>\n"
                     + "                            <h4 style=\"text-align:center;margin-top:10px\">\n"
                     + "                                Este correo se ha enviado automáticamente desde Kiosco Nómina Designer.</h4>\n"
@@ -870,7 +870,7 @@ public class EnvioCorreo {
                     + "                        <div style=\"margin:2% 4% 4% auto;text-align:justify;font-family:sans-serif\">\n"
                     + "                            <h2 style=\"margin:0 0 5px;text-align:center\">Estimado usuario(a):</h2>\n"
                     + "                            <br>\n"
-                    + "                            <h4 style=\"margin:2px;text-align:center\">\n" + mensaje
+                    + "                            <h4 style=\"margin:2px;text-align:center;color:#ffffff;\">\n" + mensaje
                     + "                                </h4>\n"
                     + ((nombreAnexo == null || nombreAnexo.equals("null")) ? "" : "<h4 style=\"text-align:center;margin-top:10px\">"
                     + "Adjunto a este correo encontrará el documento anexo a la novedad de ausentismo.")
@@ -1123,10 +1123,10 @@ public class EnvioCorreo {
                     + "                    <td>\n"
                     + "                        <div style=\"margin:2% 4% 4% auto;text-align:justify;font-family:sans-serif\">\n"
                     //+ "                            <h2 style=\"color:#ffffff !important; margin:0 0 5px;text-align:center\">" + saludo + "</h2>\n"
-                    + "                            <h2 style=\"margin:0 0 5px;text-align:center\">" + saludo + "</h2>\n"
+                    + "                            <h2 style=\"margin:0 0 5px;text-align:center;color:#ffffff;\">" + saludo + "</h2>\n"
                     + "                            <br><br>\n"
                     //+ "                            <h4 style=\"margin:2px;text-align:center\">\n" + mensaje
-                    + "                            <h4 style=\"margin:2px;text-align:center;\">\n" + mensaje + "</h4>\n"
+                    + "                            <h4 style=\"margin:2px;text-align:center;color:#ffffff;text-align:\">\n" + mensaje + "</h4>\n"
                     + "                                <br><br> "
                     + "                            <h4 style=\"text-align:center;margin-top:10px\">\n"
                     + "                                Este correo se ha enviado automáticamente desde Kiosco Nómina Designer.</h4>\n"

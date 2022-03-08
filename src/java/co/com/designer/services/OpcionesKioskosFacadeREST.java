@@ -107,7 +107,10 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
             }
             if (!roles.contains("AUTORIZAAUSENTISMOS")) {
                 sqlQuery+= " and ok.kiorol.nombre not in ('AUTORIZAAUSENTISMOS') ";
-            }            
+            } 
+            if (!roles.contains("RRHH")) {
+                sqlQuery+= " and ok.kiorol.nombre not in ('RRHH') ";
+            }
              sqlQuery+=  " order by ok.codigo asc";
                                
             Query query = getEntityManager(cadena).createQuery(sqlQuery);
@@ -155,6 +158,9 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
         }
         if (!roles.contains("AUTORIZAAUSENTISMOS")) {
             sqlQuery += " and ok.kiorol.nombre not in ('AUTORIZAAUSENTISMOS') ";
+        }
+        if (!roles.contains("RRHH")) {
+                sqlQuery+= " and ok.kiorol.nombre not in ('RRHH') ";
         }
         sqlQuery += " order by ok.codigo asc";
 
@@ -454,6 +460,10 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
                 rol = rol + ";AUTORIZAAUSENTISMOS";
             }
             
+            if (esRRHH(documento, nitEmpresa, cadena)) {
+                rol = rol + ";RRHH";
+            }
+            
             /*Habilitación de módulo ausentismo de acuerdo a registro en tabla KIOAUTORIZADORES*/
             /*if (esAutorizadorAusentismos(documento, nitEmpresa, cadena)) {
                 rol = rol + ";AUTORIZAAUSENTISMOS";
@@ -505,6 +515,26 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
         return retorno;
     }
     
+    public boolean esRRHH(String documento, String nitEmpresa, String cadena) {
+        boolean retorno = false;
+        String esquema = getEsquema(nitEmpresa, cadena);
+        setearPerfil(esquema, cadena);
+        String sqlQuery = "select count(*) count \n" +
+                    "from kioautorizadores ka \n" +
+                    "where ka.persona = (select secuencia from personas where numerodocumento=?)\n" +
+                    "and ka.kiomodulo = (select secuencia from kiomodulos where nombre like 'RRHH') ";
+        try {
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, documento);
+            BigDecimal conteo = BigDecimal.ZERO;
+            conteo = (BigDecimal) query.getSingleResult();
+            System.out.println("Conteo de esRRHH: " + conteo);
+            return conteo.compareTo(BigDecimal.ZERO) > 0;
+        } catch (Exception e) {
+            System.out.println("Error esRRHH: " + e.getMessage());
+        }
+        return retorno;
+    }    
     /*public boolean esAutorizadorAusentismos(String documento, String nitEmpresa, String cadena) {
         boolean retorno = false;
         String esquema = getEsquema(nitEmpresa, cadena);
