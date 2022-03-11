@@ -13,6 +13,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -33,15 +34,17 @@ public class RrHh  implements Serializable{
     @Column(name = "NOMBREADJUNTO")
     private String nombreadjunto;
     @Column(name = "FECHAINICIO")
-    @Temporal(javax.persistence.TemporalType.DATE)
-    private Date fechainicio;
+    private String fechainicio;
     @Column(name = "FECHAFIN")
-    @Temporal(javax.persistence.TemporalType.DATE)
-    private Date fechafin;
+    private String fechafin;
     @Column(name = "FORMATO")
     private String formato;
+    @Column(name = "ESTADO")
+    private String estado;
+    @Column(name = "FECHAMODIFICADO")
+    private String fechamodificado;
 
-    public RrHh(BigInteger secuencia, String titulo, String descripcion, String nombreadjunto, Date fechainicio, Date fechafin, String formato) {
+    public RrHh(BigInteger secuencia, String titulo, String descripcion, String nombreadjunto, String fechainicio, String fechafin, String formato, String estado, String fechamodificado) {
         this.secuencia = secuencia;
         this.titulo = titulo;
         this.descripcion = descripcion;
@@ -49,6 +52,8 @@ public class RrHh  implements Serializable{
         this.fechainicio = fechainicio;
         this.fechafin = fechafin;
         this.formato = formato;
+        this.estado = estado;
+        this.fechamodificado = fechamodificado;
     }
 
     public RrHh() {
@@ -86,19 +91,19 @@ public class RrHh  implements Serializable{
         this.nombreadjunto = nombreadjunto;
     }
 
-    public Date getFechainicio() {
+    public String getFechainicio() {
         return fechainicio;
     }
 
-    public void setFechainicio(Date fechainicio) {
+    public void setFechainicio(String fechainicio) {
         this.fechainicio = fechainicio;
     }
 
-    public Date getFechafin() {
+    public String getFechafin() {
         return fechafin;
     }
 
-    public void setFechafin(Date fechafin) {
+    public void setFechafin(String fechafin) {
         this.fechafin = fechafin;
     }
 
@@ -110,6 +115,22 @@ public class RrHh  implements Serializable{
         this.formato = formato;
     }
 
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+
+    public String getFechamodificado() {
+        return fechamodificado;
+    }
+
+    public void setFechamodificado(String fechamodificado) {
+        this.fechamodificado = fechamodificado;
+    }
+
     
-    
+        
 }

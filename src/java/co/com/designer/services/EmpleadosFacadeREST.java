@@ -1044,14 +1044,29 @@ public class EmpleadosFacadeREST {
                             "WHERE t4.SECUENCIA = KSA.SECUENCIA AND t4.SECUENCIA = t3.KIOSOLICIAUSENTISMO)\n" +
                             "AND KSA.EMPLEADOJEFE=JEFE.SECUENCIA  \n";
             }
-            
-            
-            
+            else if(tipoNotificacion.equals("RRHH")){
+                sqlQuery = "SELECT \n" +
+                            "COUNT(*)\n" +
+                            "FROM KIOMENSAJESRRHH rh, empresas em  \n" +
+                            "WHERE \n" +
+                            "rh.empresa = em.secuencia\n" +
+                            "and em.nit = ? \n" +
+                            "AND (TO_CHAR(RH.FECHAINICIO, 'DD/MM/YYYY') <= TO_CHAR(SYSDATE, 'DD/MM/YYYY')\n" +
+                            "AND TO_CHAR(RH.FECHAFIN, 'DD/MM/YYYY') >= TO_CHAR(SYSDATE, 'DD/MM/YYYY')) \n" +
+                            "AND RH.ESTADO = 'ACTIVO' ";
+            }
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, secEmpl);
+            if (tipoNotificacion.equals("VACACION")){
+                query.setParameter(1, secEmpl);
+            }else if(tipoNotificacion.equals("AUSENTISMO")){
+                query.setParameter(1, secEmpl);
+            }else if(tipoNotificacion.equals("RRHH")){
+                query.setParameter(1, nitEmpresa);   
+            }            
             s = query.getResultList();
         } catch (Exception ex) {
-            return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
+            //return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
+            return Response.status(Response.Status.OK).entity("Error").build();
         }
         return Response.status(Response.Status.OK).entity(s).build();
     }  
