@@ -2,6 +2,7 @@ package co.com.designer.services;
 
 import co.com.designer.kiosko.generales.EnvioCorreo;
 import co.com.designer.kiosko.entidades.ConexionesKioskos;
+import co.com.designer.kiosko.entidades.Recordatorios;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Writer;
 import com.google.zxing.WriterException;
@@ -1397,5 +1398,36 @@ public class EmpleadosFacadeREST {
         }
         return nombre;
     }
+    
+    
+//    Devuelve una lista de proverbios para la pantalla inicial
+    
+    @GET
+    @Path("/proverbios")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response getProverbios(@QueryParam("nit") String nitEmpresa, @QueryParam("cadena") String cadena) {
+        System.out.println("parametros getProverbios():"+ " nit: " + nitEmpresa + " cadena: " + cadena);
+        List exLab = null;
+        try {
+           
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
+            String sqlQuery = "select \n" +
+                              "r.secuencia secuencia,\n" +
+                              "r.autor autor,\n" +
+                              "r.mensaje mensaje\n" +
+                              "from recordatorios r  \n" +
+                              "where r.tipo = 'PROVERBIO'";
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery, Recordatorios.class);
+
+            exLab = query.getResultList();
+            exLab.forEach(System.out::println);
+            return Response.status(Response.Status.OK).entity(exLab).build();
+        } catch (Exception ex) {
+            System.out.println("Error "+this.getClass().getName()+".getProverbios: " + ex);
+            return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
+        }
+    } 
+            
     
 }
