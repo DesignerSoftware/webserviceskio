@@ -1065,11 +1065,11 @@ public class EmpleadosFacadeREST {
                 query.setParameter(1, nitEmpresa);   
             }            
             s = query.getResultList();
+            return Response.status(Response.Status.OK).entity(s).build();
         } catch (Exception ex) {
             //return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
-            return Response.status(Response.Status.OK).entity("Error").build();
+            return Response.status(Response.Status.OK).entity(0).build();
         }
-        return Response.status(Response.Status.OK).entity(s).build();
     }  
     
     @GET
@@ -1425,7 +1425,7 @@ public class EmpleadosFacadeREST {
             return Response.status(Response.Status.OK).entity(exLab).build();
         } catch (Exception ex) {
             System.out.println("Error "+this.getClass().getName()+".getProverbios: " + ex);
-            return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
+            return Response.status(Response.Status.OK).entity(0).build();
         }
     } 
             

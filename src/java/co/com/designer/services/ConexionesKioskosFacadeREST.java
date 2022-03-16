@@ -1322,7 +1322,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         String grupoEmpresarial = "";
         Encriptacion enc = new Encriptacion();
         String passwordEncriptacion = "Manager01";
-        String jwtOriginal = enc.decrypt(jwt, passwordEncriptacion);
+        String jwtOriginal = jwt;//enc.decrypt(jwt, passwordEncriptacion);
         System.out.println("original " + jwtOriginal);
         try {
             usuario = (String) Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwtOriginal).getBody().getSubject();

@@ -86,12 +86,12 @@
         </properties>
           
     </persistence-unit>
-    <!--   
+    
     <persistence-unit name="DEFAULT34" transaction-type="JTA">
             
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
             
-        <jta-data-source>jdbc/rhnrm</jta-data-source>
+        <jta-data-source>jdbc/rhntronex</jta-data-source>
             
         <class>co.com.designer.kiosko.entidades.ConexionesKioskos</class>
             
@@ -107,7 +107,8 @@
                 
         </properties>
           
-    </persistence-unit>    
+    </persistence-unit>   
+    <!-- 
     <persistence-unit name="DEFAULT35" transaction-type="JTA">
             
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
