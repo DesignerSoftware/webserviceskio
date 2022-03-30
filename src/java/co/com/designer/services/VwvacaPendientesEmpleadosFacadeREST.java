@@ -1571,7 +1571,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                             System.out.println("size: " + lista.size());
                             // String mensajeAuditoria = "Nos permitimos informar que " + personaCreaSolici
                                // + " generó la SOLICITUD DE VACACIONES el " + fechaCorreo + " a las " + horaGeneracion + " en el módulo de Kiosco Nómina Designer.";
-                          String mensajeAuditoria="Nos permitimos informar que se acaba de "+estadoVerbo+" una solicitud de vacaciones";
+                          String mensajeAuditoria="Nos permitimos informar que se acaba de "+estadoVerbo+" una solicitud de VACACIONES";
                         if (estado.equals("RECHAZADO") || estado.equals("AUTORIZADO")){
                             mensajeAuditoria+=" creada para "+ getApellidoNombreXsecEmpl(secEmplSolicita, nitEmpresa, cadena, esquema);
                         }

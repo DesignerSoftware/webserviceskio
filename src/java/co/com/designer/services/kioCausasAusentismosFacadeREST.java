@@ -1952,7 +1952,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             if (e.enviarCorreoAusentismos(
                     servidorsmtp, puerto, autenticado, starttls, remitente, clave,
                     correoEmpleado,
-                    "Novedad de ausentismo Kiosco - Nuevo reporte: " + fechaCorreo + ". Inicio de ausentismo: " + fechaInicial,
+                    "Novedad de AUSENTISMO Kiosco - Nuevo reporte: " + fechaCorreo + ". Inicio de ausentismo: " + fechaInicial,
                     mensaje, nombreAnexo, urlKio, nitEmpresa, cadena)) {
                 System.out.println("Correo enviado al empleado.");
             }
@@ -1961,7 +1961,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             if (e.enviarCorreoAusentismos(
                     servidorsmtp, puerto, autenticado, starttls, remitente, clave,
                     correoAutorizaSolici,
-                    "Novedad de ausentismo Kiosco - Nuevo reporte: " + fechaCorreo + ". Inicio de ausentismo: " + fechaInicial,
+                    "Novedad de AUSENTISMO Kiosco - Nuevo reporte: " + fechaCorreo + ". Inicio de ausentismo: " + fechaInicial,
                     mensaje, nombreAnexo, urlKio, nitEmpresa, cadena)) {
                 System.out.println("Correo enviado al jefe.");
             }

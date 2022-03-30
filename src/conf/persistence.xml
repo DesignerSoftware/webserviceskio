@@ -87,7 +87,7 @@
           
     </persistence-unit>
     
-    <persistence-unit name="DEFAULT34" transaction-type="JTA">
+    <!--<persistence-unit name="DEFAULT34" transaction-type="JTA">
             
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
             
@@ -107,7 +107,7 @@
                 
         </properties>
           
-    </persistence-unit>   
+    </persistence-unit>   -->
     <!-- 
     <persistence-unit name="DEFAULT35" transaction-type="JTA">
             

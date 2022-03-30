@@ -102,8 +102,8 @@ public class Encriptacion {
             return denc;
         } catch (Exception e) {
             System.out.println("Error while decrypting: " + e.toString());
+            return "N";
         }
-        return null;
     }
     public static void setKey(String myKey) 
     {

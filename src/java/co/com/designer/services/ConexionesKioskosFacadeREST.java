@@ -1198,7 +1198,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         fechaExpiracion.setTime(new java.util.Date());
         fechaExpiracion.add(Calendar.DAY_OF_YEAR, 30);  // 30 dias a partir de la fecha*/
         String documento = getDocumentoPorSeudonimo(usuario, nit, cadena);
-        String jwt = Jwts.builder()
+        String jwtCompleto = Jwts.builder()
                 .signWith(SignatureAlgorithm.HS256, passwordEncript.getBytes("UTF-8"))
                 .setSubject(usuario)
                 .setIssuedAt(fechaCreacion)
@@ -1210,7 +1210,11 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                 .claim("cadena", cadena)
                 .claim("grupo", grupo)
                 .compact();
-        System.out.println("Token generado: " + jwt);
+        System.out.println("Token generado: " + jwtCompleto);
+        
+        Encriptacion e = new Encriptacion();
+        String jwt = e.encrypt(jwtCompleto, passwordEncript);
+        System.out.println("Token encriptado: " + jwt);
 
         registroToken = registraToken(usuario, nit, jwt, "LOGIN", fechaCreacion, fechaCreacion, cadena);
 
@@ -1322,8 +1326,14 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         String grupoEmpresarial = "";
         Encriptacion enc = new Encriptacion();
         String passwordEncriptacion = "Manager01";
-        String jwtOriginal = jwt;//enc.decrypt(jwt, passwordEncriptacion);
-        System.out.println("original " + jwtOriginal);
+        String jwtOriginal =  enc.decrypt(jwt, passwordEncriptacion);
+        System.out.println("original: " + jwt);
+        System.out.println("original1: " + jwtOriginal);        
+        if (jwtOriginal=="N" || jwtOriginal.equals("N")) {
+            System.out.println("Entre al if");
+            jwtOriginal = jwt;
+        }
+        System.out.println("original2: " + jwtOriginal);
         try {
             usuario = (String) Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwtOriginal).getBody().getSubject();
             nit = (String) Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwtOriginal).getBody().get("empresa");

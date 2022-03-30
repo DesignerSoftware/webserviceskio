@@ -28,6 +28,7 @@ public class ApplicationConfig extends Application {
      * all resources defined in the project.
      * If required, comment out calling this method in getClasses().
      */
+    // KIOSKO
     // resources.add(org.glassfish.jersey.media.multipart.MultiPartFeature.class);  // verificar que este añadida en resources
     private void addRestResourceClasses(Set<Class<?>> resources) {
         resources.add(co.com.designer.services.CadenasKioskosFacadeREST.class);
@@ -39,7 +40,6 @@ public class ApplicationConfig extends Application {
         resources.add(co.com.designer.services.VwvacaPendientesEmpleadosFacadeREST.class);
         resources.add(co.com.designer.services.filter.CorsFilter.class);
         resources.add(co.com.designer.services.kioCausasAusentismosFacadeREST.class);
-        resources.add(org.glassfish.jersey.media.multipart.MultiPartFeature.class);
     }
     
 }
