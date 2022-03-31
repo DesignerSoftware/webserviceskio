@@ -1,6 +1,7 @@
 package co.com.designer.services;
 
 import co.com.designer.kiosko.entidades.ConexionesKioskos;
+import co.com.designer.kiosko.entidades.KioVigenciasCIR;
 import co.com.designer.kiosko.entidades.OpcionesKioskosApp;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -713,6 +714,37 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
             System.out.println("Error "+this.getClass().getName()+".getEsquema(): " + e);
         } 
         return esquema;
-    }     
+    } 
+    
+    
+    @GET
+        @Path("/kiovigenciasCIR")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response getAnosCIR(@QueryParam("nit") String nitEmpresa, @QueryParam("opcionkioskoapp") String opcionkioskoapp, @QueryParam("cadena") String cadena) {
+        System.out.println("parametros kiovigenciasCIR():"+ " opionkioskoapp"+ opcionkioskoapp + " nit: " + nitEmpresa + " cadena: " + cadena);
+        List exLab = null;
+        try {
+           
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
+            String sqlQuery = "select \n" +
+                              "kc.secuencia secuencia,\n" +
+                              "kc.ano ano, \n" +
+                              "kc.anoarchivo anoarchivo, \n" +
+                              "kc.estado estado \n" +
+                              "from kiovigenciascir kc  \n" +
+                              "where kc.opcionkioskoapp = (select secuencia from opcioneskioskosapp where codigo = ? and empresa =kc.empresa) \n" +
+                              "and kc.empresa = (select secuencia from empresas where nit=?)";
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery, KioVigenciasCIR.class);
+            query.setParameter(1, opcionkioskoapp);
+            query.setParameter(2, nitEmpresa);
+            exLab = query.getResultList();
+            exLab.forEach(System.out::println);
+            return Response.status(Response.Status.OK).entity(exLab).build();
+        } catch (Exception ex) {
+            System.out.println("Error "+this.getClass().getName()+".getAnosCIR: " + ex);
+            return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
+        }
+    } 
     
 }

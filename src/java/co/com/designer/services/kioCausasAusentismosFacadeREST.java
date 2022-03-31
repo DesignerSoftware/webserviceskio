@@ -1807,21 +1807,29 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             @QueryParam("cadena") String cadena) {
         String fileName = null;
         String uploadFilePath = null;
+         boolean cargueArchivo= false;
         try {
             fileName = fileFormDataContentDisposition.getFileName();
             uploadFilePath = writeToFileServer(fileInputStream, fileName, nitEmpresa, cadena);
-            if (updateAnexoKioSoliciAusentismo(seudonimo, nitEmpresa, fileName, secKioSoliciAusentismo, cadena)) {
-                System.out.println("Nombre de archivo actualizado en la solicitud");
-            } else {
-                System.out.println("Archivo subido pero no se actualizó el nombre en la solicitud.");
+            if(uploadFilePath.equals("N")){
+                cargueArchivo = false;
+            }else{
+                if (updateAnexoKioSoliciAusentismo(seudonimo, nitEmpresa, fileName, secKioSoliciAusentismo, cadena)) {
+                    System.out.println("Nombre de archivo actualizado en la solicitud");
+                    cargueArchivo = true;
+                } else {
+                    System.out.println("Archivo subido pero no se actualizó el nombre en la solicitud.");
+                    cargueArchivo = true;
+                }
             }
+            
         } catch (IOException ioe) {
             ioe.printStackTrace();
             System.out.println("Error: " + this.getClass().getName() + ".cargarAnexo()" + ioe.getMessage());
         } catch (Exception e) {
             System.out.println("Ha ocurrido un error " + this.getClass().getName() + ".cargarAnexo() " + e.getMessage());
         }
-        return Response.ok("Fichero subido a " + uploadFilePath).build();
+        return Response.ok(cargueArchivo).build();
     }
 
     private String writeToFileServer(InputStream inputStream, String fileName, String nitEmpresa, String cadena) throws IOException {
@@ -1838,6 +1846,10 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                 outputStream.write(bytes, 0, read);
             }
             outputStream.flush();
+        }  catch (FileNotFoundException  fnfe) {
+            System.out.println("Error " + this.getClass().getName() + ".writeToFileServer() " + fnfe.getMessage());
+            System.out.println("Hubo un problema al enviar el archivo.");
+            return "N";
         } catch (IOException ioe) {
             ioe.printStackTrace();
         } catch (Exception e) {
