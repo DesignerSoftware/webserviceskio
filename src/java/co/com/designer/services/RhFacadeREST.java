@@ -343,8 +343,8 @@ public class RhFacadeREST {
                     + "WHERE \n"
                     + "rh.empresa = em.secuencia\n"
                     + "and em.nit = ?\n"
-                    + "AND (TO_CHAR(RH.FECHAINICIO, 'DD/MM/YYYY') <= TO_CHAR(SYSDATE, 'DD/MM/YYYY')\n"
-                    + "AND TO_CHAR(RH.FECHAFIN, 'DD/MM/YYYY') >= TO_CHAR(SYSDATE, 'DD/MM/YYYY')) \n"
+                    + "AND RH.FECHAINICIO <= SYSDATE\n" 
+                    + "AND RH.FECHAFIN >= SYSDATE\n "
                     + "AND RH.ESTADO = 'ACTIVO' ";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery, RrHh.class);
             query.setParameter(1, nitEmpresa);

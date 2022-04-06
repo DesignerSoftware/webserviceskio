@@ -1052,8 +1052,8 @@ public class EmpleadosFacadeREST {
                             "WHERE \n" +
                             "rh.empresa = em.secuencia\n" +
                             "and em.nit = ? \n" +
-                            "AND (TO_CHAR(RH.FECHAINICIO, 'DD/MM/YYYY') <= TO_CHAR(SYSDATE, 'DD/MM/YYYY')\n" +
-                            "AND TO_CHAR(RH.FECHAFIN, 'DD/MM/YYYY') >= TO_CHAR(SYSDATE, 'DD/MM/YYYY')) \n" +
+                            "AND RH.FECHAINICIO <= SYSDATE\n" +
+                            "AND RH.FECHAFIN >= SYSDATE \n" +
                             "AND RH.ESTADO = 'ACTIVO' ";
             }
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
@@ -1421,7 +1421,7 @@ public class EmpleadosFacadeREST {
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery, Recordatorios.class);
 
             exLab = query.getResultList();
-            exLab.forEach(System.out::println);
+            //exLab.forEach(System.out::println);
             return Response.status(Response.Status.OK).entity(exLab).build();
         } catch (Exception ex) {
             System.out.println("Error "+this.getClass().getName()+".getProverbios: " + ex);
@@ -1443,7 +1443,7 @@ public class EmpleadosFacadeREST {
             String esquema = getEsquema(nitEmpresa, cadena);
             String secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT \n" +
+            String sqlQuery = "SELECT  \n" +
                         "nvl(EMPLEADOCURRENT_PKG.FechaRetiro(EMPLEADOS.secuencia,sysdate),cortesprocesos_pkg.CapturarAnteriorCorte(EMPLEADOS.secuencia,1,sysdate+1)) FECHAHASTA ,\n" +
                         "ADD_MONTHS(NVL(EMPLEADOCURRENT_PKG.FechaRetiro(EMPLEADOS.secuencia,sysdate),cortesprocesos_pkg.CapturarAnteriorCorte(EMPLEADOS.secuencia,1,sysdate+1)),-6)+1 FECHADESDE,\n" +
                         "'FECHA DE CORTE ' ||' '|| TRIM(to_char(SOLUCIONESNODOS.FECHAPAGO,'fm dd-Mon-yyyy','nls_date_language=spanish')) FechaCorte,\n" +
