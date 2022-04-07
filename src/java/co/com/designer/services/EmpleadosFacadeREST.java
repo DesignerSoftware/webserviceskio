@@ -1443,65 +1443,32 @@ public class EmpleadosFacadeREST {
             String esquema = getEsquema(nitEmpresa, cadena);
             String secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT  \n" +
-                        "nvl(EMPLEADOCURRENT_PKG.FechaRetiro(EMPLEADOS.secuencia,sysdate),cortesprocesos_pkg.CapturarAnteriorCorte(EMPLEADOS.secuencia,1,sysdate+1)) FECHAHASTA ,\n" +
-                        "ADD_MONTHS(NVL(EMPLEADOCURRENT_PKG.FechaRetiro(EMPLEADOS.secuencia,sysdate),cortesprocesos_pkg.CapturarAnteriorCorte(EMPLEADOS.secuencia,1,sysdate+1)),-6)+1 FECHADESDE,\n" +
-                        "'FECHA DE CORTE ' ||' '|| TRIM(to_char(SOLUCIONESNODOS.FECHAPAGO,'fm dd-Mon-yyyy','nls_date_language=spanish')) FechaCorte,\n" +
-                        "SOLUCIONESNODOS.FECHAPAGO FECHACORTE2,\n" +
-                        "TRIM(to_char(SOLUCIONESNODOS.FECHAPAGO,'dd-Mon','nls_date_language=spanish')) FechaCorte,\n" +
-                        "PERSONAS.PRIMERAPELLIDO||' '||PERSONAS.SEGUNDOAPELLIDO||' '||PERSONAS.NOMBRE  NOMBRE,\n" +
-                        "EMPLEADOS.CODIGOEMPLEADO Empleado,\n" +
-                        "trim(replace(to_char(sum (DECODE(SOLUCIONESNODOS.TIPO,'PAGO', SOLUCIONESNODOS.VALOR)),'$999G999G999G999G999G999'), ',','.')) PAGO, \n" +
-                        "trim(replace(to_char(sum (DECODE(SOLUCIONESNODOS.TIPO,'DESCUENTO', SOLUCIONESNODOS.VALOR)),'$999G999G999G999G999G999'), ',','.')) DESCUENTO, \n" +
-                        " trim(replace(to_char(sum (DECODE(SOLUCIONESNODOS.TIPO, \n" +
-                        "'PAGO', SOLUCIONESNODOS.VALOR, -SOLUCIONESNODOS.VALOR)),'$999G999G999G999G999G999'), ',','.')) NETO,\n" +
-                        "sum (DECODE(SOLUCIONESNODOS.TIPO, \n" +
-                        "'PAGO', SOLUCIONESNODOS.VALOR, -SOLUCIONESNODOS.VALOR)) NETO1\n" +
-                        "FROM \n" +
-                        "EMPLEADOS, PERSONAS, SOLUCIONESNODOS, CONCEPTOS, CONEXIONESKIOSKOS PARAMETROSREPORTES, tipostrabajadores tt,\n" +
-                        "empresas em, detallesempresas dt, vigenciasformaspagos vw, vigenciascargos vc, ORGANIGRAMAS ORG, ESTRUCTURAS ES\n" +
-                        "WHERE\n" +
-                        "SOLUCIONESNODOS.TIPO IN ('PAGO', 'DESCUENTO')\n" +
-                        "AND ((EMPLEADOS.PERSONA = PERSONAS.SECUENCIA)\n" +
-                        "AND (SOLUCIONESNODOS.EMPLEADO = EMPLEADOS.SECUENCIA)\n" +
-                        "AND (SOLUCIONESNODOS.CONCEPTO = CONCEPTOS.SECUENCIA)) \n" +
-                        "AND dt.empresa = em.secuencia\n" +
-                        "AND vw.empleado = empleados.secuencia\n" +
-                        "and vc.estructura  = es.secuencia\n" +
-                        "and vc.empleado = empleados.secuencia\n" +
-                        "AND (PARAMETROSREPORTES.EMPLEADO = EMPLEADOS.SECUENCIA\n" +
-                        "AND EMPLEADOS.SECUENCIA = ? \n" +
-                        "AND (SOLUCIONESNODOS.FECHAPAGO BETWEEN \n" +
-                        "(ADD_MONTHS(NVL(EMPLEADOCURRENT_PKG.FechaRetiro(EMPLEADOS.secuencia,sysdate),cortesprocesos_pkg.CapturarAnteriorCorte(EMPLEADOS.secuencia,1,sysdate+1)),-6)+1) \n" +
-                        "AND nvl(EMPLEADOCURRENT_PKG.FechaRetiro(EMPLEADOS.secuencia,sysdate),cortesprocesos_pkg.CapturarAnteriorCorte(EMPLEADOS.secuencia,1,sysdate+1))))\n" +
-                        "and exists (select 'x' \n" +
-                        "            from cortesprocesos cp, procesos p, tipospagos tp \n" +
-                        "            where cp.proceso = p.secuencia and cp.secuencia = solucionesnodos.corteproceso\n" +
-                        "            and tp.secuencia = p.tipopago and tp.codigo=1 AND p.codigo in (1,5,10,4,21,80))  \n" +
-                        "and tt.secuencia = solucionesnodos.tipotrabajador\n" +
-                        "AND ES.ORGANIGRAMA=ORG.SECUENCIA\n" +
-                        "AND EM.SECUENCIA=ORG.EMPRESA\n" +
-                        "AND vw.fechavigencia=(select max(vwi.fechavigencia) \n" +
-                        "                      from vigenciasformaspagos vwi\n" +
-                        "                      where vwi.empleado=vw.empleado\n" +
-                        "                      and vwi.fechavigencia <= SOLUCIONESNODOS.FECHAPAGO)\n" +
-                        "AND vc.fechavigencia=(select max(vci.fechavigencia) \n" +
-                        "                      from vigenciascargos vci\n" +
-                        "                      where vci.empleado=vc.empleado\n" +
-                        "                      and vci.fechavigencia <= SOLUCIONESNODOS.FECHAPAGO)\n" +
-                        "AND SOLUCIONESNODOS.ESTADO='CERRADO'                      \n" +
-                        "group by \n" +
-                        "nvl(EMPLEADOCURRENT_PKG.FechaRetiro(EMPLEADOS.secuencia,sysdate),cortesprocesos_pkg.CapturarAnteriorCorte(EMPLEADOS.secuencia,1,sysdate+1)),\n" +
-                        "ADD_MONTHS(NVL(EMPLEADOCURRENT_PKG.FechaRetiro(EMPLEADOS.secuencia,sysdate),cortesprocesos_pkg.CapturarAnteriorCorte(EMPLEADOS.secuencia,1,sysdate+1)),-6)+1,\n" +
-                        "' FECHA DE CORTE ' ||' '|| TRIM(to_char (SOLUCIONESNODOS.FECHAPAGO,'fm dd-Mon-yyyy','nls_date_language=spanish')) ,\n" +
-                        "SOLUCIONESNODOS.FECHAPAGO ,\n" +
-                        "SOLUCIONESNODOS.CORTEPROCESO,\n" +
-                        "--segunda cabezera\n" +
-                        "PERSONAS.PRIMERAPELLIDO||' '||PERSONAS.SEGUNDOAPELLIDO||' '||PERSONAS.NOMBRE ,\n" +
-                        "EMPLEADOS.CODIGOEMPLEADO,\n" +
-                        "SOLUCIONESNODOS.EMPLEADO,\n" +
-                        "SOLUCIONESNODOS.FECHAPAGO\n" +
-                        "ORDER BY FECHACORTE2 \n" ;
+            String sqlQuery = "SELECT \n" +
+                            "SOLUCIONESNODOS.FECHAPAGO FECHACORTE,\n" +
+                            "TRIM(to_char(SOLUCIONESNODOS.FECHAPAGO,'dd-Mon','nls_date_language=spanish')) FechaCorte1,\n" +
+                            "trim(replace(to_char(sum (DECODE(SOLUCIONESNODOS.TIPO, \n" +
+                            "'PAGO', SOLUCIONESNODOS.VALOR, -SOLUCIONESNODOS.VALOR)),'$999G999G999G999G999G999'), ',','.')) NETO,\n" +
+                            "sum (DECODE(SOLUCIONESNODOS.TIPO, \n" +
+                            "'PAGO', SOLUCIONESNODOS.VALOR, -SOLUCIONESNODOS.VALOR)) NETO1\n" +
+                            "FROM \n" +
+                            "SOLUCIONESNODOS, CONCEPTOS, CONEXIONESKIOSKOS PARAMETROSREPORTES\n" +
+                            "WHERE\n" +
+                            "SOLUCIONESNODOS.CONCEPTO = CONCEPTOS.SECUENCIA\n" +
+                            "AND PARAMETROSREPORTES.EMPLEADO = SOLUCIONESNODOS.EMPLEADO\n" +
+                            "AND SOLUCIONESNODOS.TIPO IN ('PAGO', 'DESCUENTO')\n" +
+                            "AND PARAMETROSREPORTES.EMPLEADO = ? \n" +
+                            "AND (SOLUCIONESNODOS.FECHAPAGO BETWEEN \n" +
+                            "(ADD_MONTHS(NVL(EMPLEADOCURRENT_PKG.FechaRetiro(SOLUCIONESNODOS.EMPLEADO,sysdate),cortesprocesos_pkg.CapturarAnteriorCorte(SOLUCIONESNODOS.EMPLEADO,1,sysdate+1)),-6)+1) \n" +
+                            "AND nvl(EMPLEADOCURRENT_PKG.FechaRetiro(SOLUCIONESNODOS.EMPLEADO,sysdate),cortesprocesos_pkg.CapturarAnteriorCorte(SOLUCIONESNODOS.EMPLEADO,1,sysdate+1)))\n" +
+                            "and exists (select 'x' \n" +
+                            "            from cortesprocesos cp, procesos p, tipospagos tp \n" +
+                            "            where cp.proceso = p.secuencia and cp.secuencia = solucionesnodos.corteproceso\n" +
+                            "            and tp.secuencia = p.tipopago and tp.codigo=1 AND p.codigo in (1,5,10,4,21,80))  \n" +
+                            "AND SOLUCIONESNODOS.ESTADO='CERRADO' \n" +
+                            "group by \n" +
+                            "SOLUCIONESNODOS.FECHAPAGO, \n" +
+                            "TRIM(to_char(SOLUCIONESNODOS.FECHAPAGO,'dd-Mon','nls_date_language=spanish'))\n" +
+                            "ORDER BY SOLUCIONESNODOS.FECHAPAGO  \n";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpl);
             exLab = query.getResultList();

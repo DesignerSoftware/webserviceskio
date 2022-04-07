@@ -1225,14 +1225,170 @@ public class EnvioCorreo {
         }
         return envioCorreo;
     }
+    
+    /*Correo novedad de corrección de información que se envia a RRHH o Auditoria Módulo Vacaciones(No se incluye botón de Ir a Kiosco) */
+    public boolean enviarCorreoComunicado(
+            String asunto, String saludo, String mensaje, String nit, String cadena, String correoDestinatarioMain, String url) {
+        System.out.println("enviarCorreoComunicado()");
+        String servidorsmtp = getConfigCorreoServidorSMTP(nit, cadena);
+        String puerto = getConfigCorreo(nit, "PUERTO", cadena);
+        String autenticado = getConfigCorreo(nit, "AUTENTICADO", cadena);
+        String starttls = getConfigCorreo(nit, "STARTTLS", cadena);
+        String remitente = getConfigCorreo(nit, "REMITENTE", cadena);
+        String clave = getConfigCorreo(nit, "CLAVE", cadena);
+        //String destinatario = getCorreoSoporteKiosco(nit, cadena);
+        System.out.println("Datos enviarCorreoComunicado: " + servidorsmtp + ", puerto: " + puerto + ", autenticado: " + autenticado + ", starttls: " + starttls + ", remitente: " + remitente + ", clave: " + clave);
+        boolean envioCorreo = false;
+        Properties props = new Properties();
+        props.put("mail.smtp.host", servidorsmtp);
+        //props.put("mail.smtp.socketFactory.port", puerto);
+        //props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        // props.put("mail.smtp.auth", autenticado == "S" ? "true" : "false");
+        props.put("mail.smtp.auth", autenticado.equals("S") ? "true" : "false");
+        props.put("mail.smtp.starttls.enable", starttls.equals("S") ? "true" : "false");
+        props.put("mail.smtp.port", puerto);
+        Session session = Session.getInstance(props,
+                new javax.mail.Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(remitente, clave);
+            }
+        });
 
-    public static void main(String[] args) {
+        try {
+            Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(remitente));
+            //message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(destinatario));
+            message.addRecipients(Message.RecipientType.TO,
+                    InternetAddress.parse(correoDestinatarioMain));
+            /*message.addRecipients(Message.RecipientType.TO, InternetAddress.parse(correoDestinatarioMain));
+            message.addRecipients(Message.RecipientType.TO, InternetAddress.parse("mateoc@nomina.com.co"));
+            message.addRecipients(Message.RecipientType.TO, InternetAddress.parse("mateocoronadocardona@gmail.com"));*/
+            // if (correoUsuario != null) {
+            message.setSubject(asunto);
+
+// This mail has 2 part, the BODY and the embedded image
+            MimeMultipart multipart = new MimeMultipart("related");
+// first part (the html)
+            BodyPart messageBodyPart = new MimeBodyPart();
+            String htmlText
+                    = "<div style=\"margin: 0 auto; width: 607px; text-align: center;\n" +
+                    "      font-family: sans-serif;  justify-content: flex-start; border: #3b5998 solid 5px;\">\n" +
+                    "        <!-- <h3 >NÓMINA DESIGNER</h3> -->\n" +
+                    "        <img src=\"https://www.nomina.com.co/images/images/logoKiosco.png\" alt=\"\" style=\"width: 607px;\">\n" +
+                    "        <div style=\"margin: 0 auto; width: 550px; padding: 5px;\">\n" +
+                    "            <h3>Estimados Usuarios</h3>\n" +
+                    "            <p style=\"text-align:justify;font-family:sans-serif\">" +
+                    "                " + saludo  +
+                    "                " + mensaje +
+                    "            <div style=\"height: 10px;\">\n" +
+                    "                <a style=\"text-decoration:none;border-radius:5px;padding:11px 23px; color:white;background-color:#3498db\"\n" +
+                    "                    href='" + url + "' target=\"_blank\" data-saferedirecturl='" + url + "'>Ir a Kiosco</a>\n" +
+                    "                <!-- <a style=\"text-decoration:none;border-radius:5px;margin:11px 23px;color:white;background-color:#3498db\"\n" +
+                    "                    href=\"+urlKiosco+\" target=\"_blank\" data-saferedirecturl=\"+urlKiosco+\">Ir a Kiosco</a> -->\n" +
+                    "            </div>\n" +
+                    "            <div style=\"margin-bottom: 25px;\">\n" +
+                    "                <ul style=\"width: 100%; height: 20px; text-align: center; padding: 10px 0 0 0 !important;\">\n" +
+                    "                    <li style=\"display:inline;\"><a href=\"https://www.facebook.com/nominads\" target=\"_blank\"> <img\n" +
+                    "                                width=\"19px\" height=\"19px\"\n" +
+                    "                                src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/21113922.png\"\n" +
+                    "                                style=\"width: 19px; height: 19px;  \n" +
+                    "                            color: #fff;\n" +
+                    "                            background: #000;\n" +
+                    "                            padding: 10px 15px;\n" +
+                    "                            text-decoration: none;\n" +
+                    "                            background: #3b5998;\"></a>\n" +
+                    "                    </li>\n" +
+                    "                    <li style=\"display:inline;\"><a href=\"https://twitter.com/NominaDesigner\" target=\"_blank\"\n" +
+                    "                            class=\"icon-twitter\"> <img width=\"19px\" height=\"19px\"\n" +
+                    "                                src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733635.png\"\n" +
+                    "                                style=\"width: 19px; height: 19px;\n" +
+                    "                            color: #fff;\n" +
+                    "                            background: #000;\n" +
+                    "                            padding: 10px 15px;\n" +
+                    "                            text-decoration: none;\n" +
+                    "                            -webkit-transition: all 300ms ease;\n" +
+                    "                            -o-transition: all 300ms ease;\n" +
+                    "                            transition: all 300ms ease;\n" +
+                    "                            background: #00abf0;\"></a>\n" +
+                    "                    </li>\n" +
+                    "                    <li style=\"display:inline;\"><a href=\"https://www.nomina.com.co/\" target=\"_blank\"\n" +
+                    "                            class=\"icon-nomina\">\n" +
+                    "                            <img width=\"19px\" height=\"19px\"\n" +
+                    "                                src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/3522533.png\"\n" +
+                    "                                style=\"width: 19px; height: 19px; display: inline-block;\n" +
+                    "                            color: #fff;\n" +
+                    "                            background: #000;\n" +
+                    "                            padding: 10px 15px;\n" +
+                    "                            text-decoration: none;\n" +
+                    "                            -webkit-transition: all 300ms ease;\n" +
+                    "                            -o-transition: all 300ms ease;\n" +
+                    "                            transition: all 300ms ease;\n" +
+                    "                            background: #0ad2ec;\"></a>\n" +
+                    "                    </li>\n" +
+                    "                    <li style=\"display:inline;\"><a href=\"https://www.youtube.com/user/nominads\" target=\"_blank\"\n" +
+                    "                            class=\"icon-youtube\"> <img width=\"19px\" height=\"19px\"\n" +
+                    "                                src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733646.png\"\n" +
+                    "                                style=\"width: 19px; height: 19px; display: inline-block;\n" +
+                    "                            color: #fff;\n" +
+                    "                            background: #000;\n" +
+                    "                            padding: 10px 15px;\n" +
+                    "                            text-decoration: none;\n" +
+                    "                            -webkit-transition: all 300ms ease;\n" +
+                    "                            -o-transition: all 300ms ease;\n" +
+                    "                            transition: all 300ms ease;\n" +
+                    "                            background: #ce1010;\"></a>\n" +
+                    "                    </li>\n" +
+                    "                </ul>\n" +
+                    "            </div>\n" +
+                    "            <p style=\"font-size: 0.8rem; padding-top: 10px;\">Este correo se ha generado automáticamente desde Kiosco Nómina Designer.</p>\n" +
+                    "        </div>\n" +
+                    "        <img src=\"https://www.nomina.com.co/images/images/logoCorreoHeader.png\" alt=\"\" style=\"padding: 0px 0px;\">\n" +
+                    "    </div>"
+                    /*+ " <br>"
+                    + "  <p style=\"color: #55a532;\" >Imprimir en caso de ser estrictamente necesario, el medio ambiente se lo agradecerá. Ayudemos a evitar el calentamiento global.</p>\n" 
+                    + " <br>"
+                    + "   <p> Confidencialidad: CI2 S.A  es una empresa consiente de la importancia de la información en cuanto a su "
+                    + "disponibilidad, Integridad y confidencialidad, por ello busca su protección a través de sus directrices de gestión "
+                    + "de seguridad de la información. Los datos contenidos en  este correo electrónico de CI2 S.A  y en todos sus archivos "
+                    + "anexos, es confidencial y/o privilegiada y sólo puede ser utilizada por la(s) persona(s) a la(s) cual(es) está dirigida. "
+                    + "Si usted no es el destinatario autorizado, cualquier modificación, retención, difusión, distribución o copia total o "
+                    + "parcial de este mensaje y/o de la información contenida en el mismo y/o en sus archivos anexos está prohibida y son "
+                    + "sancionadas por la ley. Si por error recibe este mensaje, le ofrecemos disculpas, sírvase borrarlo de inmediato, "
+                    + "notificarle de su error a la persona que lo envió y abstenerse de divulgar su contenido y anexos. </p>"*/
+                    ;
+            messageBodyPart.setContent(htmlText, "text/html");
+// add it
+            multipart.addBodyPart(messageBodyPart);
+// second part (the image)
+            messageBodyPart = new MimeBodyPart();
+            //DataSource fds = new FileDataSource("C:\\DesignerRHN12\\Basico12\\fotos_empleados\\headerlogocorreoKiosko.png");
+            String rutaImagenes = getPathFoto(nit, cadena);
+            System.out.println("RutaImagenes: " + rutaImagenes + "headerlogocorreoKiosko.png");
+            DataSource fds = new FileDataSource(rutaImagenes + "headerlogocorreoKiosko.png");
+            messageBodyPart.setDataHandler(new DataHandler(fds));
+            messageBodyPart.setHeader("Content-ID", "<image>");
+// add image to the multipart
+            multipart.addBodyPart(messageBodyPart);
+// put everything together
+            message.setContent(multipart);
+// Send the actual HTML message, as big as you like
+            Transport.send(message);
+            System.out.println("Mail sent successfully!!! To:" + correoDestinatarioMain);
+            envioCorreo = true;
+        } catch (MessagingException e) {
+            envioCorreo = false;
+            throw new RuntimeException(e);
+        }
+        return envioCorreo;
+    }
+
+    //public static void main(String[] args) {
         /*new EnvioCorreo().enviarCorreo("", "thalia.manrike@gmail.com", "Prueba 2", 
                 "Esto es un correo de prueba", "");*/
         //new EnvioCorreo().pruebaEnvio3();
 //       new EnvioCorreo().pruebaEnvio2();
         //new EnvioCorreo().pruebaEnvio();
-    }
+    //}
 
     public String getEsquema(String nitEmpresa, String cadena) {
         System.out.println("Parametros getEsquema(): nitempresa: " + nitEmpresa + ", cadena: " + cadena);

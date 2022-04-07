@@ -6,6 +6,7 @@
 package co.com.designer.services;
 
 import co.com.designer.kiosko.entidades.RrHh;
+import co.com.designer.kiosko.generales.EnvioCorreo;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -13,8 +14,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,6 +62,44 @@ public class RhFacadeREST {
         String unidadPersistencia = persistence;
         EntityManager em = Persistence.createEntityManagerFactory(unidadPersistencia).createEntityManager();
         return em;
+    }
+
+    public String getCorreosXempleadosActivos(String nitEmpresa, String cadena, String esquema) {
+        System.out.println("getCorreosXempleadosActivos()");
+        List emailSoporte = null;
+        String correoDestinatarios = "";
+        try {
+            setearPerfil(esquema, cadena);
+            String sqlQuery = "SELECT P.EMAIL \n"
+                    + "FROM EMPLEADOS E, PERSONAS P, EMPRESAS EM\n"
+                    + "WHERE \n"
+                    + "P.SECUENCIA=E.PERSONA \n"
+                    + "AND E.EMPRESA = EM.SECUENCIA\n"
+                    + "AND EM.NIT = 860005114\n"
+                    + "AND EMPLEADOCURRENT_PKG.TIPOTRABAJADORCORTE(E.SECUENCIA, SYSDATE)='ACTIVO'\n"
+                    + "AND P.EMAIL IS NOT NULL ";
+            //System.out.println("Query: " + sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, nitEmpresa);
+            emailSoporte = query.getResultList();
+            Iterator<String> it = emailSoporte.iterator();
+            //System.out.println("obtener " + correoDestinatarioMain.get(0));
+            System.out.println("size: " + emailSoporte.size());
+            while (it.hasNext()) {
+                String correoenviar = it.next();
+                //System.out.println("correo auditoria: " + correoenviar);
+                correoDestinatarios += correoenviar;
+                if (it.hasNext()) {
+                    correoDestinatarios += ",";
+                }
+                //c.pruebaEnvio2("smtp.gmail.com","587","pruebaskiosco534@gmail.com","Nomina01", "S", correoenviar,
+            }
+            //emailSoporte =  query.getSingleResult().toString();
+            System.out.println("Emails soporte: " + correoDestinatarios);
+        } catch (Exception e) {
+            System.out.println("Error: getCorreoRecursosHumanos: " + e.getMessage());
+        }
+        return correoDestinatarios;
     }
 
     public String getDocumentoPorSeudonimo(String seudonimo, String nitEmpresa, String cadena) {
@@ -223,10 +264,10 @@ public class RhFacadeREST {
         }
         return conteo > 0;
     }
-    
+
     public boolean deleteMensaje(String seudonimo, String secuenciamsj, String nit, String cadena, String esquema) {
-        System.out.println("Parametros deleteMensaje(): seudonimo: " + seudonimo + ", nit: " + nit + 
-                ", cadena: " + cadena + ", secuenciamsj: " + secuenciamsj);
+        System.out.println("Parametros deleteMensaje(): seudonimo: " + seudonimo + ", nit: " + nit
+                + ", cadena: " + cadena + ", secuenciamsj: " + secuenciamsj);
         int conteo = 0;
         try {
             //String esquema = getEsquema(nit, cadena);
@@ -312,7 +353,7 @@ public class RhFacadeREST {
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery, RrHh.class);
             query.setParameter(1, nitEmpresa);
             s = query.getResultList();
-            s.forEach(System.out::println);
+            //s.forEach(System.out::println);
             return Response.status(Response.Status.OK).entity(s).build();
         } catch (Exception ex) {
             System.out.println("Error " + this.getClass().getName() + "getDatosEmpleadoNit: " + ex);
@@ -320,7 +361,7 @@ public class RhFacadeREST {
         }
 
     }
-    
+
     @GET
     @Path("/consultarmsjActivos")
     @Produces({MediaType.APPLICATION_JSON})
@@ -367,12 +408,13 @@ public class RhFacadeREST {
             @QueryParam("fechainicio") String fechainicial, @QueryParam("fechafin") String fechaFin,
             @QueryParam("titulo") String titulo, @QueryParam("mensaje") String mensaje,
             @QueryParam("anexoadjunto") String anexoAdjunto, @QueryParam("extenciondjunto") String extenciondjunto,
-            @QueryParam("cadena") String cadena) {
-        System.out.println("Token recibido crearNovedadAusentismo: " + token);
-        System.out.println("parametros: crearNovedadAusentismo{ seudonimo: " + seudonimo + ", nitempresa: " + nit + ","
+            @QueryParam("cadena") String cadena, @QueryParam("correo") String correo,
+            @QueryParam("url") String url ) {
+        System.out.println("Token recibido crearMensajeRh: " + token);
+        System.out.println("parametros: crearMensajeRh{ seudonimo: " + seudonimo + ", nitempresa: " + nit + ","
                 + "\n fechainicio: " + fechainicial + ", fechaFin: " + fechaFin + ", titulo: " + titulo
                 + " anexoAdjunto: " + anexoAdjunto + " mensaje: " + mensaje + ", cadena: " + cadena
-                + " extenciondjunto: " + extenciondjunto);
+                + " extenciondjunto: " + extenciondjunto + " correo: " + correo);
         boolean soliciCreada = false;
         String esquema = null;
         String nombreAnexo = null; // nombre con el que debe guardarse el campo del documento anexo
@@ -386,23 +428,50 @@ public class RhFacadeREST {
         try {
             Date fecha = new Date();
             String fechaGeneracion = new SimpleDateFormat("ddMMyyyy HHmmss").format(fecha);
+            String fechaGeneracion1 = new SimpleDateFormat("dd/MM/yyyy HH:mm").format(fecha);
             System.out.println("fecha: " + fechaGeneracion);
             if (!anexoAdjunto.contains("N") || !anexoAdjunto.equals("N")) {
                 nombreAnexo = nit + "_anexo_" + fechaGeneracion.replaceAll(" ", "") + extenciondjunto;
             }
 
-            // Registro en tabla KIOSOLICIAUSENTISMOS
+            // Registro en tabla KIOMENSAJESRRHH
             if (creaMensaje(seudonimo, nit, nombreAnexo, fechaGeneracion, fechainicial, fechaFin,
                     titulo, mensaje, cadena, esquema)) {
-                soliciCreada = true;
-                System.out.println("Mensaje creado.");
-                mensaje = "Mensaje Creado con Exito.";
+                //ENVIO DE CORREO 
+                if (correo == "S" || correo.equals("S")) {
+                    String mensajeCorreo = "Nos permitimos informar que se ha reportado el siguiente comunicado: "
+                            + "<br><br><b>"
+                            + titulo + ":</b> " 
+                            + mensaje;
+                    System.out.println("Parametros enviaKIOMENSAJESRRHH(): seudonimo " + seudonimo + ", nit: " + nit + ", cadena: " + cadena);
+                    String asunto = "¡Nuevo Comunicado Disponible! " + fechaGeneracion1;
+                    try {
+                        EnvioCorreo e = new EnvioCorreo();
+                        //if (e.enviarCorreoInformativo("Módulo Kiosco: Reporte de corrección de información de "+nombreEmpl+" "+fecha,
+                        if (e.enviarCorreoComunicado(asunto, "Estimados Colaboradores:", mensajeCorreo,
+                                nit, cadena, getCorreosXempleadosActivos(nit, cadena, esquema),url)) {
+                            soliciCreada = true;
+                            mensaje = "Mensaje Creado con Exito y Envío de correo.";
+                            System.out.println("Mensaje creado.");
+                        } else {
+                            soliciCreada = false;
+                            mensaje = "Se presento un inconveniente al enviar el correo.";
+                        }
+                    } catch (Exception ex) {
+                        Logger.getLogger(EmpleadosFacadeREST.class.getName()).log(Level.SEVERE, null, ex);
+                        mensaje = "Ha ocurrido un error, por favor intentalo de nuevo más tarde.";
+                    }
+                } else {
+                    soliciCreada = true;
+                    mensaje = "Mensaje Creado con Exito.";
+                    System.out.println("Mensaje creado.");
+                }
             } else {
                 System.out.println("Ha ocurrido un error al momento de crear el registro");
                 mensaje = "Ha ocurrido un error y no fue posible crear el comunicado, por favor inténtelo de nuevo más tarde.";
             }
         } catch (Exception e) {
-            System.out.println("Error: " + this.getClass().getName() + ".crearNovedadAusentismo()");
+            System.out.println("Error: " + this.getClass().getName() + ".crearMensajeRh()");
         }
         // Respuesta
         JSONObject obj = new JSONObject();
@@ -478,7 +547,7 @@ public class RhFacadeREST {
         }
         return obj.toString();
     }
-    
+
     @POST
     @Path("/deleteMensajeRh")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
@@ -488,7 +557,7 @@ public class RhFacadeREST {
             @QueryParam("cadena") String cadena, @QueryParam("secuenciamsj") String secuenciamsj) {
         System.out.println("Token recibido deleteMensajeRh: " + token);
         System.out.println("parametros: deleteMensajeRh{ seudonimo: " + seudonimo + ", nitempresa: " + nit + ","
-                + ", cadena: " + cadena +" secuenciamsj: " + secuenciamsj);
+                + ", cadena: " + cadena + " secuenciamsj: " + secuenciamsj);
         boolean soliciCreada = false;
         String esquema = null;
         String mensaje = null;

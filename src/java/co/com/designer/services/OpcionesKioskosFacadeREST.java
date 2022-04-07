@@ -734,7 +734,9 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
                               "kc.estado estado \n" +
                               "from kiovigenciascir kc  \n" +
                               "where kc.opcionkioskoapp = (select secuencia from opcioneskioskosapp where codigo = ? and empresa =kc.empresa) \n" +
-                              "and kc.empresa = (select secuencia from empresas where nit=?)";
+                              "and kc.empresa = (select secuencia from empresas where nit=?)" +
+                              "and kc.estado = 'S' " +
+                              "ORDER BY ano";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery, KioVigenciasCIR.class);
             query.setParameter(1, opcionkioskoapp);
             query.setParameter(2, nitEmpresa);
