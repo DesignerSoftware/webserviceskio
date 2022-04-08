@@ -74,8 +74,8 @@ public class RhFacadeREST {
                     + "FROM EMPLEADOS E, PERSONAS P, EMPRESAS EM\n"
                     + "WHERE \n"
                     + "P.SECUENCIA=E.PERSONA \n"
-                    + "AND E.EMPRESA = EM.SECUENCIA\n"
-                    + "AND EM.NIT = 860005114\n"
+                    + "AND E.EMPRESA = EM.SECUENCIA \n"
+                    + "AND EM.NIT = ? \n"
                     + "AND EMPLEADOCURRENT_PKG.TIPOTRABAJADORCORTE(E.SECUENCIA, SYSDATE)='ACTIVO'\n"
                     + "AND P.EMAIL IS NOT NULL ";
             //System.out.println("Query: " + sqlQuery);
@@ -384,7 +384,7 @@ public class RhFacadeREST {
                     + "WHERE \n"
                     + "rh.empresa = em.secuencia\n"
                     + "and em.nit = ?\n"
-                    + "AND RH.FECHAINICIO <= SYSDATE\n" 
+                    + "AND RH.FECHAINICIO <= SYSDATE\n"
                     + "AND RH.FECHAFIN >= SYSDATE\n "
                     + "AND RH.ESTADO = 'ACTIVO' ";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery, RrHh.class);
@@ -409,7 +409,7 @@ public class RhFacadeREST {
             @QueryParam("titulo") String titulo, @QueryParam("mensaje") String mensaje,
             @QueryParam("anexoadjunto") String anexoAdjunto, @QueryParam("extenciondjunto") String extenciondjunto,
             @QueryParam("cadena") String cadena, @QueryParam("correo") String correo,
-            @QueryParam("url") String url ) {
+            @QueryParam("url") String url) {
         System.out.println("Token recibido crearMensajeRh: " + token);
         System.out.println("parametros: crearMensajeRh{ seudonimo: " + seudonimo + ", nitempresa: " + nit + ","
                 + "\n fechainicio: " + fechainicial + ", fechaFin: " + fechaFin + ", titulo: " + titulo
@@ -441,7 +441,7 @@ public class RhFacadeREST {
                 if (correo == "S" || correo.equals("S")) {
                     String mensajeCorreo = "Nos permitimos informar que se ha reportado el siguiente comunicado: "
                             + "<br><br><b>"
-                            + titulo + ":</b> " 
+                            + titulo + ":</b> "
                             + mensaje;
                     System.out.println("Parametros enviaKIOMENSAJESRRHH(): seudonimo " + seudonimo + ", nit: " + nit + ", cadena: " + cadena);
                     String asunto = "¡Nuevo Comunicado Disponible! " + fechaGeneracion1;
@@ -449,7 +449,7 @@ public class RhFacadeREST {
                         EnvioCorreo e = new EnvioCorreo();
                         //if (e.enviarCorreoInformativo("Módulo Kiosco: Reporte de corrección de información de "+nombreEmpl+" "+fecha,
                         if (e.enviarCorreoComunicado(asunto, "Estimados Colaboradores:", mensajeCorreo,
-                                nit, cadena, getCorreosXempleadosActivos(nit, cadena, esquema),url)) {
+                                nit, cadena, getCorreosXempleadosActivos(nit, cadena, esquema), url)) {
                             soliciCreada = true;
                             mensaje = "Mensaje Creado con Exito y Envío de correo.";
                             System.out.println("Mensaje creado.");
@@ -690,5 +690,64 @@ public class RhFacadeREST {
         Response.ResponseBuilder responseBuilder = Response.ok((Object) file);
         responseBuilder.header("Content-Disposition", "attachment; filename=\"" + anexo + "\"");
         return responseBuilder.build();
+    }
+
+    @GET
+    @Path("/reenviarcorreo")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public String reenviarCorreo(
+            @HeaderParam("authorization") String token,
+            @QueryParam("seudonimo") String seudonimo, @QueryParam("nitempresa") String nit,
+            @QueryParam("titulo") String titulo, @QueryParam("mensaje") String mensaje,
+            @QueryParam("cadena") String cadena, @QueryParam("url") String url) {
+        System.out.println("Token recibido reenviarCorreo: " + token);
+        System.out.println("parametros: reenviarCorreo{ seudonimo: " + seudonimo + ", nitempresa: " + nit + ","
+                + ", titulo: " + titulo + " mensaje: " + mensaje + ", cadena: " + cadena);
+        boolean sendEmail = false;
+        String esquema = null;
+        try {
+            //esquema = getEsquema(esquema, cadena);
+            esquema = getEsquema(nit, cadena);
+        } catch (Exception e) {
+            System.out.println("Error: No se pudo consultar esquema. " + e.getMessage());
+        }
+
+        try {
+            Date fecha = new Date();
+            String fechaGeneracion = new SimpleDateFormat("dd/MM/yyyy HH:mm").format(fecha);
+            //ENVIO DE CORREO 
+            String mensajeCorreo = "Nos permitimos informar que se ha reportado el siguiente comunicado: "
+                    + "<br><br><b>" + titulo + ":</b> "
+                    + mensaje;
+            String asunto = "¡Nuevo Comunicado Disponible! " + fechaGeneracion;
+            try {
+                EnvioCorreo e = new EnvioCorreo();
+                //if (e.enviarCorreoInformativo("Módulo Kiosco: Reporte de corrección de información de "+nombreEmpl+" "+fecha,
+                if (e.enviarCorreoComunicado(asunto, "Estimados Colaboradores:", mensajeCorreo,
+                        nit, cadena, getCorreosXempleadosActivos(nit, cadena, esquema), url)) {
+                    sendEmail = true;
+                    mensaje = "Mensaje Enviado con Exito.";
+                    System.out.println("Mensaje creado.");
+                } else {
+                    sendEmail = false;
+                    mensaje = "Se presento un inconveniente al enviar el correo.";
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(EmpleadosFacadeREST.class.getName()).log(Level.SEVERE, null, ex);
+                mensaje = "Ha ocurrido un error, por favor intentalo de nuevo más tarde.";
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error: " + this.getClass().getName() + ".crearMensajeRh()");
+        }
+        // Respuesta
+        JSONObject obj = new JSONObject();
+        try {
+            obj.put("correoEnviado", sendEmail);
+            obj.put("mensaje", mensaje);
+        } catch (JSONException ex) {
+            Logger.getLogger(EmpleadosFacadeREST.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return obj.toString();
     }
 }

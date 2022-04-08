@@ -23,6 +23,7 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.NoSuchProviderException;
 import javax.mail.PasswordAuthentication;
+import javax.mail.SendFailedException;
 import javax.mail.Transport;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
@@ -1375,10 +1376,13 @@ public class EnvioCorreo {
             Transport.send(message);
             System.out.println("Mail sent successfully!!! To:" + correoDestinatarioMain);
             envioCorreo = true;
+        } catch (SendFailedException e) {
+            System.out.println("No recipient addresses: No hay correos para enviar ");
+            envioCorreo = false;
         } catch (MessagingException e) {
             envioCorreo = false;
             throw new RuntimeException(e);
-        }
+        } 
         return envioCorreo;
     }
 
