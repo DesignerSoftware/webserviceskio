@@ -39,6 +39,8 @@ import javax.persistence.Query;
  */
 public class EnvioCorreo {
     
+    private String urlKio ="https://www.nomina.com.co/images/images/kiosko/";
+    
     protected EntityManager getEntityManager() {
         String unidadPersistencia="wsreportePU";
         EntityManager em = Persistence.createEntityManagerFactory(unidadPersistencia).createEntityManager();
@@ -257,7 +259,7 @@ public class EnvioCorreo {
                     = 
                     "<div style=\"background: #00223c;\">\n"
                     + "<div\n"
-                    + "        style=\"padding:10%;color:white; background: #00223c;background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url(https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/imgcorreoreporte.jpg/);  min-height:100%;background-size:cover\" !important;>\n"
+                    + "        style=\"padding:10%;color:white; background: #00223c;background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url("+urlKio+"imgcorreoreporte.jpg);  min-height:100%;background-size:cover\" !important;>\n"
                     + "        <table style=\"max-width:90%;padding:10%;margin:0 auto;border-collapse:collapse\">\n"
                     + "            <tbody>\n"
                     + "                <tr >\n"
@@ -267,7 +269,8 @@ public class EnvioCorreo {
                     + "                                data-saferedirecturl="+urlKiosco+">\n"
                     + "\n"
                     + "                                <img width=\"80px\" height=\"80px\" style=\"display:block;margin:auto auto 0px auto\"\n"
-                    + "                                    src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/kioscologopro.png\">\n"
+                    //+ "                                    src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/kioscologopro.png\">\n"
+                    + "                                    src=\""+urlKio+"kioscologopro.png\">\n"
                     //+ "                                    src=\"https://designer.ci2.co:8181/wsreporte/webresources/conexioneskioskos/obtenerLogo/LogoCI2Grande.png?nit=830056149&cadena=DEFAULT1\">\n"
                     + "                            </a>\n"
                     + "                        </div>\n"
@@ -296,7 +299,7 @@ public class EnvioCorreo {
                     + "                                <br>                                                                \n"
                     + "                                    <ul style=\"width: 100%; height: 20px; text-align: center; padding: 10px 0 0 0 !important;\">\n"
                     + "                <li style=\"background: #3b5998; display:inline;\"><a href=\"https://www.facebook.com/nominads\" target=\"_blank\"\n"
-                    + "                    > <img width=\"19px\" height=\"19px\" src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/21113922.png\" style=\"width: 19px; height: 19px;  \n"
+                    + "                    > <img width=\"19px\" height=\"19px\" src=\""+urlKio+"21113922.png\" style=\"width: 19px; height: 19px;  \n"
                     + "                     color: #fff;\n"
                     + "                     background: #000;\n"
                     + "                     padding: 10px 15px;\n"
@@ -304,7 +307,7 @@ public class EnvioCorreo {
                     + "                     \n"
                     + "                     background: #3b5998;\"></a></li>"
                     + "                                        <li style=\"background: #00abf0; display:inline;\"><a href=\"https://twitter.com/NominaDesigner\" target=\"_blank\"\n"
-                    + "                                            class=\"icon-twitter\"> <img width=\"19px\" height=\"19px\" src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733635.png\" style=\"width: 19px; height: 19px;\n"
+                    + "                                            class=\"icon-twitter\"> <img width=\"19px\" height=\"19px\" src=\""+urlKio+"733635.png\" style=\"width: 19px; height: 19px;\n"
                     + "                                            color: #fff;\n"
                     + "                                            background: #000;\n"
                     + "                                            padding: 10px 15px;\n"
@@ -314,7 +317,7 @@ public class EnvioCorreo {
                     + "                                            transition: all 300ms ease;\n"
                     + "                                            background: #00abf0;\"></a></li>\n"
                     + "                                        <li style=\"background: #0ad2ec; display:inline;\"><a href=\"https://www.nomina.com.co/\" target=\"_blank\"\n"
-                    + "                                                class=\"icon-nomina\"> <img width=\"19px\" height=\"19px\" src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/3522533.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
+                    + "                                                class=\"icon-nomina\"> <img width=\"19px\" height=\"19px\" src=\""+urlKio+"3522533.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
                     + "                                                color: #fff;\n"
                     + "                                                background: #000;\n"
                     + "                                                padding: 10px 15px;\n"
@@ -324,7 +327,7 @@ public class EnvioCorreo {
                     + "                                                transition: all 300ms ease;\n"
                     + "                                                background: #0ad2ec;\"></a></li>\n"
                     + "                                        <li style=\"background: #ce1010; display:inline;\"><a href=\"https://www.youtube.com/user/nominads\" target=\"_blank\"\n"
-                    + "                                                    class=\"icon-youtube\"> <img width=\"19px\" height=\"19px\" src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733646.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
+                    + "                                                    class=\"icon-youtube\"> <img width=\"19px\" height=\"19px\" src=\""+urlKio+"733646.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
                     + "                                                    color: #fff;\n"
                     + "                                                    background: #000;\n"
                     + "                                                    padding: 10px 15px;\n"
@@ -645,7 +648,7 @@ public class EnvioCorreo {
             String starttls, String remitente, String clave, String destinatario,
             String asunto, String mensaje, String urlKiosco, String nit, String cadena) {
         System.out.println("Parametros enviarCorreoVacaciones(): servidorsmto: " + servidorsmtp + ", puerto: " + puerto + ", autenticado: " + autenticado + ", starttls: " + starttls + ""
-                + "\n remitente: " + remitente + ", clave: " + clave + ", destinatario: " + destinatario + ", asunto: " + asunto + ", nit: " + nit + ", cadena: " + cadena);
+                + "\n remitente: " + remitente + ", clave: " + clave + ", destinatario: " + destinatario + ", asunto: " + asunto + ", nit: " + nit + ", cadena: " + cadena+ ", urlKIOSKO: " + urlKiosco);
         boolean envioCorreo = false;
         Properties props = new Properties();
         props.put("mail.smtp.host", servidorsmtp);
@@ -684,7 +687,7 @@ public class EnvioCorreo {
                     + "</style>"
                     + "<div style=\"background: #00223c;\">\n"
                     + "<div\n"
-                    + "        style=\"padding:10%;color:white; background: #00223c;background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url(https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/imgcorreoreporte.jpg/);  min-height:100%;background-size:cover\">\n"
+                    + "        style=\"padding:10%;color:white; background: #00223c;background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url("+urlKio+"imgcorreoreporte.jpg);  min-height:100%;background-size:cover\">\n"
                     + "        <table style=\"max-width:90%;padding:10%;margin:0 auto;border-collapse:collapse\">\n"
                     + "            <tbody>\n"
                     + "                <tr >\n"
@@ -694,7 +697,7 @@ public class EnvioCorreo {
                     + "                                data-saferedirecturl=" + urlKiosco + ">\n"
                     + "\n"
                     + "                                <img width=\"80px\"  height=\"80px\" style=\"display:block;margin:auto auto 0px auto\"\n"
-                    + "                                    src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/kioscologopro.png\">\n"
+                    + "                                    src=\""+urlKio+"kioscologopro.png\">\n"
                     //+ "                                    src=\"https://designer.ci2.co:8181/wsreporte/webresources/conexioneskioskos/obtenerLogo/LogoCI2Grande.png?nit=830056149&cadena=DEFAULT1\">\n"
                     + "                            </a>\n"
                     + "                        </div>\n"
@@ -723,7 +726,7 @@ public class EnvioCorreo {
                     + "                                <br>                                                                \n"
                     + "                                    <ul style=\"width: 100%; height: 20px; text-align: center; padding: 10px 0 0 0 !important;\">\n"
                     + "                <li style=\"background: #3b5998; display:inline;\"><a href=\"https://www.facebook.com/nominads\" target=\"_blank\"\n"
-                    + "                    > <img width=\"19px\" height=\"19px\"  src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/21113922.png\" style=\"width: 19px; height: 19px;  \n"
+                    + "                    > <img width=\"19px\" height=\"19px\"  src=\""+urlKio+"21113922.png\" style=\"width: 19px; height: 19px;  \n"
                     + "                     color: #fff;\n"
                     + "                     background: #000;\n"
                     + "                     padding: 10px 15px;\n"
@@ -731,7 +734,7 @@ public class EnvioCorreo {
                     + "                     \n"
                     + "                     background: #3b5998;\"></a></li>"
                     + "                                        <li style=\"background: #00abf0; display:inline;\"><a href=\"https://twitter.com/NominaDesigner\" target=\"_blank\"\n"
-                    + "                                            class=\"icon-twitter\"> <img width=\"19px\" height=\"19px\"  src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733635.png\" style=\"width: 19px; height: 19px;\n"
+                    + "                                            class=\"icon-twitter\"> <img width=\"19px\" height=\"19px\"  src=\""+urlKio+"733635.png\" style=\"width: 19px; height: 19px;\n"
                     + "                                            color: #fff;\n"
                     + "                                            background: #000;\n"
                     + "                                            padding: 10px 15px;\n"
@@ -741,7 +744,7 @@ public class EnvioCorreo {
                     + "                                            transition: all 300ms ease;\n"
                     + "                                            background: #00abf0;\"></a></li>\n"
                     + "                                        <li style=\"background: #0ad2ec; display:inline;\"><a href=\"https://www.nomina.com.co/\" target=\"_blank\"\n"
-                    + "                                                class=\"icon-nomina\"> <img width=\"19px\" height=\"19px\"  src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/3522533.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
+                    + "                                                class=\"icon-nomina\"> <img width=\"19px\" height=\"19px\"  src=\""+urlKio+"3522533.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
                     + "                                                color: #fff;\n"
                     + "                                                background: #000;\n"
                     + "                                                padding: 10px 15px;\n"
@@ -751,7 +754,7 @@ public class EnvioCorreo {
                     + "                                                transition: all 300ms ease;\n"
                     + "                                                background: #0ad2ec;\"></a></li>\n"
                     + "                                        <li style=\"background: #ce1010; display:inline;\"><a href=\"https://www.youtube.com/user/nominads\" target=\"_blank\"\n"
-                    + "                                                    class=\"icon-youtube\"> <img width=\"19px\" height=\"19px\"  src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733646.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
+                    + "                                                    class=\"icon-youtube\"> <img width=\"19px\" height=\"19px\"  src=\""+urlKio+"733646.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
                     + "                                                    color: #fff;\n"
                     + "                                                    background: #000;\n"
                     + "                                                    padding: 10px 15px;\n"
@@ -849,7 +852,7 @@ public class EnvioCorreo {
                     + "</style>"
                     + "<div style=\"background: #00223c;\">\n"
                     + "<div\n"
-                    + "        style=\"padding:10%;color:white; background: #00223c;background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url(https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/imgcorreoreporte.jpg/); min-height:100%;background-size:cover\">\n"
+                    + "        style=\"padding:10%;color:white; background: #00223c;background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url("+urlKio+"imgcorreoreporte.jpg); min-height:100%;background-size:cover\">\n"
                     + "        <table style=\"max-width:90%;padding:10%;margin:0 auto;border-collapse:collapse\">\n"
                     + "            <tbody>\n"
                     + "                <tr >\n"
@@ -859,7 +862,8 @@ public class EnvioCorreo {
                     + "                                data-saferedirecturl=" + urlKiosco + ">\n"
                     + "\n"
                     + "                                <img width=\"80px\" height=\"80px\" style=\"display:block;margin:auto auto 0px auto\"\n"
-                    + "                                    src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/kioscologopro.png\">\n"
+                    + "                                    src=\""+urlKio+"kioscologopro.png\">\n"
+//                    + "                                    alt=\""+urlKio+"conexioneskioskos/obtenerFoto/kioscologopro.png\">\n"
                     //+ "                                    src=\"https://designer.ci2.co:8181/wsreporte/webresources/conexioneskioskos/obtenerLogo/LogoCI2Grande.png?nit=830056149&cadena=DEFAULT1\">\n"
                     + "                            </a>\n"
                     + "                        </div>\n"
@@ -890,7 +894,7 @@ public class EnvioCorreo {
                     + "                                <br>                                                                \n"
                     + "                                    <ul style=\"width: 100%; height: 20px; text-align: center; padding: 10px 0 0 0 !important;\">\n"
                     + "                <li style=\"background: #3b5998; display:inline;\"><a href=\"https://www.facebook.com/nominads\" target=\"_blank\"\n"
-                    + "                    > <img width=\"19px\" height=\"19px\"  src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/21113922.png\" style=\"width: 19px; height: 19px;  \n"
+                    + "                    > <img width=\"19px\" height=\"19px\"  src=\""+urlKio+"21113922.png\" style=\"width: 19px; height: 19px;  \n"
                     + "                     color: #fff;\n"
                     + "                     background: #000;\n"
                     + "                     padding: 10px 15px;\n"
@@ -898,7 +902,7 @@ public class EnvioCorreo {
                     + "                     \n"
                     + "                     background: #3b5998;\"></a></li>"
                     + "                                        <li style=\"background: #00abf0; display:inline;\"><a href=\"https://twitter.com/NominaDesigner\" target=\"_blank\"\n"
-                    + "                                            class=\"icon-twitter\"> <img width=\"19px\" height=\"19px\"  src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733635.png\" style=\"width: 19px; height: 19px;\n"
+                    + "                                            class=\"icon-twitter\"> <img width=\"19px\" height=\"19px\"  src=\""+urlKio+"733635.png\" style=\"width: 19px; height: 19px;\n"
                     + "                                            color: #fff;\n"
                     + "                                            background: #000;\n"
                     + "                                            padding: 10px 15px;\n"
@@ -908,7 +912,7 @@ public class EnvioCorreo {
                     + "                                            transition: all 300ms ease;\n"
                     + "                                            background: #00abf0;\"></a></li>\n"
                     + "                                        <li style=\"background: #0ad2ec; display:inline;\"><a href=\"https://www.nomina.com.co/\" target=\"_blank\"\n"
-                    + "                                                class=\"icon-nomina\"> <img width=\"19px\" height=\"19px\"  src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/3522533.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
+                    + "                                                class=\"icon-nomina\"> <img width=\"19px\" height=\"19px\"  src=\""+urlKio+"3522533.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
                     + "                                                color: #fff;\n"
                     + "                                                background: #000;\n"
                     + "                                                padding: 10px 15px;\n"
@@ -918,7 +922,9 @@ public class EnvioCorreo {
                     + "                                                transition: all 300ms ease;\n"
                     + "                                                background: #0ad2ec;\"></a></li>\n"
                     + "                                        <li style=\"background: #ce1010; display:inline;\"><a href=\"https://www.youtube.com/user/nominads\" target=\"_blank\"\n"
-                    + "                                                    class=\"icon-youtube\"> <img width=\"19px\" height=\"19px\" src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733646.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
+                    + "                                                    class=\"icon-youtube\"> <img width=\"19px\" height=\"19px\" src=\""+urlKio+"733646.png\" "
+                    + "                                                    alt=\""+urlKio+"733646.png\""
+                    + "                                                     style=\"width: 19px; height: 19px; display: inline-block;\n"
                     + "                                                    color: #fff;\n"
                     + "                                                    background: #000;\n"
                     + "                                                    padding: 10px 15px;\n"
@@ -1103,7 +1109,7 @@ public class EnvioCorreo {
                     + "                      \"</style>\""
                     + "<div style=\"background: #00223c;\">\n"
                     + "<div\n"
-                    + "        style=\"padding:10%;color:white ; background: #00223c; background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url(https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/imgcorreoreporte.jpg/); min-height:100%;background-size:cover\">\n"
+                    + "        style=\"padding:10%;color:white ; background: #00223c; background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url("+urlKio+"imgcorreoreporte.jpg); min-height:100%;background-size:cover\">\n"
                     + "        <table style=\"max-width:90%;padding:10%;margin:0 auto;border-collapse:collapse\">\n"
                     + "            <tbody>\n"
                     + "                <tr >\n"
@@ -1113,7 +1119,7 @@ public class EnvioCorreo {
                     + "                                >\n"
                     + "\n"
                     + "                                <img width=\"80px\" height=\"80px\"  style=\"display:block;margin:auto auto 0px auto;\"\n"
-                    + "                                    src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/kioscologopro.png\">\n"
+                    + "                                    src=\""+urlKio+"kioscologopro.png\">\n"
                     //+ "                                    src=\"https://designer.ci2.co:8181/wsreporte/webresources/conexioneskioskos/obtenerLogo/LogoCI2Grande.png?nit=830056149&cadena=DEFAULT1\">\n"
                     + "                            </a>\n"
                     + "                        </div>\n"
@@ -1140,7 +1146,7 @@ public class EnvioCorreo {
                     + "                                <br>                                                                \n"
                     + "                                    <ul style=\"width: 100% !important; height: 20px !important; text-align: center !important; padding: 10px 0 0 0 !important;\">\n"
                     + "                <li style=\"background: #3b5998 !important; display:inline !important;\"><a href=\"https://www.facebook.com/nominads\" target=\"_blank\"\n"
-                    + "                    > <img width=\"19px\" height=\"19px\"  src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/21113922.png\" style=\"width: 19px !important; height: 19px !important;  \n"
+                    + "                    > <img width=\"19px\" height=\"19px\"  src=\""+urlKio+"21113922.png\" style=\"width: 19px !important; height: 19px !important;  \n"
                     + "                     color: #fff !important;\n"
                     + "                     background: #000 !important;\n"
                     + "                     padding: 10px 15px !important;\n"
@@ -1148,7 +1154,7 @@ public class EnvioCorreo {
                     + "                     \n"
                     + "                     background: #3b5998 !important;\"></a></li>"
                     + "                                        <li style=\"background: #00abf0 !important; display:inline !important;\"><a href=\"https://twitter.com/NominaDesigner\" target=\"_blank\"\n"
-                    + "                                            class=\"icon-twitter\"> <img width=\"19px\" height=\"19px\"  src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733635.png\" style=\"width: 19px !important; height: 19px !important;\n"
+                    + "                                            class=\"icon-twitter\"> <img width=\"19px\" height=\"19px\"  src=\""+urlKio+"733635.png\" style=\"width: 19px !important; height: 19px !important;\n"
                     + "                                            color: #fff !important;\n"
                     + "                                            background: #000 !important;\n"
                     + "                                            padding: 10px 15px !important;\n"
@@ -1158,7 +1164,7 @@ public class EnvioCorreo {
                     + "                                            transition: all 300ms ease !important;\n"
                     + "                                            background: #00abf0 !important;\"></a></li>\n"
                     + "                                        <li style=\"background: #0ad2ec !important; display:inline !important;\"><a href=\"https://www.nomina.com.co/\" target=\"_blank\"\n"
-                    + "                                                class=\"icon-nomina\"> <img width=\"19px\" height=\"19px\"  src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/3522533.png\" style=\"width: 19px !important; height: 19px !important; display: inline-block !important;\n"
+                    + "                                                class=\"icon-nomina\"> <img width=\"19px\" height=\"19px\"  src=\""+urlKio+"3522533.png\" style=\"width: 19px !important; height: 19px !important; display: inline-block !important;\n"
                     + "                                                color: #fff !important;\n"
                     + "                                                background: #000 !important;\n"
                     + "                                                padding: 10px 15px !important;\n"
@@ -1168,7 +1174,7 @@ public class EnvioCorreo {
                     + "                                                transition: all 300ms ease !important;\n"
                     + "                                                background: #0ad2ec !important;\"></a></li>\n"
                     + "                                        <li style=\"background: #ce1010 !important; display:inline !important; \"><a href=\"https://www.youtube.com/user/nominads\" target=\"_blank\"\n"
-                    + "                                                    class=\"icon-youtube\"> <img width=\"19px\" height=\"19px\"  src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733646.png\" style=\"width: 19px !important; height: 19px !important; display: inline-block !important;\n"
+                    + "                                                    class=\"icon-youtube\"> <img width=\"19px\" height=\"19px\"  src=\""+urlKio+"733646.png\" style=\"width: 19px !important; height: 19px !important; display: inline-block !important;\n"
                     + "                                                    color: #fff !important;\n"
                     + "                                                    background: #000 !important;\n"
                     + "                                                    padding: 10px 15px !important;\n"
@@ -1291,7 +1297,7 @@ public class EnvioCorreo {
                     "                <ul style=\"width: 100%; height: 20px; text-align: center; padding: 10px 0 0 0 !important;\">\n" +
                     "                    <li style=\"display:inline;\"><a href=\"https://www.facebook.com/nominads\" target=\"_blank\"> <img\n" +
                     "                                width=\"19px\" height=\"19px\"\n" +
-                    "                                src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/21113922.png\"\n" +
+                    "                                src=\""+urlKio+"21113922.png\"\n" +
                     "                                style=\"width: 19px; height: 19px;  \n" +
                     "                            color: #fff;\n" +
                     "                            background: #000;\n" +
@@ -1301,7 +1307,7 @@ public class EnvioCorreo {
                     "                    </li>\n" +
                     "                    <li style=\"display:inline;\"><a href=\"https://twitter.com/NominaDesigner\" target=\"_blank\"\n" +
                     "                            class=\"icon-twitter\"> <img width=\"19px\" height=\"19px\"\n" +
-                    "                                src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733635.png\"\n" +
+                    "                                src=\""+urlKio+"733635.png\"\n" +
                     "                                style=\"width: 19px; height: 19px;\n" +
                     "                            color: #fff;\n" +
                     "                            background: #000;\n" +
@@ -1315,7 +1321,7 @@ public class EnvioCorreo {
                     "                    <li style=\"display:inline;\"><a href=\"https://www.nomina.com.co/\" target=\"_blank\"\n" +
                     "                            class=\"icon-nomina\">\n" +
                     "                            <img width=\"19px\" height=\"19px\"\n" +
-                    "                                src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/3522533.png\"\n" +
+                    "                                src=\""+urlKio+"3522533.png\"\n" +
                     "                                style=\"width: 19px; height: 19px; display: inline-block;\n" +
                     "                            color: #fff;\n" +
                     "                            background: #000;\n" +
@@ -1328,7 +1334,7 @@ public class EnvioCorreo {
                     "                    </li>\n" +
                     "                    <li style=\"display:inline;\"><a href=\"https://www.youtube.com/user/nominads\" target=\"_blank\"\n" +
                     "                            class=\"icon-youtube\"> <img width=\"19px\" height=\"19px\"\n" +
-                    "                                src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/733646.png\"\n" +
+                    "                                src=\""+urlKio+"733646.png\"\n" +
                     "                                style=\"width: 19px; height: 19px; display: inline-block;\n" +
                     "                            color: #fff;\n" +
                     "                            background: #000;\n" +
@@ -1386,13 +1392,6 @@ public class EnvioCorreo {
         return envioCorreo;
     }
 
-    //public static void main(String[] args) {
-        /*new EnvioCorreo().enviarCorreo("", "thalia.manrike@gmail.com", "Prueba 2", 
-                "Esto es un correo de prueba", "");*/
-        //new EnvioCorreo().pruebaEnvio3();
-//       new EnvioCorreo().pruebaEnvio2();
-        //new EnvioCorreo().pruebaEnvio();
-    //}
 
     public String getEsquema(String nitEmpresa, String cadena) {
         System.out.println("Parametros getEsquema(): nitempresa: " + nitEmpresa + ", cadena: " + cadena);

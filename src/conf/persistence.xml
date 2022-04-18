@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.1" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
       
-  <persistence-unit name="wsreportePU" transaction-type="JTA">
+  <!--<persistence-unit name="wsreportePU" transaction-type="JTA">
             
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
             
@@ -21,7 +21,7 @@
                 
         </properties>
           
-    </persistence-unit>
+    </persistence-unit>-->
 
     <persistence-unit name="wscadenaskioskosPU" transaction-type="JTA">
             
@@ -87,11 +87,11 @@
           
     </persistence-unit>
     
-    <!--<persistence-unit name="DEFAULT34" transaction-type="JTA">
+   <!-- <persistence-unit name="DEFAULT1" transaction-type="JTA">
             
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
             
-        <jta-data-source>jdbc/rhntronex</jta-data-source>
+        <jta-data-source>jdbc/rhnmesser</jta-data-source>
             
         <class>co.com.designer.kiosko.entidades.ConexionesKioskos</class>
             
@@ -107,7 +107,7 @@
                 
         </properties>
           
-    </persistence-unit>   -->
+    </persistence-unit>  -->
     <!-- 
     <persistence-unit name="DEFAULT35" transaction-type="JTA">
             

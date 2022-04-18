@@ -562,8 +562,8 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         try {
             if (imagen.contains("null") || imagen.equals("") || imagen == null) {
                 documento = getDocumentoPorSeudonimo(usuario, nitEmpresa, cadena);
-                if (imagen!=null) {
-                    imagen=documento+".jpg";
+                if (imagen != null) {
+                    imagen = nitEmpresa + '_' + documento;
                 } else {
                     imagen = "sinFoto.jpg";
                 }
@@ -578,12 +578,18 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             file = new File(RUTAFOTO + imagen);
         } catch (FileNotFoundException ex) {
             try {
-                fis = new FileInputStream(new File(RUTAFOTO + "sinFoto.jpg"));
-                file = new File(RUTAFOTO + "sinFoto.jpg");
-            } catch (FileNotFoundException ex1) {
-                Logger.getLogger(ConexionesKioskosFacadeREST.class.getName()).log(Level.SEVERE, "Foto no encontrada: " + imagen, ex1);
-                System.getProperty("user.dir");
-                System.out.println("Ruta del proyecto: " + this.getClass().getClassLoader().getResource("").getPath());;
+                imagen = documento;
+                fis = new FileInputStream(new File(RUTAFOTO + imagen));
+                file = new File(RUTAFOTO + imagen);
+            } catch (FileNotFoundException e) {
+                try {
+                    fis = new FileInputStream(new File(RUTAFOTO + "sinFoto.jpg"));
+                    file = new File(RUTAFOTO + "sinFoto.jpg");
+                } catch (FileNotFoundException ex1) {
+                    Logger.getLogger(ConexionesKioskosFacadeREST.class.getName()).log(Level.SEVERE, "Foto no encontrada: " + imagen, ex1);
+                    System.getProperty("user.dir");
+                    System.out.println("Ruta del proyecto: " + this.getClass().getClassLoader().getResource("").getPath());;
+                }
             }
         } finally {
             try {
@@ -596,7 +602,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         responseBuilder.header("Content-Disposition", "attachment; filename=\"" + imagen + "\"");
         return responseBuilder.build();
     }
-    
+
     @GET
     @Path("/obtenerLogo/{imagen}")
     @Produces({"image/png", "image/jpg", "image/gif"})
@@ -1211,7 +1217,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                 .claim("grupo", grupo)
                 .compact();
         System.out.println("Token generado: " + jwtCompleto);
-        
+
         Encriptacion e = new Encriptacion();
         String jwt = e.encrypt(jwtCompleto, passwordEncript);
         System.out.println("Token encriptado: " + jwt);
@@ -1326,10 +1332,10 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         String grupoEmpresarial = "";
         Encriptacion enc = new Encriptacion();
         String passwordEncriptacion = "Manager01";
-        String jwtOriginal =  enc.decrypt(jwt, passwordEncriptacion);
+        String jwtOriginal = enc.decrypt(jwt, passwordEncriptacion);
         System.out.println("original: " + jwt);
-        System.out.println("original1: " + jwtOriginal);        
-        if (jwtOriginal=="N" || jwtOriginal.equals("N")) {
+        System.out.println("original1: " + jwtOriginal);
+        if (jwtOriginal == "N" || jwtOriginal.equals("N")) {
             System.out.println("Entre al if");
             jwtOriginal = jwt;
         }
@@ -1642,19 +1648,19 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         System.out.println("este es el corre que se va a enviar" + correo);
         try {
             if (updateClave) {
-            System.out.println("Contraseña actualizada a: " + nuevaClave);
-            EnvioCorreo e = new EnvioCorreo();
-            //envioCorreo = e.enviarNuevaClave("smtp.gmail.com", "465", "S", "pruebaskiosco534@gmail.com", "Nomina01", getCorreoConexioneskioskos(usuario, nit), getNombrePersona(usuario), nuevaClave, "");
-            envioCorreo = e.enviarNuevaClave(
-                    getConfigServidorSMTP(nitEmpresa, cadena),
-                    getConfigCorreo(nitEmpresa, "PUERTO", cadena),
-                    getConfigCorreo(nitEmpresa, "AUTENTICADO", cadena),
-                    getConfigCorreo(nitEmpresa, "STARTTLS", cadena),
-                    getConfigCorreo(nitEmpresa, "REMITENTE", cadena),
-                    getConfigCorreo(nitEmpresa, "CLAVE", cadena),
-                    correo,
-                    getNombrePersona(usuario, nitEmpresa, cadena),
-                    nuevaClave, "", getPathFoto(nitEmpresa, cadena), nitEmpresa, cadena);
+                System.out.println("Contraseña actualizada a: " + nuevaClave);
+                EnvioCorreo e = new EnvioCorreo();
+                //envioCorreo = e.enviarNuevaClave("smtp.gmail.com", "465", "S", "pruebaskiosco534@gmail.com", "Nomina01", getCorreoConexioneskioskos(usuario, nit), getNombrePersona(usuario), nuevaClave, "");
+                envioCorreo = e.enviarNuevaClave(
+                        getConfigServidorSMTP(nitEmpresa, cadena),
+                        getConfigCorreo(nitEmpresa, "PUERTO", cadena),
+                        getConfigCorreo(nitEmpresa, "AUTENTICADO", cadena),
+                        getConfigCorreo(nitEmpresa, "STARTTLS", cadena),
+                        getConfigCorreo(nitEmpresa, "REMITENTE", cadena),
+                        getConfigCorreo(nitEmpresa, "CLAVE", cadena),
+                        correo,
+                        getNombrePersona(usuario, nitEmpresa, cadena),
+                        nuevaClave, "", getPathFoto(nitEmpresa, cadena), nitEmpresa, cadena);
             } else {
                 System.out.println("Error al actualizar la contraseña");
             }
@@ -1662,7 +1668,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             System.out.println("Se genero un erro al enviar el correo");
             envioCorreo = false;
         }
-        
+
         JsonObject json = Json.createObjectBuilder()
                 .add("envioCorreo", envioCorreo)
                 .add("updateClave", updateClave)
