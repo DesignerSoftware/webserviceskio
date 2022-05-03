@@ -1277,80 +1277,53 @@ public class EnvioCorreo {
             MimeMultipart multipart = new MimeMultipart("related");
 // first part (the html)
             BodyPart messageBodyPart = new MimeBodyPart();
+            String font = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css";
+            String css = "https://www.nomina.com.co/images/images/kiosko/estilo_correo.css";
             String htmlText
-                    = "<div style=\"margin: 0 auto; width: 607px; text-align: center;\n" +
-                    "      font-family: sans-serif;  justify-content: flex-start; border: #3b5998 solid 5px;\">\n" +
-                    "        <!-- <h3 >NÓMINA DESIGNER</h3> -->\n" +
-                    "        <img src=\"https://www.nomina.com.co/images/images/logoKiosco.png\" alt=\"\" style=\"width: 607px;\">\n" +
-                    "        <div style=\"margin: 0 auto; width: 550px; padding: 5px;\">\n" +
-                    "            <h3>Estimados Usuarios</h3>\n" +
-                    "            <p style=\"text-align:justify;font-family:sans-serif\">" +
-                    "                " + saludo  +
-                    "                " + mensaje +
-                    "            <div style=\"height: 10px;\">\n" +
-                    "                <a style=\"text-decoration:none;border-radius:5px;padding:11px 23px; color:white;background-color:#3498db\"\n" +
-                    "                    href='" + url + "' target=\"_blank\" data-saferedirecturl='" + url + "'>Ir a Kiosco</a>\n" +
-                    "                <!-- <a style=\"text-decoration:none;border-radius:5px;margin:11px 23px;color:white;background-color:#3498db\"\n" +
+                    = "<div style=\"border-radius: 5px;background-color: rgba(237, 237, 237, 0.8);margin: 0 auto; width: 700px; border: 1px solid #00223c;\">\n" +
+                    "      <div style=\"margin: 0px auto; width: 607px; text-align: center;font-family: sans-serif;  justify-content: flex-start; padding-top: 20px; font-size: 18px;\">\n" +
+                    "         <!-- <h3 >NÓMINA DESIGNER</h3> -->\n" +
+                    "         <img src=\"https://www.nomina.com.co/images/images/kiosko/LOGO.png\" alt=\"\" style=\"width: 250px;\">\n" +
+                    "         <br>\n" +
+                    "         <img src=\"https://www.nomina.com.co/images/images/logoKiosco.png\" alt=\"\" style=\"padding: 25px 0px 0px 0px; width: 607px;\">\n" +
+                    "         <div style=\"margin: 0 auto;width: 550px;padding: 5px;\">\n" +
+                    "            <h3 style=\"color: #00223c;\">"+ saludo +" </h3>\n" +
+                    "            <p>" + mensaje + " </b>\n" +
+                    "               Este reporte se ha generado automáticamente desde Kiosco Nómina Designer.\n" +
+                    "               Revisa los archivos adjuntos.</p>\n" +
+                    "            <h4>Revisa los archivos adjuntos</h4>\n" +
+                    "            <br>\n" +
+                    "            <div>\n" +
+                    "               <a style=\"text-decoration:none;border-radius:5px;padding:10px 48px; color:white;background-color:#3498db;\"\n" +
+                    "                  href="+url+" target=\"_blank\" data-saferedirecturl="+url+"> Ir a Kiosco </a>\n" +
+                    "\n" +
+                    "               <!-- <a style=\"text-decoration:none;border-radius:5px;margin:11px 23px;color:white;background-color:#3498db\"\n" +
                     "                    href=\"+urlKiosco+\" target=\"_blank\" data-saferedirecturl=\"+urlKiosco+\">Ir a Kiosco</a> -->\n" +
                     "            </div>\n" +
-                    "            <div style=\"margin-bottom: 25px;\">\n" +
-                    "                <ul style=\"width: 100%; height: 20px; text-align: center; padding: 10px 0 0 0 !important;\">\n" +
-                    "                    <li style=\"display:inline;\"><a href=\"https://www.facebook.com/nominads\" target=\"_blank\"> <img\n" +
-                    "                                width=\"19px\" height=\"19px\"\n" +
-                    "                                src=\""+urlKio+"21113922.png\"\n" +
-                    "                                style=\"width: 19px; height: 19px;  \n" +
-                    "                            color: #fff;\n" +
-                    "                            background: #000;\n" +
-                    "                            padding: 10px 15px;\n" +
-                    "                            text-decoration: none;\n" +
-                    "                            background: #3b5998;\"></a>\n" +
-                    "                    </li>\n" +
-                    "                    <li style=\"display:inline;\"><a href=\"https://twitter.com/NominaDesigner\" target=\"_blank\"\n" +
-                    "                            class=\"icon-twitter\"> <img width=\"19px\" height=\"19px\"\n" +
-                    "                                src=\""+urlKio+"733635.png\"\n" +
-                    "                                style=\"width: 19px; height: 19px;\n" +
-                    "                            color: #fff;\n" +
-                    "                            background: #000;\n" +
-                    "                            padding: 10px 15px;\n" +
-                    "                            text-decoration: none;\n" +
-                    "                            -webkit-transition: all 300ms ease;\n" +
-                    "                            -o-transition: all 300ms ease;\n" +
-                    "                            transition: all 300ms ease;\n" +
-                    "                            background: #00abf0;\"></a>\n" +
-                    "                    </li>\n" +
-                    "                    <li style=\"display:inline;\"><a href=\"https://www.nomina.com.co/\" target=\"_blank\"\n" +
-                    "                            class=\"icon-nomina\">\n" +
-                    "                            <img width=\"19px\" height=\"19px\"\n" +
-                    "                                src=\""+urlKio+"3522533.png\"\n" +
-                    "                                style=\"width: 19px; height: 19px; display: inline-block;\n" +
-                    "                            color: #fff;\n" +
-                    "                            background: #000;\n" +
-                    "                            padding: 10px 15px;\n" +
-                    "                            text-decoration: none;\n" +
-                    "                            -webkit-transition: all 300ms ease;\n" +
-                    "                            -o-transition: all 300ms ease;\n" +
-                    "                            transition: all 300ms ease;\n" +
-                    "                            background: #0ad2ec;\"></a>\n" +
-                    "                    </li>\n" +
-                    "                    <li style=\"display:inline;\"><a href=\"https://www.youtube.com/user/nominads\" target=\"_blank\"\n" +
-                    "                            class=\"icon-youtube\"> <img width=\"19px\" height=\"19px\"\n" +
-                    "                                src=\""+urlKio+"733646.png\"\n" +
-                    "                                style=\"width: 19px; height: 19px; display: inline-block;\n" +
-                    "                            color: #fff;\n" +
-                    "                            background: #000;\n" +
-                    "                            padding: 10px 15px;\n" +
-                    "                            text-decoration: none;\n" +
-                    "                            -webkit-transition: all 300ms ease;\n" +
-                    "                            -o-transition: all 300ms ease;\n" +
-                    "                            transition: all 300ms ease;\n" +
-                    "                            background: #ce1010;\"></a>\n" +
-                    "                    </li>\n" +
-                    "                </ul>\n" +
-                    "            </div>\n" +
-                    "            <p style=\"font-size: 0.8rem; padding-top: 10px;\">Este correo se ha generado automáticamente desde Kiosco Nómina Designer.</p>\n" +
-                    "        </div>\n" +
-                    "        <img src=\"https://www.nomina.com.co/images/images/logoCorreoHeader.png\" alt=\"\" style=\"padding: 0px 0px;\">\n" +
-                    "    </div>"
+                    "            <br>\n" +
+                    "         </div>\n" +
+                    "         <hr>\n" +
+                    "         <a href=\"https://nomina.com.co/\" target=\"_blank\"><img src=\"https://www.nomina.com.co/images/images/kiosko/LOGO_N.png\" style=\"width: 60px;\" alt=\"\"></a>\n" +
+                    "         <div style=\"padding: 10px 0px 0px 0px;color: #00223c;\">\n" +
+                    "            <ul style=\"padding: 0px;margin: 0px;\">\n" +
+                    "               <li style=\"display:inline;\"><a href=\"https://www.facebook.com/nominads\" target=\"_blank\">\n" +
+                    "                  <img src=\"https://www.nomina.com.co/images/images/kiosko/ico_face.png\" style=\"color: #00223c;padding: 0px 10px;width: 40px;\" alt=\"\"></a>\n" +
+                    "               </li>\n" +
+                    "               <li style=\"display:inline;\"><a href=\"https://twitter.com/NominaDesigner\" target=\"_blank\">\n" +
+                    "                  <img src=\"https://www.nomina.com.co/images/images/kiosko/ico_twitee.png\" style=\"color: #00223c;padding: 0px 10px;width: 40px;\" alt=\"\"></a>\n" +
+                    "               </li>\n" +
+                    "               <li style=\"display:inline;\"><a href=\"https://www.youtube.com/user/nominads\" target=\"_blank\"> \n" +
+                    "                  <img src=\"https://www.nomina.com.co/images/images/kiosko/ico_youtube.png\" style=\"color: #00223c;padding: 0px 10px;width: 40px;\" alt=\"\"></a>\n" +
+                    "               </li>\n" +
+                    "               <li style=\"display:inline;\"><a href=\"https://www.instagram.com/nomina_designer\" target=\"_blank\"> \n" +
+                    "                  <img src=\"https://www.nomina.com.co/images/images/kiosko/ico_insta.png\" style=\"color: #00223c;padding: 0px 10px;width: 40px;\" alt=\"\"></a>\n" +
+                    "            </li>\n" +
+                    "            </ul>\n" +
+                    "         </div>\n" +
+                    "         <p style=\"font-size: 0.8rem;padding: 10px 0px;margin: 0px;\">Este reporte se ha generado automáticamente desde Kiosco Nómina Designer.</p>\n" +
+                    "         <!-- <img src=\"https://www.nomina.com.co/images/images/logoCorreoHeader.png\" alt=\"\" style=\"padding: 0px 0px;\"> -->\n" +
+                    "      </div>\n" +
+                    "   </div>" 
                     /*+ " <br>"
                     + "  <p style=\"color: #55a532;\" >Imprimir en caso de ser estrictamente necesario, el medio ambiente se lo agradecerá. Ayudemos a evitar el calentamiento global.</p>\n" 
                     + " <br>"
@@ -1363,7 +1336,7 @@ public class EnvioCorreo {
                     + "sancionadas por la ley. Si por error recibe este mensaje, le ofrecemos disculpas, sírvase borrarlo de inmediato, "
                     + "notificarle de su error a la persona que lo envió y abstenerse de divulgar su contenido y anexos. </p>"*/
                     ;
-            messageBodyPart.setContent(htmlText, "text/html");
+            messageBodyPart.setContent(htmlText, "text/html; charset=utf-8");
 // add it
             multipart.addBodyPart(messageBodyPart);
 // second part (the image)

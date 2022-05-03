@@ -348,8 +348,7 @@ public class RhFacadeREST {
                     + "WHERE \n"
                     + "rh.empresa = em.secuencia\n"
                     + "and em.nit = ?\n"
-                    + "AND (TO_CHAR(RH.FECHAINICIO, 'DD/MM/YYYY') <= TO_CHAR(SYSDATE, 'DD/MM/YYYY')\n"
-                    + "AND TO_CHAR(RH.FECHAFIN, 'DD/MM/YYYY') >= TO_CHAR(SYSDATE, 'DD/MM/YYYY'))";
+                    + "ORDER BY RH.FECHAMODIFICADO DESC";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery, RrHh.class);
             query.setParameter(1, nitEmpresa);
             s = query.getResultList();
@@ -386,7 +385,8 @@ public class RhFacadeREST {
                     + "and em.nit = ?\n"
                     + "AND RH.FECHAINICIO <= SYSDATE\n"
                     + "AND RH.FECHAFIN >= SYSDATE\n "
-                    + "AND RH.ESTADO = 'ACTIVO' ";
+                    + "AND RH.ESTADO = 'ACTIVO'\n "
+                    + "ORDER BY RH.FECHAMODIFICADO DESC";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery, RrHh.class);
             query.setParameter(1, nitEmpresa);
             s = query.getResultList();
@@ -440,7 +440,7 @@ public class RhFacadeREST {
                 //ENVIO DE CORREO 
                 if (correo == "S" || correo.equals("S")) {
                     String mensajeCorreo = "Nos permitimos informar que se ha reportado el siguiente comunicado: "
-                            + "<br><br><b>"
+                            + "<br><br><b class=\"negrilla\">"
                             + titulo + ":</b> "
                             + mensaje;
                     System.out.println("Parametros enviaKIOMENSAJESRRHH(): seudonimo " + seudonimo + ", nit: " + nit + ", cadena: " + cadena);
@@ -717,13 +717,13 @@ public class RhFacadeREST {
             String fechaGeneracion = new SimpleDateFormat("dd/MM/yyyy HH:mm").format(fecha);
             //ENVIO DE CORREO 
             String mensajeCorreo = "Nos permitimos informar que se ha reportado el siguiente comunicado: "
-                    + "<br><br><b>" + titulo + ":</b> "
+                    + "<br><br><b style=\"color: #00223c;\">" + titulo + ":</b> "
                     + mensaje;
             String asunto = "¡Nuevo Comunicado Disponible! " + fechaGeneracion;
             try {
                 EnvioCorreo e = new EnvioCorreo();
                 //if (e.enviarCorreoInformativo("Módulo Kiosco: Reporte de corrección de información de "+nombreEmpl+" "+fecha,
-                if (e.enviarCorreoComunicado(asunto, "Estimados Colaboradores:", mensajeCorreo,
+                if (e.enviarCorreoComunicado(asunto, "Estimado Usuarios", mensajeCorreo,
                         nit, cadena, getCorreosXempleadosActivos(nit, cadena, esquema), url)) {
                     sendEmail = true;
                     mensaje = "Mensaje Enviado con Exito.";
