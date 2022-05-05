@@ -339,16 +339,20 @@ public class RhFacadeREST {
                     + "RH.TITULO TITULO, \n"
                     + "replace(RH.DESCRIPCION, '\\n', '<br>') DESCRIPCION, \n"
                     + "NVL(RH.NOMBREADJUNTO,'N') NOMBREADJUNTO, \n"
+                    + "TO_CHAR(RH.FECHAINICIO, 'MM/DD/YYYY') FECHAINICIO1, \n"
                     + "TO_CHAR(RH.FECHAINICIO, 'DD/MM/YYYY') FECHAINICIO, \n"
+                    + "TO_CHAR(RH.FECHAFIN, 'MM/DD/YYYY') FECHAFIN1,\n"
                     + "TO_CHAR(RH.FECHAFIN, 'DD/MM/YYYY') FECHAFIN,\n"
                     + "NVL(SUBSTR(TRIM(RH.NOMBREADJUNTO),INSTR(TRIM(RH.NOMBREADJUNTO),'.'),5), \n"
                     + "  'N') FORMATO, \n"
-                    + "RH.ESTADO ESTADO \n"
+                    + "RH.ESTADO ESTADO,\n"
+                    + "TO_CHAR(RH.FECHACREACION, 'MM/DD/YYYY') FECHACREACION1,\n"
+                    + "TO_CHAR(RH.FECHACREACION, 'DD/MM/YYYY') FECHACREACION\n"
                     + "FROM KIOMENSAJESRRHH rh, empresas em  \n"
                     + "WHERE \n"
                     + "rh.empresa = em.secuencia\n"
                     + "and em.nit = ?\n"
-                    + "ORDER BY RH.FECHAMODIFICADO DESC";
+                    + "ORDER BY RH.FECHACREACION DESC";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery, RrHh.class);
             query.setParameter(1, nitEmpresa);
             s = query.getResultList();
@@ -386,7 +390,7 @@ public class RhFacadeREST {
                     + "AND RH.FECHAINICIO <= SYSDATE\n"
                     + "AND RH.FECHAFIN >= SYSDATE\n "
                     + "AND RH.ESTADO = 'ACTIVO'\n "
-                    + "ORDER BY RH.FECHAMODIFICADO DESC";
+                    + "ORDER BY RH.FECHACREACION DESC";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery, RrHh.class);
             query.setParameter(1, nitEmpresa);
             s = query.getResultList();
