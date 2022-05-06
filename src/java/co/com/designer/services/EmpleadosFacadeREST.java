@@ -1301,14 +1301,24 @@ public class EmpleadosFacadeREST {
     }
        
     @GET
-    @Path("exiteFoto")
+    @Path("existeFoto")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public Response exiteFoto(@QueryParam("documento") String documento, @QueryParam("nit") String nitEmpresa, @QueryParam("cadena") String cadena) throws IOException, Exception {
-        System.out.println("exiteFoto() path: empleado: " + documento + " nitEmpresa: " + nitEmpresa + " cadena: " + cadena);
+    public Response exiteFoto(@QueryParam("usuario") String usuario, @QueryParam("nit") String nitEmpresa, @QueryParam("cadena") String cadena) throws IOException, Exception {
+        System.out.println("exiteFoto() path: USUARIO: " + usuario + " nitEmpresa: " + nitEmpresa + " cadena: " + cadena);
         FileInputStream fis = null;
         File file = null;
         boolean foto = false;
-        String rutaFOTO = getPathReportes(nitEmpresa, cadena) + documento + ".jpg";
+            String rutaFOTO ;
+            String imagen;
+            String esquema = getEsquema(nitEmpresa, cadena);
+            String secEmpl = getSecuenciaEmplPorSeudonimo(usuario, nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
+            String sqlQuery = "SELECT CK.FOTOPERFIL FROM CONEXIONESKIOSKOS CK, EMPLEADOS E WHERE CK.EMPLEADO=E.SECUENCIA AND E.SECUENCIA=?";
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, secEmpl);
+            imagen = (String) query.getSingleResult();
+            rutaFOTO=  getPathReportes(nitEmpresa, cadena) + imagen;
+            System.out.println("rutaFOTO : ++++++ "+rutaFOTO);
         try {
             fis = new FileInputStream(new File(rutaFOTO));
             file = new File(rutaFOTO);
@@ -1479,5 +1489,49 @@ public class EmpleadosFacadeREST {
             return Response.status(Response.Status.OK).entity(0).build();
         }
     } 
+    
+    
+    
+    
+    @GET
+    @Path("/provisiones")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response getProvisiones(@QueryParam("nit") String nitEmpresa, @QueryParam("cadena") String cadena
+            , @QueryParam("seudonimo") String seudonimo) {
+        System.out.println("parametros getProvisiones():"+ " nit: " + nitEmpresa + " cadena: " + cadena
+        + " seudonimo: " + seudonimo);
+        List exLab = null;
+        try {
+            String esquema = getEsquema(nitEmpresa, cadena);
+            String secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
+            String sqlQuery = "select sn.fechapago, \n" +
+                                "trim(replace(to_char(sn.SALDO,'$999G999G999G999G999G999'), ',','.')) valor,\n" +
+                                "sn.unidades, cc.descripcion, cc.codigo\n" +
+                                "from comprobantes c, procesos p, empleados e, solucionesnodos sn, cortesprocesos cp, conceptos cc\n" +
+                                "where c.empleado = e.secuencia\n" +
+                                "and cc.secuencia = sn.concepto\n" +
+                                "and sn.empleado = e.secuencia\n" +
+                                "and e.secuencia = ?\n" +
+                                "and sn.corteproceso = cp.secuencia\n" +
+                                "and c.secuencia = cp.comprobante\n" +
+                                "and cp.proceso = p.secuencia\n" +
+                                "and p.codigo = 11\n" +
+                                "and cc.codigo in (44001, 44002, 44003, 44004,99989,99988,99986,99987)\n" +
+                                "and sn.ESTADO = 'CERRADO'\n" +
+                                "AND sn.FECHAPAGO = cortesprocesos_pkg.CapturarAnteriorCorte(sn.EMPLEADO,1,sysdate)\n" +
+                                "ORDER BY CC.descripcion";
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, secEmpl);
+            exLab = query.getResultList();
+            //exLab.forEach(System.out::println);
+            return Response.status(Response.Status.OK).entity(exLab).build();
+        } catch (Exception ex) {
+            System.out.println("Error "+this.getClass().getName()+".getProvisiones: " + ex);
+            return Response.status(Response.Status.OK).entity(0).build();
+        }
+    } 
+    
+    
 
 }

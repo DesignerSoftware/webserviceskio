@@ -133,7 +133,7 @@ public class ReportesFacadeREST {
             BigDecimal retorno = null;
             String query1="select count(*) from kioconfigmodulos where codigoopcion=? and nitempresa=?";
             // Query query = getEntityManager(cadena).createNativeQuery(query1);
-            System.out.println("Query: "+query1);
+            //System.out.println("Query: "+query1);
             Query query = getEntityManager(cadena).createNativeQuery(query1);
             query.setParameter(1, codigoReporte);
             query.setParameter(2, nitEmpresa);
@@ -450,5 +450,54 @@ public class ReportesFacadeREST {
         } 
         return esquema;
     }     
+    
+    
+    @GET
+    @Path("generaReporteProvisiones/{reporte}")
+    @Produces("application/pdf")
+    public Response generaProvisiones(@PathParam("reporte") String reporte, //@PathParam("id") BigDecimal id, 
+            @QueryParam("nit") String nitEmpresa,
+            @QueryParam("cadena") String cadena, @QueryParam("usuario") String seudonimo) {
+        System.out.println("generaReporte() "+" nit: "+nitEmpresa);
+     
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
+       
+        BigDecimal secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
+        System.out.println("Parametros para generar reporte: [ reporte: "+reporte+ ", secuenciaEmpleado: "+secEmpl+", cadena: "+cadena+", "
+                        + "\n seudonimo: "+ seudonimo +"]");
+        Map parametros = new HashMap();
+        parametros.put("secuenciaempleado", secEmpl);
+
+        long tiempo=System.currentTimeMillis();
+        //String nombreReporte = reporte+"_"+id+"_"+tiempo+".pdf";
+        String nombreReporte = reporte+"_"+secEmpl+"_"+tiempo+".pdf";
+//        System.out.println("nombreReporte:" + nombreReporte);
+
+        String rutaGenerado = iniciarReporte.ejecutarReporte(reporte, getPathReportes(nitEmpresa, cadena), getPathArchivosPlanos(nitEmpresa, cadena), nombreReporte, "PDF", parametros, getEntityManager(cadena));
+        File file = new File(rutaGenerado);
+//        System.out.println("Ruta generado: "+rutaGenerado);
+       
+        try {
+            // String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);   
+                
+            System.out.println("nombreReporte recibido: "+reporte);
+             
+            ResponseBuilder response = Response.ok((Object) file);
+            Calendar fechaActual = Calendar.getInstance();
+            String nomF = String.valueOf(fechaActual.get(Calendar.YEAR)) + String.valueOf(fechaActual.get(Calendar.MONTH) + 1) + String.valueOf(fechaActual.get(Calendar.DAY_OF_MONTH))
+                    + String.valueOf(fechaActual.get(Calendar.HOUR_OF_DAY)) + String.valueOf(fechaActual.get(Calendar.MINUTE)) + String.valueOf(fechaActual.get(Calendar.SECOND))
+                    + String.valueOf(fechaActual.get(Calendar.MILLISECOND));
+            response.header("Content-Disposition", "attachment; filename=" + nomF + ".pdf");
+            return response.build();
+        
+        } catch (Exception e) {
+            System.out.println("Error: "+this.getClass().getName()+":"+e.getMessage());
+        } finally {
+            //this.getEntityManager().close();
+        }
+        return Response.status(Response.Status.NOT_FOUND).build();
+    }
 
 }

@@ -657,14 +657,43 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     public Response cargarFoto(
             @FormDataParam("fichero") InputStream fileInputStream,
             @FormDataParam("fichero") FormDataContentDisposition fileFormDataContentDisposition,
+            @QueryParam("seudonimo") String seudonimo,
             @QueryParam("nit") String nitEmpresa,
             @QueryParam("cadena") String cadena) {
-        String fileName = null;
-        String uploadFilePath = null;
+            System.out.println("Parametros cargarFoto(): cadena: " + cadena + " ,nit: "+nitEmpresa+" , seudonimo: "+seudonimo);
+            String fileName = null;
+            String uploadFilePath = null;
+            String secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
+            boolean resultado = false;
+            System.out.println("seudonimo cargarfoto "+seudonimo);
+            int conteo = 0;
+            String mensaje = "";
+                
+            
+            try {
+                fileName = fileFormDataContentDisposition.getFileName();
+                String esquema = getEsquema(nitEmpresa, cadena);
+                setearPerfil(esquema, cadena);
+                String sqlQuery = "UPDATE CONEXIONESKIOSKOS CK SET CK.FOTOPERFIL = '"+fileName+"' \n" +
+                          "WHERE CK.EMPLEADO= ?  ";
+                Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+                query.setParameter(1, secEmpl);
+                conteo = query.executeUpdate();
+                resultado = conteo > 0 ? true : false;
+                if (conteo > 0) {
+                    System.out.println("modificado");
+                } else {
+                    System.out.println("no modificado: " + resultado);
+                }
+            } catch (Exception e) {
+                System.out.println("Error " + ConexionesKioskos.class.getName() + ".cargarFoto(): " + e.getMessage());
+                mensaje = "Ha ocurrido un error al subir la foto " + e.getMessage();
+            }
 
         try {
-            fileName = fileFormDataContentDisposition.getFileName();
+            
             uploadFilePath = writeToFileServer(fileInputStream, fileName, nitEmpresa, cadena);
+
         } catch (IOException ioe) {
             ioe.printStackTrace();
             System.out.println("Error: " + ioe.getMessage());
@@ -1959,6 +1988,30 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         }
         return secuencia;
     }
+    
+    
+        public String getSecEmplPorCodigo(String codigo, String nitEmpresa, String cadena) {
+        System.out.println("Parametros getEmplPorDocumentoEmpresa(): codigo: " + codigo + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
+        String secuencia = null;
+        try {
+            String esquema = getEsquema(nitEmpresa, cadena);
+            setearPerfil(esquema, cadena);
+            String sqlQuery = "SELECT E.SECUENCIA "
+                    + "FROM EMPLEADOS E "
+                    + "WHERE "
+                    + "E.CODIGOEMPLEADO=? "
+                    + "AND EMPLEADOCURRENT_PKG.TIPOTRABAJADORCORTE(E.SECUENCIA, SYSDATE)='ACTIVO' ";
+            System.out.println("Query: " + sqlQuery);
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+
+            query.setParameter(1, codigo);
+            secuencia = query.getSingleResult().toString();
+            System.out.println("secuencia: " + secuencia);
+        } catch (Exception e) {
+            System.out.println("Error: " + this.getClass().getName() + ".getSecEmplPorCodigo: " + e.getMessage());
+        }
+        return secuencia;
+    }
 
     /**
      * metodo privado para dar formato al JSON de respuesta
@@ -1980,5 +2033,68 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         }
         return "";
     }
+    
+    
+        @GET
+    @Path("/obtenerFotoPerfil")
+    @Produces({"image/png", "image/jpg", "image/gif"})
+    public Response obtenerFotoPerfil( @QueryParam("cadena") String cadena, @QueryParam("usuario") String usuario, @QueryParam("nit") String nitEmpresa) {
+        System.out.println("Parametros obtenerFotoPerfil(): cadena: " + cadena + ", nitEmpresa: " + nitEmpresa + ", usuario: " + usuario);
+        FileInputStream fis = null;
+        File file = null;
+        String RUTAFOTO = getPathFoto(nitEmpresa, cadena);
+        
+        String imagen = null;
+        try {
+            String esquema = getEsquema(nitEmpresa, cadena);
+            String secEmpl = getSecuenciaEmplPorSeudonimo(usuario, nitEmpresa, cadena);
+            if(secEmpl == null){
+                secEmpl = getSecEmplPorCodigo(usuario, nitEmpresa, cadena);
+            }
+            System.out.println("esto es una prueba de secuencia: " + secEmpl);
+            setearPerfil(esquema, cadena);
+            String sqlQuery = "SELECT CK.FOTOPERFIL FROM CONEXIONESKIOSKOS CK, EMPLEADOS E WHERE CK.EMPLEADO=E.SECUENCIA AND E.SECUENCIA=?";
+            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, secEmpl);
+            imagen = (String) query.getSingleResult();
+            System.out.println("Imagen foto perfil: " + imagen);
+            System.out.println("Ruta foto: "+RUTAFOTO);
+            try {
+            fis = new FileInputStream(new File(RUTAFOTO + imagen));
+            file = new File(RUTAFOTO + imagen);
+            System.out.println("imagen cargada"+file);
+        } catch (FileNotFoundException ex) {
+                System.out.println("imagen no encontrada:" + ex);
+                try {
+                    fis = new FileInputStream(new File(RUTAFOTO + "sinFoto.jpg"));
+                    file = new File(RUTAFOTO + "sinFoto.jpg");
+                } catch (FileNotFoundException ex1) {
+                    Logger.getLogger(ConexionesKioskosFacadeREST.class.getName()).log(Level.SEVERE, "Foto no encontrada: " + imagen, ex1);
+                    System.getProperty("user.dir");
+                    System.out.println("Ruta del proyecto: " + this.getClass().getClassLoader().getResource("").getPath());;
+                }
+            
+        } finally {
+            try {
+                fis.close();
+            } catch (IOException ex) {
+                Logger.getLogger(ConexionesKioskosFacadeREST.class.getName()).log(Level.SEVERE, "Error cerrando fis " + imagen, ex);
+            }
+        }
+        Response.ResponseBuilder responseBuilder = Response.ok((Object) file);
+        responseBuilder.header("Content-Disposition", "attachment; filename=\"" + imagen + "\"");
+        return responseBuilder.build();
+            
+        } catch (Exception ex) {
+            System.out.println("Error "+this.getClass().getName()+".getProvisiones: " + ex);
+            return Response.status(Response.Status.OK).entity(0).build();
+        }
+        
+       
+        
+    }
+    
+    
+    
 
 }
