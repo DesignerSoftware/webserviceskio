@@ -420,6 +420,7 @@ public class RhFacadeREST {
                 + " anexoAdjunto: " + anexoAdjunto + " mensaje: " + mensaje + ", cadena: " + cadena
                 + " extenciondjunto: " + extenciondjunto + " correo: " + correo);
         boolean soliciCreada = false;
+        boolean correoEnviado = false;
         String esquema = null;
         String nombreAnexo = null; // nombre con el que debe guardarse el campo del documento anexo
         try {
@@ -455,11 +456,12 @@ public class RhFacadeREST {
                         if (e.enviarCorreoComunicado(asunto, "Estimados Colaboradores:", mensajeCorreo,
                                 nit, cadena, getCorreosXempleadosActivos(nit, cadena, esquema), url)) {
                             soliciCreada = true;
+                            correoEnviado = true;
                             mensaje = "Mensaje Creado con Exito y Envío de correo.";
                             System.out.println("Mensaje creado.");
                         } else {
-                            soliciCreada = false;
-                            mensaje = "Se presento un inconveniente al enviar el correo.";
+                            soliciCreada = true;
+                            mensaje = "Mensaje Creado con Exito, Se presento un inconveniente al enviar el correo.";
                         }
                     } catch (Exception ex) {
                         Logger.getLogger(EmpleadosFacadeREST.class.getName()).log(Level.SEVERE, null, ex);
@@ -467,6 +469,7 @@ public class RhFacadeREST {
                     }
                 } else {
                     soliciCreada = true;
+                    correoEnviado = true;
                     mensaje = "Mensaje Creado con Exito.";
                     System.out.println("Mensaje creado.");
                 }
@@ -482,6 +485,7 @@ public class RhFacadeREST {
         try {
             obj.put("NovedadCreada", soliciCreada);
             obj.put("mensaje", mensaje);
+            obj.put("correoEnviado", correoEnviado);
             obj.put("anexo", nombreAnexo); // retorna el nombre de como deberia guardarse el documento anexo
         } catch (JSONException ex) {
             Logger.getLogger(EmpleadosFacadeREST.class.getName()).log(Level.SEVERE, null, ex);

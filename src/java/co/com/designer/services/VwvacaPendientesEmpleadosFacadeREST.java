@@ -158,7 +158,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                     + "from KioEstadosSolici ei, kiosolicivacas ksi \n"
                     + "where ei.kioSoliciVaca = ksi.secuencia \n"
                     + "and ksi.secuencia=ks.secuencia) "
-                    + "and v.inicialcausacion>= empleadocurrent_pkg.fechavigenciatipocontrato(ks.empleado, sysdate) "
+                    + "and v.inicialcausacion>= empleadocurrent_pkg.FECHAINICIALCONTRATO(ks.empleado, sysdate) "
                     + "order by e.fechaProcesamiento DESC";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpl);
@@ -221,6 +221,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
             "  AND t1.PERSONA=P.SECUENCIA\n" +
             "  and t2.KIONOVEDADSOLICI = kn.secuencia\n" +
             "  and kn.vacacion=v.RFVACACION\n" +
+            "  AND V.INICIALCAUSACION>=empleadocurrent_pkg.FECHAINICIALCONTRATO(t1.secuencia, sysdate)\n" +
             "  ) \n" +
             "  ORDER BY t0.FECHAPROCESAMIENTO DESC";
             //Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
@@ -293,7 +294,8 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
         " AND T1.PERSONA=P.SECUENCIA\n" +
         " AND t2.KIONOVEDADSOLICI=KNS.SECUENCIA\n" +
         " AND KNS.VACACION=v.RFVACACION\n" +
-        " AND t2.EMPLEADOJEFE=JEFE.SECUENCIA\n" +        
+        " AND t2.EMPLEADOJEFE=JEFE.SECUENCIA\n" +
+        " AND V.INICIALCAUSACION>=empleadocurrent_pkg.FECHAINICIALCONTRATO(t1.secuencia, sysdate)" +        
         " ORDER BY t0.FECHAPROCESAMIENTO DESC\n" ;
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secuenciaEmpresa);
@@ -354,7 +356,8 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                     + "AND (((t4.SECUENCIA = t1.KIOSOLICIVACA) AND (t3.SECUENCIA = t4.EMPLEADO)) AND (t2.SECUENCIA = t3.EMPRESA))) \n"
                     + "AND t3.PERSONA=P.SECUENCIA\n"
                     + "and t4.KIONOVEDADSOLICI = kn.secuencia\n"
-                    + "and kn.vacacion=v.RFVACACION";
+                    + "and kn.vacacion=v.RFVACACION" 
+                    + "AND V.INICIALCAUSACION>=empleadocurrent_pkg.FECHAINICIALCONTRATO(t3.secuencia, sysdate)";
             //Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secSecPerAutorizador);
@@ -426,6 +429,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                     + "and t4.KIONOVEDADSOLICI = KNS.secuencia "
                     + "and KNS.vacacion=v.RFVACACION\n"
                     + "and t4.AUTORIZADOR=AUTORIZADOR.SECUENCIA "
+                    + "AND V.INICIALCAUSACION>=empleadocurrent_pkg.fechavigenciatipocontrato(t3.secuencia, sysdate)"
                     + " ORDER BY t1.FECHAPROCESAMIENTO DESC ";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secPerAutorizador);

@@ -281,7 +281,8 @@ public class EmpleadosFacadeREST {
                               "and hv.persona = p.secuencia \n" +
                               "and ex.motivoretiro = mo.secuencia(+) \n" +
                               "and ex.sectoreconomico = sec.secuencia(+) \n" +
-                              "and p.numerodocumento = ? ";
+                              "and p.numerodocumento = ? \n" +
+                              "order by ex.fechahasta";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpl);
 
@@ -922,7 +923,7 @@ public class EmpleadosFacadeREST {
                     + "and ad.secuencia(+)=vf.adiestramientof "
               //      + "and vf.FECHAVIGENCIA>=empleadocurrent_pkg.FechaVigenciaTipoContrato(e.secuencia, sysdate) "
                     + "and e.secuencia=? "
-                    + "order by vf.fechavigencia";
+                    + "order by vf.fechavigencia DESC";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpl);
             s = query.getResultList();
@@ -946,7 +947,7 @@ public class EmpleadosFacadeREST {
                     + "and ad.secuencia(+)=vf.adiestramientof "
               //      + "and vf.FECHAVIGENCIA>=empleadocurrent_pkg.FechaVigenciaTipoContrato(e.secuencia, sysdate) "
                     + "and e.secuencia=? "
-                    + "order by vf.fechavigencia";
+                    + "order by vf.fechavigencia desc";
             } catch (Exception e) {
             }
             return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
@@ -976,7 +977,7 @@ public class EmpleadosFacadeREST {
                     + "and vf.institucion = i.secuencia(+) "
                     + "and ad.secuencia(+)=vf.adiestramientonf "
                     + "and e.secuencia=? "
-                    + "order by vf.fechavigencia";
+                    + "order by vf.fechavigencia desc";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpl);
             s = query.getResultList();
@@ -1011,14 +1012,17 @@ public class EmpleadosFacadeREST {
                             "KIOESTADOSSOLICI KES, \n" +
                             "KIOSOLICIVACAS KS, \n" +
                             "KIONOVEDADESSOLICI KNS,\n" +
-                            "EMPLEADOS JEFE\n" +
+                            "EMPLEADOS JEFE,\n" +
+                            "VwVacaPendientesEmpleados V\n" +
                             "WHERE \n" +
                             "KES.ESTADO = 'ENVIADO' AND KS.EMPLEADOJEFE =?\n" +
                             "AND KES.SECUENCIA = (SELECT MAX(t3.SECUENCIA) FROM KIOSOLICIVACAS t4, KIOESTADOSSOLICI t3 \n" +
                             "WHERE t4.SECUENCIA = KS.SECUENCIA AND t4.SECUENCIA = t3.KIOSOLICIVACA\n" +
                             "AND KS.SECUENCIA = KES.KIOSOLICIVACA) \n" +
                             "AND KS.KIONOVEDADSOLICI=KNS.SECUENCIA\n" +
-                            "AND KS.EMPLEADOJEFE=JEFE.SECUENCIA";
+                            "AND KS.EMPLEADOJEFE=JEFE.SECUENCIA\n" +
+                            "AND KNS.VACACION=v.RFVACACION\n" +
+                            "AND V.INICIALCAUSACION>=empleadocurrent_pkg.FECHAINICIALCONTRATO(KS.EMPLEADO, sysdate)";
             
             }else if(tipoNotificacion.equals("AUSENTISMO")){
             

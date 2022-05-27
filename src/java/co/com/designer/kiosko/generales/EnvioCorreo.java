@@ -5,6 +5,7 @@
  */
 package co.com.designer.kiosko.generales;
 
+import com.sun.mail.util.MailConnectException;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
@@ -1280,50 +1281,56 @@ public class EnvioCorreo {
             String font = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css";
             String css = "https://www.nomina.com.co/images/images/kiosko/estilo_correo.css";
             String htmlText
-                    = "<div style=\"border-radius: 5px;background-color: rgba(237, 237, 237, 0.8);margin: 0 auto; width: 700px; border: 1px solid #00223c;\">\n" +
-                    "      <div style=\"margin: 0px auto; width: 607px; text-align: center;font-family: sans-serif;  justify-content: flex-start; padding-top: 20px; font-size: 18px;\">\n" +
-                    "         <!-- <h3 >NÓMINA DESIGNER</h3> -->\n" +
-                    "         <img src=\"https://www.nomina.com.co/images/images/kiosko/LOGO.png\" alt=\"\" style=\"width: 250px;\">\n" +
-                    "         <br>\n" +
-                    "         <img src=\"https://www.nomina.com.co/images/images/logoKiosco.png\" alt=\"\" style=\"padding: 25px 0px 0px 0px; width: 607px;\">\n" +
-                    "         <div style=\"margin: 0 auto;width: 550px;padding: 5px;\">\n" +
-                    "            <h3 style=\"color: #00223c;\">"+ saludo +" </h3>\n" +
-                    "            <p>" + mensaje + " </b>\n" +
-                    "               Este reporte se ha generado automáticamente desde Kiosco Nómina Designer.\n" +
-                    "               Revisa los archivos adjuntos.</p>\n" +
-                    "            <h4>Revisa los archivos adjuntos</h4>\n" +
+                    =
+                    "<div style=\"background-color: rgba(237, 237, 237, 0.8);\">\n" +
+                    "   <div style=\"padding: 10px 0px;\">" +
+                    "      <div style=\"background-color: white;margin: 0 auto; width: 700px;\">\n" +
+                    "         <div\n" +
+                    "            style=\"margin: 0px auto;text-align: center;font-family: sans-serif;  justify-content: flex-start; padding-top: 20px; font-size: 18px;\">\n" +
+                    "            <!-- <h3 >NÓMINA DESIGNER</h3> -->\n" +
+                    "            <img src=\"https://www.nomina.com.co/images/images/kiosko/LOGO.png\" alt=\"\" style=\"width: 250px;\">\n" +
                     "            <br>\n" +
-                    "            <div>\n" +
-                    "               <a style=\"text-decoration:none;border-radius:5px;padding:10px 48px; color:white;background-color:#3498db;\"\n" +
-                    "                  href="+url+" target=\"_blank\" data-saferedirecturl="+url+"> Ir a Kiosco </a>\n" +
+                    "            <img src=\"https://www.nomina.com.co/images/images/logoKiosco.png\" alt=\"\" style=\"padding: 0px 0px 0px 0px; width: 700px;\">" +
+                    "            <div style=\"margin: 0 auto;width: 550px;padding: 5px;\">\n" +
+                    "               <h3 style=\"color: #00223c;\">"+ saludo +" </h3>\n" +
+                    "               <p>" + mensaje + " </b>\n" +
+                    "                   Este reporte se ha generado automáticamente desde Kiosco Nómina Designer.\n" +
+                    "                 Revisa los archivos adjuntos.</p>\n" +
+                    "                <h4>Revisa los archivos adjuntos</h4>\n" +
+                    "                <br>\n" +
+                    "                <div>\n" +
+                    "                   <a style=\"text-decoration:none;border-radius:5px;padding:10px 48px; color:white;background-color:#3498db;\"\n" +
+                    "                    href="+url+" target=\"_blank\" data-saferedirecturl="+url+"> Ir a Kiosco </a>\n" +
                     "\n" +
-                    "               <!-- <a style=\"text-decoration:none;border-radius:5px;margin:11px 23px;color:white;background-color:#3498db\"\n" +
-                    "                    href=\"+urlKiosco+\" target=\"_blank\" data-saferedirecturl=\"+urlKiosco+\">Ir a Kiosco</a> -->\n" +
-                    "            </div>\n" +
-                    "            <br>\n" +
+                    "                <!-- <a style=\"text-decoration:none;border-radius:5px;margin:11px 23px;color:white;background-color:#3498db\"\n" +
+                    "                     href=\"+urlKiosco+\" target=\"_blank\" data-saferedirecturl=\"+urlKiosco+\">Ir a Kiosco</a> -->\n" +
+                    "              </div>\n" +
+                    "               <br>\n" +
+                    "             </div>\n" +
+                    "             <hr>\n" +
+                    "             <a href=\"https://nomina.com.co/\" target=\"_blank\"><img src=\"https://www.nomina.com.co/images/images/kiosko/LOGO_N.png\" style=\"width: 60px;\" alt=\"\"></a>\n" +
+                    "             <div style=\"padding: 10px 0px 0px 0px;color: #00223c;\">\n" +
+                    "               <ul style=\"padding: 0px;margin: 0px;\">\n" +
+                    "                 <li style=\"display:inline;\"><a href=\"https://www.facebook.com/nominads\" target=\"_blank\">\n" +
+                    "                   <img src=\"https://www.nomina.com.co/images/images/kiosko/ico_face.png\" style=\"color: #00223c;padding: 0px 10px;width: 40px;\" alt=\"\"></a>\n" +
+                    "                 </li>\n" +
+                    "                  <li style=\"display:inline;\"><a href=\"https://twitter.com/NominaDesigner\" target=\"_blank\">\n" +
+                    "                    <img src=\"https://www.nomina.com.co/images/images/kiosko/ico_twitee.png\" style=\"color: #00223c;padding: 0px 10px;width: 40px;\" alt=\"\"></a>\n" +
+                    "                 </li>\n" +
+                    "                <li style=\"display:inline;\"><a href=\"https://www.youtube.com/user/nominads\" target=\"_blank\"> \n" +
+                    "                   <img src=\"https://www.nomina.com.co/images/images/kiosko/ico_youtube.png\" style=\"color: #00223c;padding: 0px 10px;width: 40px;\" alt=\"\"></a>\n" +
+                    "                </li>\n" +
+                    "                <li style=\"display:inline;\"><a href=\"https://www.instagram.com/nomina_designer\" target=\"_blank\"> \n" +
+                    "                   <img src=\"https://www.nomina.com.co/images/images/kiosko/ico_insta.png\" style=\"color: #00223c;padding: 0px 10px;width: 40px;\" alt=\"\"></a>\n" +
+                    "                 </li>\n" +
+                    "               </ul>\n" +
+                    "           </div>\n" +
+                    "             <p style=\"font-size: 0.8rem;padding: 10px 0px;margin: 0px;\">Este reporte se ha generado automáticamente desde Kiosco Nómina Designer.</p>\n" +
+                    "          <!-- <img src=\"https://www.nomina.com.co/images/images/logoCorreoHeader.png\" alt=\"\" style=\"padding: 0px 0px;\"> -->\n" +
                     "         </div>\n" +
-                    "         <hr>\n" +
-                    "         <a href=\"https://nomina.com.co/\" target=\"_blank\"><img src=\"https://www.nomina.com.co/images/images/kiosko/LOGO_N.png\" style=\"width: 60px;\" alt=\"\"></a>\n" +
-                    "         <div style=\"padding: 10px 0px 0px 0px;color: #00223c;\">\n" +
-                    "            <ul style=\"padding: 0px;margin: 0px;\">\n" +
-                    "               <li style=\"display:inline;\"><a href=\"https://www.facebook.com/nominads\" target=\"_blank\">\n" +
-                    "                  <img src=\"https://www.nomina.com.co/images/images/kiosko/ico_face.png\" style=\"color: #00223c;padding: 0px 10px;width: 40px;\" alt=\"\"></a>\n" +
-                    "               </li>\n" +
-                    "               <li style=\"display:inline;\"><a href=\"https://twitter.com/NominaDesigner\" target=\"_blank\">\n" +
-                    "                  <img src=\"https://www.nomina.com.co/images/images/kiosko/ico_twitee.png\" style=\"color: #00223c;padding: 0px 10px;width: 40px;\" alt=\"\"></a>\n" +
-                    "               </li>\n" +
-                    "               <li style=\"display:inline;\"><a href=\"https://www.youtube.com/user/nominads\" target=\"_blank\"> \n" +
-                    "                  <img src=\"https://www.nomina.com.co/images/images/kiosko/ico_youtube.png\" style=\"color: #00223c;padding: 0px 10px;width: 40px;\" alt=\"\"></a>\n" +
-                    "               </li>\n" +
-                    "               <li style=\"display:inline;\"><a href=\"https://www.instagram.com/nomina_designer\" target=\"_blank\"> \n" +
-                    "                  <img src=\"https://www.nomina.com.co/images/images/kiosko/ico_insta.png\" style=\"color: #00223c;padding: 0px 10px;width: 40px;\" alt=\"\"></a>\n" +
-                    "            </li>\n" +
-                    "            </ul>\n" +
-                    "         </div>\n" +
-                    "         <p style=\"font-size: 0.8rem;padding: 10px 0px;margin: 0px;\">Este reporte se ha generado automáticamente desde Kiosco Nómina Designer.</p>\n" +
-                    "         <!-- <img src=\"https://www.nomina.com.co/images/images/logoCorreoHeader.png\" alt=\"\" style=\"padding: 0px 0px;\"> -->\n" +
-                    "      </div>\n" +
-                    "   </div>" 
+                    "    </div>" +
+                    "  </div>" +
+                    "</div>" 
                     /*+ " <br>"
                     + "  <p style=\"color: #55a532;\" >Imprimir en caso de ser estrictamente necesario, el medio ambiente se lo agradecerá. Ayudemos a evitar el calentamiento global.</p>\n" 
                     + " <br>"
@@ -1358,10 +1365,13 @@ public class EnvioCorreo {
         } catch (SendFailedException e) {
             System.out.println("No recipient addresses: No hay correos para enviar ");
             envioCorreo = false;
+        } catch (MailConnectException e) {
+            System.out.println("No se puedo establecer conexión con el servidor de correo " + e );
+            envioCorreo = false;
         } catch (MessagingException e) {
             envioCorreo = false;
             throw new RuntimeException(e);
-        } 
+        }
         return envioCorreo;
     }
 

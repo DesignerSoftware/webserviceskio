@@ -2009,7 +2009,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                         System.out.println("codigoopcion: " + "41");
                         /*c.enviarCorreoVacaciones(servidorsmtp, puerto, autenticado, starttls, remitente, clave, correoenviar, 
                                             "Auditoria: Nueva Solicitud de vacaciones Kiosco. "+fechaCorreo, mensajeAuditoria, urlKio, nit);*/
-                        e.enviarCorreoInformativo("Auditoria: Nueva novedad de AUSENTISMO Kiosco. " + fechaCorreo,
+                        e.enviarCorreoInformativo("Auditoria: Nueva novedad de AUSENTISMO Kiosco. " + fecha,
                                 "Estimado usuario: ", mensajeAuditoria, nitEmpresa, urlKio, cadena, correoenviar, null);
                     }
                 } else {
