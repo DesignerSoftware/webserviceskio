@@ -1,133 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.1" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
-      
-  <!--<persistence-unit name="wsreportePU" transaction-type="JTA">
-            
-        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
-            
-        <jta-data-source>jdbc/rhnasp</jta-data-source>
-            
-        <class>co.com.designer.kiosko.entidades.ConexionesKioskos</class>
-            
-        <exclude-unlisted-classes>false</exclude-unlisted-classes>
-            
-        <validation-mode>NONE</validation-mode>
-            
-        <properties>
-                  
-            <property name="eclipselink.canonicalmodel.subpackage" value="one"/>
-                  
-            <property name="eclipselink.logging.level" value="FINE"/>
-                
-        </properties>
-          
-    </persistence-unit>-->
-
     <persistence-unit name="wscadenaskioskosPU" transaction-type="JTA">
-            
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
-            
         <jta-data-source>jdbc/cadenaskioskos</jta-data-source>
-            
         <class>co.com.designer.kiosko.entidades.ConexionesKioskos</class>
-            
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
-            
         <validation-mode>NONE</validation-mode>
-            
         <properties>
-                  
-            <property name="eclipselink.canonicalmodel.subpackage" value="two"/>
-                  
+            <property name="eclipselink.canonicalmodel.subpackage" value="one"/>
             <property name="eclipselink.logging.level" value="FINE"/>
-                
         </properties>
-          
     </persistence-unit>
-    <persistence-unit name="DEFAULT1" transaction-type="JTA">
-            
+    <!--<persistence-unit name="DEFAULT1" transaction-type="JTA">
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
-            
         <jta-data-source>jdbc/rhnlc</jta-data-source>
-            
         <class>co.com.designer.kiosko.entidades.ConexionesKioskos</class>
-            
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
-            
         <validation-mode>NONE</validation-mode>
-            
         <properties>
-                  
             <property name="eclipselink.canonicalmodel.subpackage" value="three"/>
-                  
             <property name="eclipselink.logging.level" value="FINE"/>
-                
         </properties>
-          
-    </persistence-unit>
-        <persistence-unit name="DEFAULT2" transaction-type="JTA">
-            
-        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
-            
-        <jta-data-source>jdbc/rhnmab</jta-data-source>
-            
-        <class>co.com.designer.kiosko.entidades.ConexionesKioskos</class>
-            
-        <exclude-unlisted-classes>false</exclude-unlisted-classes>
-            
-        <validation-mode>NONE</validation-mode>
-            
-        <properties>
-                  
-            <property name="eclipselink.canonicalmodel.subpackage" value="five"/>
-                  
-            <property name="eclipselink.logging.level" value="FINE"/>
-                
-        </properties>
-          
-    </persistence-unit>
-    
-   <!-- <persistence-unit name="DEFAULT1" transaction-type="JTA">
-            
-        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
-            
-        <jta-data-source>jdbc/rhnmesser</jta-data-source>
-            
-        <class>co.com.designer.kiosko.entidades.ConexionesKioskos</class>
-            
-        <exclude-unlisted-classes>false</exclude-unlisted-classes>
-            
-        <validation-mode>NONE</validation-mode>
-            
-        <properties>
-                  
-            <property name="eclipselink.canonicalmodel.subpackage" value="four"/>
-                  
-            <property name="eclipselink.logging.level" value="FINE"/>
-                
-        </properties>
-          
-    </persistence-unit>  -->
-    <!-- 
-    <persistence-unit name="DEFAULT35" transaction-type="JTA">
-            
-        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
-            
-        <jta-data-source>jdbc/rhnmab</jta-data-source>
-            
-        <class>co.com.designer.kiosko.entidades.ConexionesKioskos</class>
-            
-        <exclude-unlisted-classes>false</exclude-unlisted-classes>
-            
-        <validation-mode>NONE</validation-mode>
-            
-        <properties>
-                  
-            <property name="eclipselink.canonicalmodel.subpackage" value="five"/>
-                  
-            <property name="eclipselink.logging.level" value="FINE"/>
-                
-        </properties>
-          
-    </persistence-unit> -->
+    </persistence-unit>-->
 </persistence>

@@ -8,17 +8,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
-//import java.sql.ResultSet;
-//import java.sql.SQLDataException;
-//import java.math.BigInteger;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-//import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -26,7 +21,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-//import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -37,13 +31,11 @@ import java.io.*;
 import java.math.BigInteger;
 import java.sql.ResultSet;
 import java.util.Calendar;
-import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.persistence.Persistence;
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
@@ -51,7 +43,6 @@ import java.sql.Date;
 import javax.json.JsonValue;
 import org.json.JSONException;
 import passwordGenerator.GeneradorClave;
-//import javax.ws.rs.core.Response;
 
 /**
  *
@@ -61,9 +52,6 @@ import passwordGenerator.GeneradorClave;
 @Path("conexioneskioskos")
 public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKioskos> {
 
-    //@PersistenceContext(unitName = "wsreportePU")
-    //private EntityManager em;
-    //final String UPLOAD_FILE_SERVER = "C:\\DesignerRHN12\\Basico12\\fotos_empleados\\";
     final String UPLOAD_FILE_SERVER = "E:\\DesignerRHN10\\Basico10\\fotos_empleados\\";
 
     public ConexionesKioskosFacadeREST() {
@@ -162,8 +150,6 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @GET
     @Path("{usuario}/{pass}@{bd}")
     @Produces(MediaType.TEXT_PLAIN)
-//    public String validaUsuario(@DefaultValue("") @QueryParam("usuario") String usuario, @DefaultValue("") @QueryParam("pass") String pass, @DefaultValue("") @QueryParam("bd") String bd) {
-//    public Response validaUsuario(@PathParam("usuario") String usuario, @PathParam("pass") String pass, @PathParam("bd") String bd) {
     public String validaUsuario(@PathParam("usuario") String usuario, @PathParam("pass") String pass, @PathParam("bd") String bd) {
         BigDecimal res = null;
         try {
@@ -319,6 +305,15 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             return correo;
         }
     }*/
+    /**
+     * Como usar: http://ip:puerto/wsreporte/webresources/conexioneskioskos/updateFechas?usuario=8125176&nitEmpresa=811025446&fechadesde=2020-08-01&fechahasta=2020-08-31&enviocorreo=false
+     * @param seudonimo
+     * @param documento
+     * @param clave
+     * @param nitEmpresa
+     * @param cadena
+     * @return 
+     */
     @POST
     @Path("/creaUsuario")
     @Produces(MediaType.APPLICATION_JSON)
@@ -358,10 +353,10 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             } else {
                 String secEmpl = getSecEmplPorDocumentoYEmpresa(documento, nitEmpresa, cadena);
                 String sqlQueryInsert = "INSERT INTO CONEXIONESKIOSKOS (SEUDONIMO, EMPLEADO, PERSONA, PWD, "
-                        + "NITEMPRESA, ACTIVO) "
+                        + "NITEMPRESA, ACTIVO, ULTIMACONEXION) "
                         + "VALUES (lower(?), ?, "
                         + "(SELECT SECUENCIA FROM PERSONAS WHERE NUMERODOCUMENTO=?), "
-                        + " GENERALES_PKG.ENCRYPT(?), ?, 'P')";
+                        + " GENERALES_PKG.ENCRYPT(?), ?, 'P', SYSDATE)";
                 Query queryInsert = getEntityManager(cadena).createNativeQuery(sqlQueryInsert);
                 queryInsert.setParameter(1, seudonimo);
                 queryInsert.setParameter(2, secEmpl);
