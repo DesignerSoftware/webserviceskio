@@ -1,14 +1,11 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package co.com.designer.services;
 
 import co.com.designer.kiosko.generales.EnvioCorreo;
 import co.com.designer.kiosko.entidades.KioCausasAusentismos;
 import co.com.designer.kiosko.entidades.DiagnosticosCategorias;
 import co.com.designer.kiosko.entidades.OpcionesKioskosApp;
+import co.com.designer.persistencia.implementacion.PersistenciaConexiones;
+import co.com.designer.persistencia.interfaz.IPersistenciaConexiones;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -20,8 +17,8 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.Persistence;
+//import javax.persistence.EntityManager;
+//import javax.persistence.Persistence;
 import javax.persistence.Query;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -30,58 +27,40 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.text.SimpleDateFormat;
-import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.persistence.PersistenceException;
-import javax.persistence.Tuple;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.core.Response;
-import java.util.Arrays;
-import java.io.FileFilter;
 
 /**
  *
- * @author UPC006
+ * @author Mateo
  */
 @Stateless
 @Path("ausentismos")
 public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAusentismos> {
 
+    private IPersistenciaConexiones persistenciaConexiones;
+    
     public kioCausasAusentismosFacadeREST() {
         super(KioCausasAusentismos.class);
+        persistenciaConexiones = new PersistenciaConexiones();
     }
 
-    @Override
-    protected EntityManager getEntityManager() {
-        String unidadPersistencia = "wsreportePU";
-        EntityManager em = Persistence.createEntityManagerFactory(unidadPersistencia).createEntityManager();
-        return em;
-    }
-
-    protected EntityManager getEntityManager(String persistence) {
-        String unidadPersistencia = persistence;
-        EntityManager em = Persistence.createEntityManagerFactory(unidadPersistencia).createEntityManager();
-        return em;
-    }
-
-    @Override
     protected void setearPerfil() {
         try {
             String rol = "ROLKIOSKO";
             String sqlQuery = "SET ROLE " + rol + " IDENTIFIED BY RLKSK ";
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager().createNativeQuery(sqlQuery);
             query.executeUpdate();
         } catch (Exception ex) {
             System.out.println("Error setearPerfil: " + ex);
@@ -92,7 +71,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         try {
             String rol = "ROLKIOSKO";
             String sqlQuery = "SET ROLE " + rol + " IDENTIFIED BY RLKSK ";
-            Query query = getEntityManager(cadenaPersistencia).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadenaPersistencia).createNativeQuery(sqlQuery);
             query.executeUpdate();
         } catch (Exception ex) {
             System.out.println("Error setearPerfil: " + ex);
@@ -107,7 +86,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             }
             System.out.println("setearPerfil(cadena)");
             String sqlQuery = "SET ROLE " + rol + " IDENTIFIED BY RLKSK ";
-            Query query = getEntityManager(cadenaPersistencia).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadenaPersistencia).createNativeQuery(sqlQuery);
             query.executeUpdate();
         } catch (Exception ex) {
             System.out.println("Error setearPerfil(cadenaPersistencia): " + ex);
@@ -118,14 +97,6 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
     @Path("/token")
     public String authenticate(@HeaderParam("authorization") String token) {
         System.out.println("Token recibido: " + token);
-        //return Response.ok("Token="+token).build();
-        /*Response.ResponseBuilder response = Response.ok("token=" + token);
-        response.header("my-header1", token);
-        return response.build();*/
-        //return Response.ok().status(Response.Status.OK).entity(token.toString()).build();
-        /*return Response.ok(
-        token)
-        .build();*/
         return token;
     }
 
@@ -137,21 +108,6 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         return super.findAll();
     }
 
-    /*@GET
-    @Path("/causas")
-    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public List findAlls(@QueryParam("nitempresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
-           String esquema = getEsquema(nitEmpresa, cadena);
-           setearPerfil(esquema, cadena);
-           String sqlQuery = "SELECT ka "
-                   + " FROM KioCausasAusentismos ka "
-                   + " WHERE "
-                   + " ka.empresa.nit=:nitempresa ";
-                       Query query = getEntityManager(cadena).createQuery(sqlQuery);
-            query.setParameter("nitempresa", Long.parseLong(nitEmpresa));
-            List<OpcionesKioskosApp>  lista = query.getResultList();
-            return lista;
-    }*/
     @GET
     @Path("/causas")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
@@ -163,7 +119,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                 + " FROM KioCausasAusentismos ka "
                 + " WHERE "
                 + " ka.empresa.nit=:nitempresa ";
-        Query query = getEntityManager(cadena).createQuery(sqlQuery);
+        Query query = this.persistenciaConexiones.getEntityManager(cadena).createQuery(sqlQuery);
         query.setParameter("nitempresa", Long.parseLong(nitEmpresa));
         List<OpcionesKioskosApp> lista = query.getResultList();
         return lista;
@@ -177,7 +133,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         setearPerfil(esquema, cadena);
         String sqlQuery = "SELECT ka "
                 + " FROM DiagnosticosCategorias ka order by ka.codigo ";
-        Query query = getEntityManager(cadena).createQuery(sqlQuery);
+        Query query = this.persistenciaConexiones.getEntityManager(cadena).createQuery(sqlQuery);
         List<DiagnosticosCategorias> lista = query.getResultList();
         return lista;
     }
@@ -191,9 +147,8 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         List lista = null;
         String sqlQuery = "SELECT secuencia, codigo, descripcion "
                 + " FROM DIAGNOSTICOSCATEGORIAS order by codigo, descripcion ";
-        Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+        Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
         lista = query.getResultList();
-        //lista.forEach(System.out::println);
         return lista;
     }
 
@@ -233,7 +188,6 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                 mensaje = "El empleado no existe";
             }
         } catch (Exception e) {
-            // return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
             mensaje = "Se ha presentado un error al hacer la consulta. Si el error persiste por favor comuniquese con el área de Talento humano de su empresa.";
         }
         JsonObject json = Json.createObjectBuilder()
@@ -272,7 +226,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         System.out.println("link Kiosco: " + urlKiosco);
         System.out.println("grupoEmpresarial: " + grupoEmpr);
         boolean soliciCreada = false;
-        boolean soliciValida = false;
+//        boolean soliciValida = false;
         String esquema = null;
         String nombreAnexo = null; // nombre con el que debe guardarse el campo del documento anexo
         String secKioSoliciAusent = null;
@@ -286,17 +240,17 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         try {
             Date fecha = new Date();
             String fechaGeneracion = new SimpleDateFormat("ddMMyyyy HHmmss").format(fecha);
-            String fechaCorreo = new SimpleDateFormat("dd/MM/yyyy").format(fecha);
-            String horaGeneracion = new SimpleDateFormat("HH:mm").format(fecha);
+//            String fechaCorreo = new SimpleDateFormat("dd/MM/yyyy").format(fecha);
+//            String horaGeneracion = new SimpleDateFormat("HH:mm").format(fecha);
             System.out.println("fecha: " + fechaGeneracion);
             String secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nit, cadena, esquema);
             String secEmplJefe = null;
-            String personaCreaSolici = getApellidoNombreXsecEmpl(secEmpl, nit, cadena, esquema);
+//            String personaCreaSolici = getApellidoNombreXsecEmpl(secEmpl, nit, cadena, esquema);
             String nombreAutorizaSolici = ""; // Nombre Jefe
             String correoAutorizaSolici = null; // Correo Jefe
             String mensaje = "";
-            String urlKio = urlKiosco + "#/login/" + grupoEmpr;
-            String urlKioOlvidoClave = urlKiosco + "#/olvidoClave/" + grupoEmpr;
+//            String urlKio = urlKiosco + "#/login/" + grupoEmpr;
+//            String urlKioOlvidoClave = urlKiosco + "#/olvidoClave/" + grupoEmpr;
             secEmplJefe = consultarSecuenciaEmpleadoJefe(secEmpl, nit, cadena, esquema);
             if ("S".equals(anexoAdjunto)) {
                 nombreAnexo = "anexo_" + secEmpl + "_" + fechaGeneracion.replaceAll(" ", "");
@@ -345,7 +299,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                                     if (creaKioEstadoSoliciAusent(seudonimo, nit, secKioSoliciAusent, fechaGeneracion, "ENVIADO", null, cadena, esquema)) {
                                         soliciCreada = true;
                                         System.out.println("Estado de novedad de ausentismo creado.");
-                                        getEntityManager(cadena).close();
+                                        this.persistenciaConexiones.getEntityManager(cadena).close();
                                     } else {
                                         mensaje = "Ha ocurrido un error y no fue posible crear la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuníquese con el área de nómina y recursos humanos de su empresa";
                                     }
@@ -367,7 +321,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                                         if (creaKioEstadoSoliciAusent(seudonimo, nit, secKioSoliciAusent, fechaGeneracion, "ENVIADO", null, cadena, esquema)) {
                                             soliciCreada = true;
                                             System.out.println("Estado de novedad de ausentismo creado.");
-                                            getEntityManager(cadena).close();
+                                            this.persistenciaConexiones.getEntityManager(cadena).close();
                                         } else {
                                             mensaje = "Ha ocurrido un error y no fue posible crear la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuníquese con el área de nómina y recursos humanos de su empresa";
                                         }
@@ -397,7 +351,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                                     if (creaKioEstadoSoliciAusent(seudonimo, nit, secKioSoliciAusent, fechaGeneracion, "ENVIADO", null, cadena, esquema)) {
                                         soliciCreada = true;
                                         System.out.println("Estado de novedad de ausentismo creado.");
-                                        getEntityManager(cadena).close();
+                                        this.persistenciaConexiones.getEntityManager(cadena).close();
                                     } else {
                                         mensaje = "Ha ocurrido un error y no fue posible crear la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuníquese con el área de nómina y recursos humanos de su empresa";
                                     }
@@ -423,7 +377,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                                         if (creaKioEstadoSoliciAusent(seudonimo, nit, secKioSoliciAusent, fechaGeneracion, "ENVIADO", null, cadena, esquema)) {
                                             soliciCreada = true;
                                             System.out.println("Estado de novedad de ausentismo creado.");
-                                            getEntityManager(cadena).close();
+                                            this.persistenciaConexiones.getEntityManager(cadena).close();
                                         } else {
                                             mensaje = "Ha ocurrido un error y no fue posible crear la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuníquese con el área de nómina y recursos humanos de su empresa";
                                         }
@@ -445,7 +399,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                                     if (creaKioEstadoSoliciAusent(seudonimo, nit, secKioSoliciAusent, fechaGeneracion, "ENVIADO", null, cadena, esquema)) {
                                         soliciCreada = true;
                                         System.out.println("Estado de novedad de ausentismo creado.");
-                                        getEntityManager(cadena).close();
+                                        this.persistenciaConexiones.getEntityManager(cadena).close();
                                     } else {
                                         mensaje = "Ha ocurrido un error y no fue posible crear la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuníquese con el área de nómina y recursos humanos de su empresa";
                                     }
@@ -461,7 +415,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                                     if (creaKioEstadoSoliciAusent(seudonimo, nit, secKioSoliciAusent, fechaGeneracion, "ENVIADO", null, cadena, esquema)) {
                                         soliciCreada = true;
                                         System.out.println("Estado de novedad de ausentismo creado.");
-                                        getEntityManager(cadena).close();
+                                        this.persistenciaConexiones.getEntityManager(cadena).close();
                                     } else {
                                         mensaje = "Ha ocurrido un error y no fue posible crear la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuníquese con el área de nómina y recursos humanos de su empresa";
                                     }
@@ -479,7 +433,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                             if (creaKioEstadoSoliciAusent(seudonimo, nit, secKioSoliciAusent, fechaGeneracion, "ENVIADO", null, cadena, esquema)) {
                                 soliciCreada = true;
                                 System.out.println("Estado de novedad de ausentismo creado.");
-                                getEntityManager(cadena).close();
+                                this.persistenciaConexiones.getEntityManager(cadena).close();
                             } else {
                                 mensaje = "Ha ocurrido un error y no fue posible crear la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuníquese con el área de nómina y recursos humanos de su empresa";
                             }
@@ -528,11 +482,12 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                 mensaje = "No tiene un autorizador de ausentismos relacionado, por favor comuníquese con el área de nómina y recursos humanos de su empresa.";
             }
         } catch (Exception e) {
-            System.out.println("Error: " + this.getClass().getName() + ".crearNovedadAusentismo()");
+            System.out.println("Error: " + this.getClass().getName() + ".crearNovedadAusentismo() "+e.getMessage());
+            e.printStackTrace();
         }
         String mensaje = "";
-        String urlKio = urlKiosco + "#/login/" + grupoEmpr;
-        String urlKioOlvidoClave = urlKiosco + "#/olvidoClave/" + grupoEmpr;
+//        String urlKio = urlKiosco + "#/login/" + grupoEmpr;
+//        String urlKioOlvidoClave = urlKiosco + "#/olvidoClave/" + grupoEmpr;
         // Respuesta
         JSONObject obj = new JSONObject();
         try {
@@ -562,7 +517,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                         + "VALUES "
                         + "(?,  USER, ?, 'S', TO_DATE(?, 'ddmmyyyy HH24miss'), ?,"
                         + "TO_DATE(?, 'DD/MM/YYYY'), TO_DATE(?, 'DD/MM/YYYY'), ?, ?, ?)";
-                Query query = getEntityManager(cadena).createNativeQuery(sql);
+                Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sql);
                 query.setParameter(1, secEmpleado);
                 query.setParameter(2, secEmplJefe);
                 query.setParameter(3, fechaGeneracion);
@@ -597,7 +552,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     + " AND FECHAGENERACION=TO_DATE(?, 'ddmmyyyy HH24miss') "
                     + " AND EMPLEADOJEFE=? AND ACTIVA='S' ";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpl);
             query.setParameter(2, fechaGeneracion);
             query.setParameter(3, secEmplJefe);
@@ -636,7 +591,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     //+ "?, TO_DATE(?,'DD/MM/YYYY'), SYSDATE, ?, ?, "
                     + "TO_DATE(?,'DD/MM/YYYY'), TO_DATE(?,'DD/MM/YYYY'), SYSDATE, ?, ?, "
                     + "?, ?, ?, 'N')";
-            Query query = getEntityManager(cadena).createNativeQuery(sql);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sql);
             String secEmpleado = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena, esquema);
             query.setParameter(1, secEmpleado);
             query.setParameter(2, fechainicial);
@@ -678,7 +633,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     + "(KIOSOLICIAUSENTISMO, FECHAPROCESAMIENTO, ESTADO, EMPLEADOEJECUTA, MOTIVOPROCESA)\n"
                     + "VALUES "
                     + "(?, TO_DATE(?, 'ddmmyyyy HH24miss'), ?, ?, ?)";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, kioSoliciAusentismo);
             query.setParameter(2, fechaProcesa);
             query.setParameter(3, estado);
@@ -701,7 +656,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT E.SECUENCIA SECUENCIAEMPLEADO FROM EMPLEADOS E, CONEXIONESKIOSKOS CK WHERE CK.EMPLEADO=E.SECUENCIA AND CK.SEUDONIMO=? AND CK.NITEMPRESA=?";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, seudonimo);
             query.setParameter(2, nitEmpresa);
             secuencia = query.getSingleResult().toString();
@@ -719,7 +674,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT EM.SECUENCIA SECUENCIAEMPRESA FROM EMPRESAS EM WHERE EM.NIT=?";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
             secuencia = query.getSingleResult().toString();
             System.out.println("secuencia: " + secuencia);
@@ -742,7 +697,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     + "KES.KIOSOLICIAUSENTISMO=KSA.SECUENCIA \n"
                     + "AND KES.SECUENCIA=?";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
 
             query.setParameter(1, secKioEstadoSolici);
             secEmplJefe = query.getSingleResult().toString();
@@ -764,7 +719,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     + " FROM PERSONAS P "
                     + " WHERE "
                     + " P.SECUENCIA=? ";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secPersona);
             System.out.println("getCorreoXsecPer(): " + correo);
             correo = query.getSingleResult().toString();
@@ -787,7 +742,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             //} else {
             //  sqlQuery = "SELECT InitCap(NVL(NOMBRE, 'USUARIO')) NOMBRE FROM PERSONAS WHERE EMAIL=?";
             //}
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secPersona);
             nombre = query.getSingleResult().toString();
             System.out.println("Nombre Autorizador vacaciones: " + nombre);
@@ -811,9 +766,9 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     + "WHERE\n"
                     + "KES.KIOSOLICIAUSENTISMO=KSA.SECUENCIA\n"
                     + "AND KNSA.KIOSOLICIAUSENTISMO = KSA.SECUENCIA \n"
-                    + "AND KES.SECUENCIA=?";
+                    + "AND KES.SECUENCIA=? ";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
 
             query.setParameter(1, secKioEstadoSolici);
             secPerAutorizador = query.getSingleResult().toString();
@@ -845,7 +800,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     + "                        where vci.empleado = vc.empleado \n"
                     + "                       and vci.fechavigencia <= sysdate)";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpleado);
             secJefe = query.getSingleResult().toString();
             System.out.println("secuencia jefe: " + secJefe);
@@ -869,7 +824,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     + "KES.KIOSOLICIAUSENTISMO=KSA.SECUENCIA "
                     + "AND KES.SECUENCIA=?";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, kioEstadoSolici);
             secEmpl = query.getSingleResult().toString();
             System.out.println("Valor getEmplXsecKioEstadoSolici(): " + secEmpl);
@@ -889,7 +844,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     + " FROM PERSONAS P, EMPLEADOS EMPL "
                     + " WHERE P.SECUENCIA=EMPL.PERSONA "
                     + " AND EMPL.SECUENCIA=?";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpl);
             nombre = (String) query.getSingleResult();
             System.out.println("Resultado getApellidoNombreXsecEmpl(): " + nombre);
@@ -912,7 +867,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     + " WHERE CK.EMPLEADO=E.SECUENCIA "
                     + " AND P.SECUENCIA=E.PERSONA "
                     + " AND CK.EMPLEADO=?";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpl);
             System.out.println("getCorreoXsecEmpl(): " + correo);
             correo = query.getSingleResult().toString();
@@ -1025,7 +980,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     + "and KSA.empleado = ?\n"
                     + "and KES.estado = ?\n"
                     + "order by KES.fechaProcesamiento DESC";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpl);
             query.setParameter(2, estado);
             s = query.getResultList();
@@ -1192,7 +1147,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     + "AND KSA.EMPLEADOJEFE=JEFE.SECUENCIA  \n"
                     + "AND DC.SECUENCIA(+) = KNSA.DIAGNOSTICOCATEGORIA\n"
                     + "ORDER BY KES.FECHAPROCESAMIENTO DESC";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secuenciaEmpresa);
             query.setParameter(2, estado);
             query.setParameter(3, secuenciaJefe);
@@ -1297,7 +1252,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                         + "WHERE SECUENCIA=?";
                 //String esquema = getEsquema(nitEmpresa, cadena);
                 setearPerfil(esquema, cadena);
-                query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+                query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
                 query.setParameter(1, fechaGeneracion);
                 query.setParameter(2, estado);
                 query.setParameter(3, secEmplEjecuta);
@@ -1315,7 +1270,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                         + "WHERE SECUENCIA=?";
                 //String esquema = getEsquema(nitEmpresa, cadena);
                 setearPerfil(esquema, cadena);
-                query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+                query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
                 query.setParameter(1, fechaGeneracion);
                 query.setParameter(2, estado);
                 query.setParameter(3, secEmplEjecuta);
@@ -1488,7 +1443,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         Date fechaRegreso = null;
         try {
             setearPerfil(esquema, cadena);
-            query = getEntityManager(cadena).createNativeQuery(consulta);
+            query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(consulta);
             query.setParameter(1, fechaStr);
             fechaRegreso = (Date) (query.getSingleResult());
             System.out.println("getDate(): " + fechaRegreso);
@@ -1542,7 +1497,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     + "FROM KIOESTADOSSOLICIAUSENT KESI \n"
                     + "WHERE KESI.SECUENCIA=KES.SECUENCIA \n"
                     + "AND KES.ESTADO IN ('ENVIADO','AUTORIZADO','LIQUIDADO'))";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, empleado);
             query.setParameter(2, causa);
             query.setParameter(3, fechaInicial);
@@ -1564,7 +1519,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         String fechaRegreso = null;
         try {
             setearPerfil(esquema, cadena);
-            query = getEntityManager(cadena).createNativeQuery(consulta);
+            query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(consulta);
             query.setParameter(1, fechaStr);
             fechaRegreso = (String) (query.getSingleResult());
             System.out.println("getDate(): " + fechaRegreso);
@@ -1589,7 +1544,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         try {
             setearPerfil(esquema, cadena);
             sqlQuery = "select kioausentismo_pkg.CAUSAPORCENTAJELIQUIDACION(?) from dual ";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, causa);
             porcentaje = query.getSingleResult().toString();
             System.out.println("porcentaje: " + porcentaje);
@@ -1608,7 +1563,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         try {
             setearPerfil(esquema, cadena);
             sqlQuery = "select kioausentismo_pkg.CAUSAFORMALIQUIDACION(?) from dual ";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, causa);
             formaLiq = query.getSingleResult().toString();
             /*Iterator<String> it= CausaFormaLiquidacion.iterator();
@@ -1639,7 +1594,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         try {
             setearPerfil(esquema, cadena);
             sqlQuery = "select kioausentismo_pkg.MENSAJEVALIDACIONAUSENT(?,to_date(?, 'dd/mm/yyyy'),?) from dual";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, seudonimo);
             query.setParameter(2, fechaInicio);
             query.setParameter(3, nitEmpresa);
@@ -1682,7 +1637,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             sqlQuery = "SELECT ORIGENINCAPACIDAD "
                     + "FROM CAUSASAUSENTISMOS CA "
                     + "WHERE CA.SECUENCIA=? ";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, causa);
             CausaOrigenIncapacidad = query.getSingleResult().toString();
             /*Iterator<String> it= CausaFormaLiquidacion.iterator();
@@ -1713,7 +1668,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         try {
             setearPerfil(esquema, cadena);
             sqlQuery = "select secuencia from causasausentismos where codigo=? ";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, codCausa);
             secCausa = query.getSingleResult().toString();
             /*Iterator<String> it= CausaFormaLiquidacion.iterator();
@@ -1753,7 +1708,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         try {
             setearPerfil(esquema, cadena);
             sqlQuery = "SELECT TO_CHAR(TO_DATE(?, 'dd/mm/yyyy') + ?,'dd/mm/yyyy') FROM DUAL ";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, fechaInicio);
             query.setParameter(2, dias);
             fechaSugerida = query.getSingleResult().toString();
@@ -1781,7 +1736,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             setearPerfil(esquema, cadena);
             sqlQuery = "select TO_CHAR(TO_DATE(kioausentismo_pkg.CALCULAFECHAFINAUSENT("
                     + "?, ?, ?, ? ,  ?)), 'DD/MM/YYYY') from dual";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, fechaInicio);
             query.setParameter(2, dias);
             query.setParameter(3, seudonimo);
@@ -1986,7 +1941,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     String sqlQuery = "select email from kioconfigmodulos where codigoopcion=? and nitempresa=?";
                     //Query query2 = getEntityManager(cadena).createNativeQuery(sqlQuery);
                     System.out.println("Query2: " + sqlQuery);
-                    Query query2 = getEntityManager(cadena).createNativeQuery(sqlQuery);
+                    Query query2 = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
                     query2.setParameter(1, "41");
                     query2.setParameter(2, nitEmpresa);
                     List lista = query2.getResultList();
@@ -2084,7 +2039,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     + "    and ksi.secuencia=t2.secuencia) "
                     + "ORDER BY t0.FECHAPROCESAMIENTO DESC";
             //Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
             query.setParameter(2, secEmplJefe);
             s = query.getResultList();
@@ -2154,7 +2109,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     + "AND EMPLEADOJEFE = E.SECUENCIA) NOMBREJEFE "
                     + "FROM KIOSOLICIAUSENTISMOS WHERE SECUENCIA=? ";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secKioSoliciAusentismo);
             list = query.getResultList();
 
@@ -2181,7 +2136,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         System.out.println("Query: " + query1);
         String esquema = getEsquema(nitEmpresa, cadena);
         setearPerfil(esquema, cadena);
-        Query query = getEntityManager(cadena).createNativeQuery(query1);
+        Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(query1);
         query.setParameter(1, nombreModulo);
         query.setParameter(2, codigoOpc);
         query.setParameter(3, nitEmpresa);
@@ -2203,7 +2158,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
             String sqlQuery = "UPDATE KIOSOLICIAUSENTISMOS SET NOMBREANEXO=? WHERE SECUENCIA=?";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nombreAnexo);
             query.setParameter(2, secKioSoliciAusentismo);
             conteo = query.executeUpdate();
@@ -2224,7 +2179,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                     + "WHERE "
                     + "KSA.SECUENCIA = ?";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secKioSoliciAusentismo);
             secEmplJefe = query.getSingleResult().toString();
             System.out.println("Empl jefe asociado: " + secEmplJefe);
@@ -2243,7 +2198,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             setearPerfil(esquema, cadena);
             sqlQuery = "SELECT P.EMAIL FROM PERSONAS P, conexioneskioskos ck WHERE p.secuencia=ck.persona and "
                     + " ck.seudonimo=? and ck.nitempresa=?";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, seudonimo);
             query.setParameter(2, nitEmpresa);
             correo = query.getSingleResult().toString();
@@ -2261,7 +2216,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT E.SECUENCIA SECUENCIAEMPLEADO FROM EMPLEADOS E, CONEXIONESKIOSKOS CK WHERE CK.EMPLEADO=E.SECUENCIA AND CK.SEUDONIMO=? AND CK.NITEMPRESA=?";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, seudonimo);
             query.setParameter(2, nitEmpresa);
             secuencia = query.getSingleResult().toString();
@@ -2280,7 +2235,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT " + valor + " FROM CONFICORREOKIOSKO WHERE EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?)";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
             servidorsmtp = query.getSingleResult().toString();
             System.out.println(valor + ": " + servidorsmtp);
@@ -2298,7 +2253,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT SERVIDORSMTP FROM CONFICORREOKIOSKO WHERE EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?)";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
             servidorsmtp = query.getSingleResult().toString();
             System.out.println("Servidor smtp: " + servidorsmtp);
@@ -2316,7 +2271,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT PATHREPORTES FROM GENERALESKIOSKO WHERE ROWNUM<=1";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             rutaFoto = query.getSingleResult().toString();
             System.out.println("rutaFotos: " + rutaFoto);
         } catch (Exception e) {
@@ -2331,7 +2286,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         String sqlQuery;
         try {
             sqlQuery = "SELECT ESQUEMA FROM CADENASKIOSKOSAPP WHERE NITEMPRESA=? AND CADENA=?";
-            Query query = getEntityManager("wscadenaskioskosPU").createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager("wscadenaskioskosPU").createNativeQuery(sqlQuery);
             query.setParameter(1, nitempresa);
             query.setParameter(2, cadena);
             esquema = query.getSingleResult().toString();
@@ -2354,7 +2309,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             6 - LICENSIA 
             */
             sqlQuery = "SELECT SECUENCIA FROM TIPOSAUSENTISMOS WHERE CODIGO=? ";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, codigoCausa);
             secClase = query.getSingleResult().toString();
             System.out.println("secClase: " + secClase);

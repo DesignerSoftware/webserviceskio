@@ -14,7 +14,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.math.BigDecimal;
+//import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
@@ -25,15 +25,15 @@ import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.UriInfo;
+//import javax.ws.rs.core.Context;
+//import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PUT;
+//import javax.ws.rs.PUT;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -108,7 +108,11 @@ public class RhFacadeREST {
         try {
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P, CONEXIONESKIOSKOS CK WHERE CK.PERSONA=P.SECUENCIA AND lower(CK.SEUDONIMO)=lower(?) AND CK.NITEMPRESA=?";
+            String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO "
+                    + "FROM PERSONAS P, CONEXIONESKIOSKOS CK "
+                    + "WHERE CK.PERSONA=P.SECUENCIA "
+                    + "AND lower(CK.SEUDONIMO)=lower(?) "
+                    + "AND CK.NITEMPRESA=?";
             System.out.println("Query: " + sqlQuery);
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
 

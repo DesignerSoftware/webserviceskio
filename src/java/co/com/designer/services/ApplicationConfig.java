@@ -1,24 +1,23 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package co.com.designer.services;
 
 import java.util.Set;
 import javax.ws.rs.core.Application;
-
+import javax.ws.rs.ApplicationPath;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 /**
  *
- * @author usuario
+ * @author Thalia Manrique
  */
-@javax.ws.rs.ApplicationPath("webresources")
+@ApplicationPath("webresources")
 public class ApplicationConfig extends Application {
 
     @Override
     public Set<Class<?>> getClasses() {
         Set<Class<?>> resources = new java.util.HashSet<>();        
-        addRestResourceClasses(resources);
+        this.addRestResourceClasses(resources);
+        // verificar que este añadida en resources
+        // resources.add(org.glassfish.jersey.media.multipart.MultiPartFeature.class);
+        resources.add(MultiPartFeature.class);
         return resources;
     }
 
@@ -28,13 +27,11 @@ public class ApplicationConfig extends Application {
      * all resources defined in the project.
      * If required, comment out calling this method in getClasses().
      */
-    // KIOSKO
-    // resources.add(org.glassfish.jersey.media.multipart.MultiPartFeature.class);
-    // verificar que este añadida en resources
     private void addRestResourceClasses(Set<Class<?>> resources) {
         resources.add(co.com.designer.services.CadenasKioskosFacadeREST.class);
         resources.add(co.com.designer.services.ConexionesKioskosFacadeREST.class);
         resources.add(co.com.designer.services.EmpleadosFacadeREST.class);
+        resources.add(co.com.designer.services.GestionPqrsFacadeREST.class);
         resources.add(co.com.designer.services.OpcionesKioskosFacadeREST.class);
         resources.add(co.com.designer.services.ReportesFacadeREST.class);
         resources.add(co.com.designer.services.RhFacadeREST.class);

@@ -2,6 +2,20 @@ package co.com.designer.services;
 
 import co.com.designer.kiosko.generales.*;
 import co.com.designer.kiosko.entidades.ConexionesKioskos;
+import co.com.designer.persistencia.interfaz.IPersistenciaCadenasKioskosApp;
+import co.com.designer.persistencia.interfaz.IPersistenciaPerfiles;
+import co.com.designer.persistencia.implementacion.PersistenciaPerfiles;
+import co.com.designer.persistencia.implementacion.PersistenciaCadenasKioskosApp;
+import co.com.designer.persistencia.implementacion.PersistenciaConexiones;
+import co.com.designer.persistencia.implementacion.PersistenciaConexionesKioskos;
+import co.com.designer.persistencia.implementacion.PersistenciaEmpleados;
+import co.com.designer.persistencia.implementacion.PersistenciaGeneralesKiosko;
+import co.com.designer.persistencia.implementacion.PersistenciaPersonas;
+import co.com.designer.persistencia.interfaz.IPersistenciaConexiones;
+import co.com.designer.persistencia.interfaz.IPersistenciaConexionesKioskos;
+import co.com.designer.persistencia.interfaz.IPersistenciaEmpleados;
+import co.com.designer.persistencia.interfaz.IPersistenciaGeneralesKiosko;
+import co.com.designer.persistencia.interfaz.IPersistenciaPersonas;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -10,7 +24,6 @@ import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.util.List;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -25,21 +38,19 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.json.JSONObject;
 import java.io.*;
-import java.math.BigInteger;
 import java.sql.ResultSet;
 import java.util.Calendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
-import javax.persistence.Persistence;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
 import java.sql.Date;
+//import javax.ejb.EJB;
 import javax.json.JsonValue;
 import org.json.JSONException;
 import passwordGenerator.GeneradorClave;
@@ -52,25 +63,47 @@ import passwordGenerator.GeneradorClave;
 @Path("conexioneskioskos")
 public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKioskos> {
 
-    final String UPLOAD_FILE_SERVER = "E:\\DesignerRHN10\\Basico10\\fotos_empleados\\";
+//    @EJB
+    private IPersistenciaPerfiles rolesBD;
+    private IPersistenciaConexiones persistenciaConexiones;
+//    @EJB
+    private IPersistenciaCadenasKioskosApp cadenasKio;
+    private IPersistenciaConexionesKioskos persisConKio;
+    private IPersistenciaGeneralesKiosko persisGenKio;
+    private IPersistenciaEmpleados perisEmpleados;
+    private IPersistenciaEmpleados persisEmple;
+    private IPersistenciaPersonas persisPersonas;
 
+//    final String UPLOAD_FILE_SERVER = "E:\\DesignerRHN10\\Basico10\\fotos_empleados\\";
     public ConexionesKioskosFacadeREST() {
         super(ConexionesKioskos.class);
+        this.rolesBD = new PersistenciaPerfiles();
+        this.cadenasKio = new PersistenciaCadenasKioskosApp();
+        this.persistenciaConexiones = new PersistenciaConexiones();
+        this.persisGenKio = new PersistenciaGeneralesKiosko();
+        this.perisEmpleados = new PersistenciaEmpleados();
+        this.persisEmple = new PersistenciaEmpleados();
+        this.persisPersonas = new PersistenciaPersonas();
+        this.persisConKio = new PersistenciaConexionesKioskos();
     }
 
+    /*
     @Override
     protected EntityManager getEntityManager() {
         String unidadPersistencia = "wsreportePU";
         EntityManager em = Persistence.createEntityManagerFactory(unidadPersistencia).createEntityManager();
         return em;
     }
+     */
 
+ /*
     protected EntityManager getEntityManager(String persistence) {
         String unidadPersistencia = persistence;
         EntityManager em = Persistence.createEntityManagerFactory(unidadPersistencia).createEntityManager();
         return em;
     }
-
+     */
+ /*
     @Override
     protected void setearPerfil() {
         try {
@@ -83,7 +116,9 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             System.out.println("Error setearPerfil(): " + ex);
         }
     }
+     */
 
+ /*
     protected void setearPerfil(String esquema, String cadenaPersistencia) {
         try {
             String rol = "ROLKIOSKO";
@@ -92,13 +127,13 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             }
             System.out.println("setearPerfil(esquema, cadena)");
             String sqlQuery = "SET ROLE " + rol + " IDENTIFIED BY RLKSK ";
-            Query query = getEntityManager(cadenaPersistencia).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadenaPersistencia).createNativeQuery(sqlQuery);
             query.executeUpdate();
         } catch (Exception ex) {
             System.out.println("Error setearPerfil(cadenaPersistencia, esquema): " + ex);
         }
     }
-
+     */
     @POST
     @Override
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -151,15 +186,16 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @Path("{usuario}/{pass}@{bd}")
     @Produces(MediaType.TEXT_PLAIN)
     public String validaUsuario(@PathParam("usuario") String usuario, @PathParam("pass") String pass, @PathParam("bd") String bd) {
+        /*
         BigDecimal res = null;
         try {
-            setearPerfil();
+            this.rolesBD.setearPerfil();
             String sqlQuery = "select count(*) "
                     + "from conexioneskioskos ck, personas per "
                     + "where per.secuencia = ck.persona "
                     + "and per.numerodocumento = ? "
                     + "and generales_pkg.decrypt(ck.pwd) = ? ";
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager().createNativeQuery(sqlQuery);
             query.setParameter(1, usuario);
             query.setParameter(2, pass);
             res = (BigDecimal) query.getSingleResult();
@@ -171,7 +207,8 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         }
 //        return String.valueOf(res);
         return res.toString();
-        /*        return Response
+         */
+ /*        return Response
                 .status(200)
                 .header("Access-Control-Allow-Origin", "*")
                 .header("Access-Control-Allow-Credentials", "true")
@@ -181,6 +218,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                         "GET, POST, PUT, DELETE, OPTIONS, HEAD")
                 .entity(res)
                 .build();*/
+        return persisConKio.validaUsuario(usuario, pass, bd).toString();
     }
 
     // Como usar: http://ip:puerto/wsreporte/webresources/conexioneskioskos/updateFechas?usuario=8125176&nitEmpresa=811025446&fechadesde=2020-08-01&fechahasta=2020-08-31&enviocorreo=false
@@ -189,17 +227,18 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateFechasConexionesKioskos(@QueryParam("usuario") String usuario, @QueryParam("nitEmpresa") String nitEmpresa, @QueryParam("fechadesde") String fechadesde,
             @QueryParam("fechahasta") String fechahasta, @QueryParam("enviocorreo") boolean enviocorreo, @QueryParam("dirigidoa") String dirigidoa, @QueryParam("cadena") String cadena) {
-        int conteo = 0;
         System.out.println("updateFechasConexionesKioskos() Parametros: seudonimo: " + usuario + ", fechadesde: " + fechadesde + ", fechahasta: " + fechahasta + ", dirigidoa: " + dirigidoa + ", cadena: " + cadena);
+        /*
+        int conteo = 0;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "UPDATE CONEXIONESKIOSKOS "
                     + " SET FECHADESDE=TO_DATE(?, 'yyyy-mm-dd'), FECHAHASTA=TO_DATE(?, 'yyyy-mm-dd'), ENVIOCORREO=?, DIRIGIDOA=? "
                     + " WHERE SEUDONIMO=? "
                     + " AND NITEMPRESA=?";
             String envioc = (enviocorreo == true ? "S" : "N");
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, fechadesde);
             query.setParameter(2, fechahasta);
             query.setParameter(3, envioc);
@@ -219,6 +258,14 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             conteo = 0;
             return Response.status(Response.Status.OK).entity(conteo).build();
         }
+         */
+        int conteo = this.persisConKio.updateFechasConexionesKioskos(usuario, nitEmpresa, fechadesde,
+                fechahasta, enviocorreo, dirigidoa, cadena);
+        if (conteo > 0) {
+            return Response.status(Response.Status.OK).entity(conteo).build();
+        } else {
+            return Response.status(Response.Status.GONE).entity(conteo).build();
+        }
     }
 
     // como usar: http://localhost:8082/wsreporte/webresources/conexioneskioskos/updateClave?usuario={seudonimo}&nitEmpresa={nitempresa}&clave={nuevaClave}
@@ -226,16 +273,17 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @Path("/updateClave")
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateClaveConexionesKioskos(@QueryParam("usuario") String usuario, @QueryParam("nitEmpresa") String nitEmpresa, @QueryParam("clave") String clave, @QueryParam("cadena") String cadena) {
-        int conteo = 0;
         System.out.println("updateClaveConexionesKioskos() Parametros: seudonimo: " + usuario + ", nitEmpresa: " + nitEmpresa + ", clave: " + clave);
+        /*
+        int conteo = 0;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "UPDATE CONEXIONESKIOSKOS "
                     + " SET PWD=GENERALES_PKG.ENCRYPT(?)"
                     + " WHERE SEUDONIMO=? "
                     + " AND NITEMPRESA=?";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, clave);
             query.setParameter(2, usuario);
             query.setParameter(3, nitEmpresa);
@@ -252,6 +300,13 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             conteo = 0;
             return Response.status(Response.Status.OK).entity(conteo).build();
         }
+         */
+        int conteo = this.persisConKio.updateClaveConexionesKioskos(usuario, nitEmpresa, clave, cadena);
+        if (conteo > 0) {
+            return Response.status(Response.Status.OK).entity(conteo).build();
+        } else {
+            return Response.status(Response.Status.GONE).entity(conteo).build();
+        }
     }
 
     // Como usar: http://ip:puerto/wsreporte/webresources/conexioneskioskos/updateFechas?usuario=8125176&nitEmpresa=811025446&fechadesde=2020-08-01&fechahasta=2020-08-31&enviocorreo=false
@@ -263,12 +318,13 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         List s = null;
         System.out.println("Parametros getParametros(): seudonimo: " + usuario + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT TO_CHAR(FECHADESDE, 'yyyy-mm-dd'), TO_CHAR(FECHAHASTA, 'yyyy-mm-dd'), ENVIOCORREO, nvl(DIRIGIDOA, ' ') FROM CONEXIONESKIOSKOS "
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
+            String sqlQuery = "SELECT TO_CHAR(FECHADESDE, 'yyyy-mm-dd'), TO_CHAR(FECHAHASTA, 'yyyy-mm-dd'), ENVIOCORREO, nvl(DIRIGIDOA, ' ') "
+                    + " FROM CONEXIONESKIOSKOS "
                     + " WHERE SEUDONIMO=? "
                     + " AND NITEMPRESA=?";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, usuario);
             query.setParameter(2, nitEmpresa);
 
@@ -306,13 +362,15 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         }
     }*/
     /**
-     * Como usar: http://ip:puerto/wsreporte/webresources/conexioneskioskos/updateFechas?usuario=8125176&nitEmpresa=811025446&fechadesde=2020-08-01&fechahasta=2020-08-31&enviocorreo=false
+     * Como usar:
+     * http://ip:puerto/wsreporte/webresources/conexioneskioskos/updateFechas?usuario=8125176&nitEmpresa=811025446&fechadesde=2020-08-01&fechahasta=2020-08-31&enviocorreo=false
+     *
      * @param seudonimo
      * @param documento
      * @param clave
      * @param nitEmpresa
      * @param cadena
-     * @return 
+     * @return
      */
     @POST
     @Path("/creaUsuario")
@@ -328,8 +386,8 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         JSONObject resp = new JSONObject();
         String mensaje = "";
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT COUNT(*) conteo "
                     + "FROM CONEXIONESKIOSKOS ck, PERSONAS p, EMPLEADOS e, EMPRESAS em "
                     // "WHERE ck.EMPLEADO = e.SECUENCIA "
@@ -341,7 +399,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                     + "AND em.nit = ? "
                     + "and empleadocurrent_pkg.tipotrabajadorcorte(e.secuencia, sysdate)='ACTIVO' "
                     + "AND ck.nitempresa = ? ";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, documento);
             query.setParameter(2, nitEmpresa);
             query.setParameter(3, nitEmpresa);
@@ -357,7 +415,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                         + "VALUES (lower(?), ?, "
                         + "(SELECT SECUENCIA FROM PERSONAS WHERE NUMERODOCUMENTO=?), "
                         + " GENERALES_PKG.ENCRYPT(?), ?, 'P', SYSDATE)";
-                Query queryInsert = getEntityManager(cadena).createNativeQuery(sqlQueryInsert);
+                Query queryInsert = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQueryInsert);
                 queryInsert.setParameter(1, seudonimo);
                 queryInsert.setParameter(2, secEmpl);
                 queryInsert.setParameter(3, documento);
@@ -411,10 +469,10 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         JSONObject resp = new JSONObject();
         String mensaje = "";
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "UPDATE CONEXIONESKIOSKOS SET ACTIVO=? WHERE SEUDONIMO=? AND NITEMPRESA=?";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, activo);
             query.setParameter(2, seudonimo);
             query.setParameter(3, nitEmpresa);
@@ -459,10 +517,10 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         JSONObject resp = new JSONObject();
         String mensaje = "";
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "UPDATE CONEXIONESTOKEN SET ACTIVO='N' WHERE TOKEN=?";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, jwt);
             conteo = query.executeUpdate();
             resultado = conteo > 0 ? true : false;
@@ -508,11 +566,11 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         JSONObject resp = new JSONObject();
         String mensaje = "";
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "UPDATE CONEXIONESTOKEN SET ACTIVO='N' WHERE TIPO=? "
                     + "AND CONEXIONKIOSKO=(SELECT SECUENCIA FROM CONEXIONESKIOSKOS WHERE SEUDONIMO=? AND NITEMPRESA=?)";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, tipo);
             query.setParameter(2, seudonimo);
             query.setParameter(3, nitEmpresa);
@@ -552,11 +610,11 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         System.out.println("Parametros obtenerFoto(): imagen: " + imagen + ", cadena: " + cadena + ", nitEmpresa: " + nitEmpresa + ", usuario: " + usuario);
         FileInputStream fis = null;
         File file = null;
-        String RUTAFOTO = getPathFoto(nitEmpresa, cadena);
-        String documento = null;
+        String RUTAFOTO = this.persisGenKio.getPathFoto(nitEmpresa, cadena);
+        BigDecimal documento = null;
         try {
             if (imagen.contains("null") || imagen.equals("") || imagen == null) {
-                documento = getDocumentoPorSeudonimo(usuario, nitEmpresa, cadena);
+                documento = this.persisConKio.getDocumentoPorSeudonimo(usuario, nitEmpresa, cadena);
                 if (imagen != null) {
                     imagen = nitEmpresa + '_' + documento;
                 } else {
@@ -573,7 +631,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             file = new File(RUTAFOTO + imagen);
         } catch (FileNotFoundException ex) {
             try {
-                imagen = documento;
+                imagen = documento.toString();
                 fis = new FileInputStream(new File(RUTAFOTO + imagen));
                 file = new File(RUTAFOTO + imagen);
             } catch (FileNotFoundException e) {
@@ -605,7 +663,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         System.out.println("Parametros obtenerLogo(): imagen: " + imagen + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
         FileInputStream fis = null;
         File file = null;
-        String RUTAFOTO = getPathFoto(nitEmpresa, cadena);
+        String RUTAFOTO = this.persisGenKio.getPathFoto(nitEmpresa, cadena);
         try {
             fis = new FileInputStream(new File(RUTAFOTO + imagen));
             file = new File(RUTAFOTO + imagen);
@@ -629,15 +687,16 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         return responseBuilder.build();
     }
 
+    /*
     public String getPathFoto(String nitEmpresa, String cadena) {
         System.out.println("Parametros getPathFoto(): cadena: " + cadena);
         String rutaFoto = UPLOAD_FILE_SERVER;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT PATHFOTO FROM GENERALESKIOSKO WHERE ROWNUM<=1";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             rutaFoto = query.getSingleResult().toString();
             System.out.println("rutaFotos: " + rutaFoto);
         } catch (Exception e) {
@@ -645,7 +704,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         }
         return rutaFoto;
     }
-
+     */
     @POST
     @Path("/cargarFoto")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -655,38 +714,37 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             @QueryParam("seudonimo") String seudonimo,
             @QueryParam("nit") String nitEmpresa,
             @QueryParam("cadena") String cadena) {
-            System.out.println("Parametros cargarFoto(): cadena: " + cadena + " ,nit: "+nitEmpresa+" , seudonimo: "+seudonimo);
-            String fileName = null;
-            String uploadFilePath = null;
-            String secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
-            boolean resultado = false;
-            System.out.println("seudonimo cargarfoto "+seudonimo);
-            int conteo = 0;
-            String mensaje = "";
-                
-            
-            try {
-                fileName = fileFormDataContentDisposition.getFileName();
-                String esquema = getEsquema(nitEmpresa, cadena);
-                setearPerfil(esquema, cadena);
-                String sqlQuery = "UPDATE CONEXIONESKIOSKOS CK SET CK.FOTOPERFIL = '"+fileName+"' \n" +
-                          "WHERE CK.EMPLEADO= ?  ";
-                Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
-                query.setParameter(1, secEmpl);
-                conteo = query.executeUpdate();
-                resultado = conteo > 0 ? true : false;
-                if (conteo > 0) {
-                    System.out.println("modificado");
-                } else {
-                    System.out.println("no modificado: " + resultado);
-                }
-            } catch (Exception e) {
-                System.out.println("Error " + ConexionesKioskos.class.getName() + ".cargarFoto(): " + e.getMessage());
-                mensaje = "Ha ocurrido un error al subir la foto " + e.getMessage();
-            }
+        System.out.println("Parametros cargarFoto(): cadena: " + cadena + " ,nit: " + nitEmpresa + " , seudonimo: " + seudonimo);
+        String fileName = null;
+        String uploadFilePath = null;
+        String secEmpl = this.persisConKio.getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
+        boolean resultado = false;
+        System.out.println("seudonimo cargarfoto " + seudonimo);
+        int conteo = 0;
+        String mensaje = "";
 
         try {
-            
+            fileName = fileFormDataContentDisposition.getFileName();
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
+            String sqlQuery = "UPDATE CONEXIONESKIOSKOS CK SET CK.FOTOPERFIL = '" + fileName + "' \n"
+                    + "WHERE CK.EMPLEADO= ?  ";
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, secEmpl);
+            conteo = query.executeUpdate();
+            resultado = conteo > 0 ? true : false;
+            if (conteo > 0) {
+                System.out.println("modificado");
+            } else {
+                System.out.println("no modificado: " + resultado);
+            }
+        } catch (Exception e) {
+            System.out.println("Error " + ConexionesKioskos.class.getName() + ".cargarFoto(): " + e.getMessage());
+            mensaje = "Ha ocurrido un error al subir la foto " + e.getMessage();
+        }
+
+        try {
+
             uploadFilePath = writeToFileServer(fileInputStream, fileName, nitEmpresa, cadena);
 
         } catch (IOException ioe) {
@@ -701,7 +759,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
 
         OutputStream outputStream = null;
         //String qualifiedUploadFilePath = UPLOAD_FILE_SERVER + fileName;
-        String qualifiedUploadFilePath = getPathFoto(nitEmpresa, cadena) + fileName;
+        String qualifiedUploadFilePath = this.persisGenKio.getPathFoto(nitEmpresa, cadena) + fileName;
 
         try {
             outputStream = new FileOutputStream(new File(qualifiedUploadFilePath));
@@ -719,15 +777,16 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         return qualifiedUploadFilePath;
     }
 
+    /*
     public String getSecuenciaEmplPorSeudonimo(String seudonimo, String nitEmpresa, String cadena) {
         System.out.println("Parametros getSecuenciaEmplPorSeudonimo(): seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
         String secuencia = null;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT E.SECUENCIA SECUENCIAEMPLEADO FROM EMPLEADOS E, CONEXIONESKIOSKOS CK WHERE CK.EMPLEADO=E.SECUENCIA AND CK.SEUDONIMO=? AND CK.NITEMPRESA=?";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
 
             query.setParameter(1, seudonimo);
             query.setParameter(2, nitEmpresa);
@@ -738,7 +797,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         }
         return secuencia;
     }
-
+     */
     @GET
     @Path("/datosContactoKiosco/{nit}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -746,11 +805,11 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         BigDecimal res = null;
         List datos = null;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT K.NOMBRECONTACTO NOMBRE, K.EMAILCONTACTO EMAIL, TELEFONOCONTACTO TELEFONO "
                     + "FROM KIOPERSONALIZACIONES K, EMPRESAS EM WHERE K.EMPRESA=EM.SECUENCIA AND EM.NIT=?";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
             datos = query.getResultList();
         } catch (Exception ex) {
@@ -769,16 +828,16 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         boolean primeringreso = true;
         boolean validaEmail = false;
         String estadoUsuario = "";
-        getEsquema(nitEmpresa, cadena);
+        this.cadenasKio.getEsquema(nitEmpresa, cadena);
         String mensaje = "Error no controlado, por favor inténtelo nuevamente.";
         List rs = null;
         System.out.println("validarIngresoSeudonimoKiosco() Parametros usuario: " + usuario + " clave: " + clave + " nitEmpresa: " + nitEmpresa + " cadenaConexion: " + cadena);
-        String documento = null;
+        BigDecimal documento = null;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             try {
-                documento = getDocumentoPorSeudonimo(usuario, nitEmpresa, cadena);
+                documento = this.persisConKio.getDocumentoPorSeudonimo(usuario, nitEmpresa, cadena);
                 System.out.println("Consulta documento por Seudonimo: " + documento);
                 if (documento == null) {
                     documento = getDocumentoCorreoODocumento(usuario, nitEmpresa, cadena);
@@ -791,8 +850,8 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             System.out.println("documento asociado a correo o documento: " + usuario + " es " + documento);
             if (documento != null) {
                 System.out.println("Ingresa ciclo documento!=null");
-                if (validarUsuarioyEmpresa(documento, nitEmpresa, cadena)) { // valida si existe relacion con la empresa y se encuentra activo
-                    if (validarUsuarioRegistrado(documento, nitEmpresa, cadena)) { // relacion entre conexioneskioskos, empleados y personas
+                if (validarUsuarioyEmpresa(documento.toString(), nitEmpresa, cadena)) { // valida si existe relacion con la empresa y se encuentra activo
+                    if (validarUsuarioRegistrado(documento.toString(), nitEmpresa, cadena)) { // relacion entre conexioneskioskos, empleados y personas
                         System.out.println("usuario " + usuario + " esta registrado en conexioneskioskos");
                         if (validarSeudonimoRegistrado(usuario, nitEmpresa, cadena)) {
                             System.out.println("El seudonimo  " + usuario + " existe y esta relacionado con la empresa seleccionada " + nitEmpresa);
@@ -810,11 +869,11 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                                 System.out.println("El estado del usuario " + usuario + " es activo: S");
                                 if (validarIngresoUsuarioSeudonimoRegistrado(usuario, clave, nitEmpresa, cadena)) {
                                     try {
-                                        if (!this.validarCodigoUsuario(usuario)) {
+                                        if (!this.perisEmpleados.validarCodigoUsuario(usuario)) {
                                             System.out.println("El usuario es un correo " + usuario);
-                                            if (!validarSeudonimoCorreo(usuario, nitEmpresa, cadena)) {
+                                            if (!this.persisConKio.validarSeudonimoCorreo(usuario, nitEmpresa, cadena)) {
                                                 System.out.println("Seudonimo de correo diferente " + usuario);
-                                                usuario = updateCorreoSeudonimo(usuario, nitEmpresa, cadena);
+                                                usuario = this.persisConKio.updateCorreoSeudonimo(usuario, nitEmpresa, cadena);
                                                 System.out.println("Seudonimo Actualizado " + usuario);
                                                 cambioEstadoSeudonimo(usuario, nitEmpresa, "P", cadena);
                                                 estadoUsuario = validarEstadoUsuarioSeudonimo(usuario, nitEmpresa, cadena);
@@ -895,26 +954,27 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         }
     }
 
-    public String getDocumentoCorreoODocumento(String usuario, String nitEmpresa, String cadena) {
+    public BigDecimal getDocumentoCorreoODocumento(String usuario, String nitEmpresa, String cadena) {
         System.out.println("Parametros getDocumentoCorreoODocumento() usuario: " + usuario + ", cadena: " + cadena);
-        String documento = null;
+        BigDecimal documento = null;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P WHERE lower(P.EMAIL)=lower(?)";
-            if (this.validarCodigoUsuario(usuario)) {
+            if (this.perisEmpleados.validarCodigoUsuario(usuario)) {
                 sqlQuery += " OR P.NUMERODOCUMENTO=?"; // si el valor es numerico validar por numero de documento
             }
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
 
             query.setParameter(1, usuario);
-            if (this.validarCodigoUsuario(usuario)) {
+            if (this.perisEmpleados.validarCodigoUsuario(usuario)) {
                 query.setParameter(2, usuario);
             }
-            documento = query.getSingleResult().toString();
+            documento = new BigDecimal(query.getSingleResult().toString());
         } catch (Exception e) {
             System.out.println("Error: " + ConexionesKioskosFacadeREST.class.getName() + " getDocumentoCorreoODocumento: " + e.getMessage());
+            /*
             try {
                 String sqlQuery2 = "SELECT P.NUMERODOCUMENTO DOCUMENTO "
                         + "FROM PERSONAS P, EMPLEADOS E "
@@ -926,7 +986,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                 }
                 sqlQuery2 += ")";
                 System.out.println("Query2: " + sqlQuery2);
-                Query query2 = getEntityManager(cadena).createNativeQuery(sqlQuery2);
+                Query query2 = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery2);
                 query2.setParameter(1, usuario);
                 if (this.validarCodigoUsuario(usuario)) {
                     query2.setParameter(2, usuario);
@@ -936,6 +996,8 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             } catch (Exception ex) {
                 System.out.println("Error 2: " + ConexionesKioskos.class.getName() + " getDocumentoCorreoODocumento(): ");
             }
+             */
+            documento = this.perisEmpleados.getDocumentoXUsuario(cadena, usuario);
         }
         return documento;
     }
@@ -944,8 +1006,8 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         System.out.println("Parametros validarUsuarioyEmpresa(): documento: " + documento + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
         boolean resultado = false;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT COUNT(*) count FROM EMPLEADOS e, Empresas em, Personas p "
                     + " WHERE e.empresa = em.secuencia "
                     + " AND P.SECUENCIA=E.PERSONA "
@@ -956,7 +1018,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                     + " OR EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(e.secuencia, SYSDATE) = 'PENSIONADO')";
             System.out.println("validarUsuarioyEmpresa() Parametros[ documento: " + documento + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena + "]");
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, documento);
             query.setParameter(2, nitEmpresa);
 
@@ -970,6 +1032,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         return resultado;
     }
 
+    /*
     public boolean validarCodigoUsuario(String usuario) {
         boolean resultado = false;
         BigInteger numUsuario;
@@ -982,26 +1045,27 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         }
         return resultado;
     }
-
+     */
     // 13/10/2021
     /**
      * metodo para validar si el correo es diferente al seudonumo
      *
      * @return String Respuesta en formato boolean
      */
+    /*
     public boolean validarSeudonimoCorreo(String usuario, String nitEmpresa, String cadena) {
         System.out.println("Parametros validarSeudonimoCorreo() [ seudonimo: " + usuario + ", nitEmpresa: " + nitEmpresa + " cadena: " + cadena + " ]");
         boolean resultado = false;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "select count(*) "
                     + "from conexioneskioskos ck, personas p "
                     + "where ck.persona = p.secuencia "
                     + "and lower(ck.seudonimo) = lower(p.email) "
                     + "and lower(ck.seudonimo) = ? ";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, usuario);
             BigDecimal retorno = (BigDecimal) query.getSingleResult();
             Integer instancia = retorno.intValueExact();
@@ -1015,28 +1079,29 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         }
         return resultado;
     }
-
+     */
     // 13/10/2021
     /**
      * metodo para validar si el correo es diferente al seudonumo
      *
      * @return String Respuesta en formato boolean
      */
+    /*
     public String updateCorreoSeudonimo(String usuario, String nitEmpresa, String cadena) {
         System.out.println("Parametros validarSeudonimoCorreo() [ seudonimo: " + usuario + ", nitEmpresa: " + nitEmpresa + " cadena: " + cadena + " ]");
         String documento = null;
         String correo = null;
         String resultado = null;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             documento = getDocumentoPorSeudonimo(usuario, nitEmpresa, cadena);
             correo = consultarCorreoPersonaEmpresa(documento, nitEmpresa, cadena);
             String sqlQuery = "update conexioneskioskos set seudonimo = ? "
                     + "where persona = (select secuencia "
                     + "from personas where numerodocumento = ?) ";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             System.out.println("correoPesona " + correo);
             System.out.println("documento " + documento);
             query.setParameter(1, correo);
@@ -1049,7 +1114,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         }
         return correo;
     }
-
+     */
     // 13/10/2021
     /**
      * metodo para cambiar el estado del seudonimo
@@ -1066,10 +1131,10 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         JSONObject resp = new JSONObject();
         String mensaje = "";
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "UPDATE CONEXIONESKIOSKOS SET ACTIVO=? WHERE SEUDONIMO=? AND NITEMPRESA=?";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, activo);
             query.setParameter(2, usuario);
             query.setParameter(3, nitEmpresa);
@@ -1100,8 +1165,8 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         System.out.println("Parametros validarUsuarioRegistrado() [ numerodoDocumento: " + documento + ", nitEmpresa: " + nitEmpresa + " cadena: " + cadena + " ]");
         boolean resultado = false;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT COUNT(*) count "
                     + "FROM CONEXIONESKIOSKOS ck, PERSONAS per, EMPLEADOS e, EMPRESAS em "
                     + "WHERE ck.EMPLEADO = e.SECUENCIA "
@@ -1112,7 +1177,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                     + "AND per.numerodocumento = ? "
                     + "AND em.nit = ? ";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, documento);
             query.setParameter(2, nitEmpresa);
             BigDecimal retorno = (BigDecimal) query.getSingleResult();
@@ -1128,8 +1193,8 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         System.out.println("validarSeudonimoRegistrado()");
         boolean resultado = false;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT COUNT(*) count "
                     + "FROM CONEXIONESKIOSKOS ck, PERSONAS per, EMPLEADOS e, EMPRESAS em "
                     + "WHERE "
@@ -1141,7 +1206,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                     + "AND em.nit = ? ";
             System.out.println("Parametros: validarSeudonimoRegistrado(): [ seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, seudonimo);
             query.setParameter(2, nitEmpresa);
             BigDecimal retorno = (BigDecimal) query.getSingleResult();
@@ -1158,8 +1223,8 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         String retorno = null;
         boolean resultado = false;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT ACTIVO estado "
                     + "FROM CONEXIONESKIOSKOS ck, PERSONAS per, EMPLEADOS e, EMPRESAS em "
                     //                    + "WHERE ck.PERSONA = per.SECUENCIA "
@@ -1170,7 +1235,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                     + "AND em.nit = ? ";
             System.out.println("validarEstadoUsuarioSeudonimo() Parametros: [usuario: " + usuario + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena + "]");
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, usuario);
             query.setParameter(2, nitEmpresa);
             retorno = query.getSingleResult().toString();
@@ -1183,8 +1248,8 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     public boolean validarIngresoUsuarioSeudonimoRegistrado(String seudonimo, String clave, String nitEmpresa, String cadena) { // retorna true si el usuario esta activo
         boolean resultado = false;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT COUNT(*) count "
                     + "FROM CONEXIONESKIOSKOS ck, Personas per, EMPLEADOS e "
                     + "WHERE ck.PERSONA = per.SECUENCIA "
@@ -1195,7 +1260,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                     + "AND ck.nitempresa = ? "
                     + "AND (EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(e.secuencia, SYSDATE) = 'ACTIVO' "
                     + "OR EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(e.secuencia, SYSDATE) = 'PENSIONADO')";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, seudonimo);
             query.setParameter(2, clave);
             query.setParameter(3, nitEmpresa);
@@ -1227,7 +1292,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         Calendar fechaExpiracion = Calendar.getInstance();
         fechaExpiracion.setTime(new java.util.Date());
         fechaExpiracion.add(Calendar.DAY_OF_YEAR, 30);  // 30 dias a partir de la fecha*/
-        String documento = getDocumentoPorSeudonimo(usuario, nit, cadena);
+        BigDecimal documento = this.persisConKio.getDocumentoPorSeudonimo(usuario, nit, cadena);
         String jwtCompleto = Jwts.builder()
                 .signWith(SignatureAlgorithm.HS256, passwordEncript.getBytes("UTF-8"))
                 .setSubject(usuario)
@@ -1263,8 +1328,8 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         System.out.println("Parametros validarLogin(): codEmple: " + codEmple + ", clave: " + clave + ", nit: " + nitEmpresa + ", cadena: " + cadena);
         boolean res = false;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sql = "select count(*) as total "
                     + "from conexioneskioskos ck "
                     +//, empleados e, empresas em " +
@@ -1277,7 +1342,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                     + " and ck.nitempresa=?";
             //"and em.nit= ? and empleadocurrent_pkg.tipotrabajadorcorte(e.secuencia, sysdate)='ACTIVO'";
             System.out.println(sql);
-            Query query = getEntityManager(cadena).createNativeQuery(sql);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sql);
             query.setParameter(1, codEmple);
             query.setParameter(2, clave);
             query.setParameter(3, nitEmpresa);
@@ -1291,38 +1356,39 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         return res;
     }
 
-    public String getDocumentoPorSeudonimo(String seudonimo, String nitEmpresa, String cadena) {
+    /*
+    public BigDecimal getDocumentoPorSeudonimo(String seudonimo, String nitEmpresa, String cadena) {
         System.out.println("Parametros getDocumentoPorSeudonimo() seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
-        String documento = null;
+        BigDecimal documento = null;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P, CONEXIONESKIOSKOS CK WHERE CK.PERSONA=P.SECUENCIA AND lower(CK.SEUDONIMO)=lower(?) AND CK.NITEMPRESA=?";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
 
             query.setParameter(1, seudonimo);
             query.setParameter(2, nitEmpresa);
-            documento = query.getSingleResult().toString();
+            documento = new BigDecimal(query.getSingleResult().toString());
             System.out.println("documento: " + documento);
         } catch (Exception e) {
             System.out.println("Error: " + this.getClass().getName() + ".getDocumentoPorSeudonimo: " + e.getMessage());
         }
         return documento;
     }
-
+     */
     public boolean registraToken(String usuario, String nitEmpresa, String token, String tipo, Date fechacreacion, java.sql.Date fechaexpira, String cadena) {
         int resCon = 0;
         boolean resultado = false;
         try {
             System.out.println("Parametros registraToken(): usuario: " + usuario + ", nitEmpresa: " + nitEmpresa + ", token: " + token + ", "
                     + "\n tipo: " + tipo + ", fechaCreacion: " + fechacreacion + ", fechaExpira: " + fechaexpira + ", cadena: " + cadena);
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sql = "INSERT INTO CONEXIONESTOKEN (CONEXIONKIOSKO, TOKEN, FECHACREACION, FECHAEXPIRACION, TIPO) VALUES "
                     + "((SELECT SECUENCIA FROM CONEXIONESKIOSKOS WHERE SEUDONIMO =? AND NITEMPRESA=?),"
                     + " ?, ?, ?, ? )";
-            Query query = getEntityManager(cadena).createNativeQuery(sql);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sql);
             System.out.println("Query: " + sql);
             query.setParameter(1, usuario);
             query.setParameter(2, nitEmpresa);
@@ -1367,14 +1433,19 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         try {
             usuario = (String) Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwtOriginal).getBody().getSubject();
             nit = (String) Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwtOriginal).getBody().get("empresa");
-            documento = (String) Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwtOriginal).getBody().get("documento");
+            Object obDocumento = Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwtOriginal).getBody().get("documento");
+            if (obDocumento instanceof Integer) {
+                documento = Integer.toString((Integer) obDocumento);
+            } else if (obDocumento instanceof String ){
+                documento = (String) obDocumento;
+            }
             cadenaToken = (String) Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwtOriginal).getBody().get("cadena");
             grupoEmpresarial = (String) Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwtOriginal).getBody().get("grupo");
             System.out.println("Información extraida token validaCuenta: usuario: " + usuario + ", nit: " + nit + ", documento: " + documento + ", cadenaToken: " + cadena + ", grupoEmpr: " + grupoEmpresarial);
 
             try {
-                String esquema = getEsquema(nit, cadenaToken);
-                setearPerfil(esquema, cadena);
+                String esquema = this.cadenasKio.getEsquema(nit, cadenaToken);
+                this.rolesBD.setearPerfil(esquema, cadena);
                 if (validarTokenExistente(jwt, nit, cadenaToken)) {
                     if (getEstadoToken(jwt, nit, cadenaToken).equals("S")) {
                         System.out.println("Token existe en bd");
@@ -1515,10 +1586,10 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         System.out.println("Parametros validarTokenExistente(): token: " + token + ", cadena: " + cadena);
         boolean resultado = false;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "select count(*) as count from conexionestoken where token=? ";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, token);
             BigDecimal retorno = (BigDecimal) query.getSingleResult();
             Integer instancia = retorno.intValueExact();
@@ -1535,10 +1606,10 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         System.out.println("Parametros getEstadoToken(): token: " + token + ", cadena: " + cadena);
         String estado = "";
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT ACTIVO FROM CONEXIONESTOKEN WHERE TOKEN = ?";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, token);
             estado = query.getSingleResult().toString();
             System.out.println("Resultado getEstadoToken(): " + estado);
@@ -1553,7 +1624,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDocumentoConexioneskioskos(@QueryParam("seudonimo") String usuario, @QueryParam("nit") String nit, @QueryParam("cadena") String cadena) {
         System.out.println("Parametros getDocumentoConexioneskioskos(): seudonimo: " + usuario + ", nit: " + nit + ", cadena: " + cadena);
-        String r = getDocumentoPorSeudonimo(usuario, nit, cadena);
+        BigDecimal r = this.persisConKio.getDocumentoPorSeudonimo(usuario, nit, cadena);
         String[] parametros = {usuario, nit};
         return Response.ok(
                 response("documentoconexioneskioskos", "Usuario: " + usuario + ", nit: " + nit, String.valueOf(r)), MediaType.APPLICATION_JSON)
@@ -1575,10 +1646,10 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         String logo = "";
         JSONObject logoE = new JSONObject();
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT LOGO FROM EMPRESAS WHERE NIT = ?";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
             logo = query.getSingleResult().toString();
             logoE.put("LOGO", logo.substring(0, logo.length() - 4));
@@ -1606,11 +1677,11 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         String correo = null;
         String sqlQuery;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             sqlQuery = "SELECT P.EMAIL FROM PERSONAS P, conexioneskioskos ck WHERE p.secuencia=ck.persona and "
                     + " lower(ck.seudonimo)=? and ck.nitempresa=?";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, seudonimo);
             query.setParameter(2, nitEmpresa);
             correo = query.getSingleResult().toString();
@@ -1666,8 +1737,8 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         boolean envioCorreo = false;
         boolean updateClave = false;
         updateClave = actualizarClave(usuario, nitEmpresa, nuevaClave, cadena);
-        String esquema = getEsquema(nitEmpresa, cadena);
-        setearPerfil(esquema, cadena);
+        String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+        this.rolesBD.setearPerfil(esquema, cadena);
         String correo = getCorreoConexioneskioskos(usuario, nitEmpresa, cadena);
         System.out.println("este es el corre que se va a enviar" + correo);
         try {
@@ -1684,7 +1755,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                         getConfigCorreo(nitEmpresa, "CLAVE", cadena),
                         correo,
                         getNombrePersona(usuario, nitEmpresa, cadena),
-                        nuevaClave, "", getPathFoto(nitEmpresa, cadena), nitEmpresa, cadena);
+                        nuevaClave, "", this.persisGenKio.getPathFoto(nitEmpresa, cadena), nitEmpresa, cadena);
             } else {
                 System.out.println("Error al actualizar la contraseña");
             }
@@ -1710,10 +1781,10 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         boolean resultado = false;
         int resCon = 0;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "UPDATE CONEXIONESKIOSKOS SET PWD=GENERALES_PKG.ENCRYPT(?) where seudonimo=? and nitempresa=?";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, clave);
             query.setParameter(2, seudonimo);
             query.setParameter(3, nitEmpresa);
@@ -1730,17 +1801,17 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         System.out.println("Parametros getNombrePersona(): usuario: " + usuario + ", cadena: " + cadena);
         String nombre = "Usuario";
         //boolean seudonimo_documento = validarCodigoUsuario(usuario);
-        String documento = getDocumentoPorSeudonimo(usuario, nitEmpresa, cadena);
+        BigDecimal documento = this.persisConKio.getDocumentoPorSeudonimo(usuario, nitEmpresa, cadena);
         String sqlQuery;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             // if (seudonimo_documento) {
             sqlQuery = "SELECT InitCap(NVL(NOMBRE, 'Usuario')) NOMBRE FROM PERSONAS WHERE NUMERODOCUMENTO=?";
             //} else {
             //  sqlQuery = "SELECT InitCap(NVL(NOMBRE, 'USUARIO')) NOMBRE FROM PERSONAS WHERE EMAIL=?";
             //}
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, documento);
             nombre = query.getSingleResult().toString();
         } catch (Exception e) {
@@ -1772,11 +1843,12 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @Path("/restKiosco/getCorreoPersonaEmpresa/{documento}/{nitEmpresa}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response obtenerCorreoDocumentoEmpresa(@PathParam("documento") String usuario, @PathParam("nitEmpresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
-        String correo = consultarCorreoPersonaEmpresa(usuario, nitEmpresa, cadena);
+        String correo = this.persisPersonas.consultarCorreoPersonaEmpresa(usuario, nitEmpresa, cadena);
         return Response.ok(response("getCorreoPersonaEmpresa", "documento: " + usuario + " nitEmpresa: " + nitEmpresa, correo))
                 .build();
     }
 
+    /*
     public String consultarCorreoPersonaEmpresa(String documento, String nitEmpresa, String cadena) {
         System.out.println("Parametros consultarCorreoPersonaEmpresa(): documento: " + documento + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
         String datos = null;
@@ -1787,9 +1859,9 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                     + "AND em.nit = ? "
                     + "AND (EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(e.secuencia, SYSDATE) = 'ACTIVO' "
                     + "OR EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(e.secuencia, SYSDATE) = 'PENSIONADO')";
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, documento);
             query.setParameter(2, nitEmpresa);
             datos = query.getSingleResult().toString();
@@ -1798,7 +1870,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         }
         return datos;
     }
-
+     */
     // envia token para validar cuenta
     @GET
     @Path("/restKiosco/jwtValidCuenta")
@@ -1825,7 +1897,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                 .setExpiration(fechaExpiracion) // 1 hora de expiración a partir de la generación del Token
                 .setIssuer("https://www.designer.com.co") //200721
                 .claim("empresa", nit)
-                .claim("documento", getDocumentoPorSeudonimo(usuario, nit, cadena))
+                .claim("documento", this.persisConKio.getDocumentoPorSeudonimo(usuario, nit, cadena))
                 .claim("cadena", cadena)
                 .claim("grupo", grupo)
                 .compact();
@@ -1908,12 +1980,12 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         System.out.println("getConfigCorreo()");
         String servidorsmtpConfig = "";
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT " + valor + " FROM CONFICORREOKIOSKO WHERE EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?)"
                     + " AND ROWNUM<=1";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
             servidorsmtpConfig = query.getSingleResult().toString();
             System.out.println(valor + ": " + servidorsmtpConfig);
@@ -1927,11 +1999,11 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         System.out.println("getConfigCorreoServidorSMTP()");
         String servidorsmtp = "smtp.designer.com.co";
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT SERVIDORSMTP FROM CONFICORREOKIOSKO WHERE EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?)";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
             servidorsmtp = query.getSingleResult().toString();
             System.out.println("Servidor smtp: " + servidorsmtp);
@@ -1941,6 +2013,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         return servidorsmtp;
     }
 
+    /*
     public String getEsquema(String nitempresa, String cadena) {
         System.out.println("Parametros getEsquema(): nitempresa: " + nitempresa + ", cadena: " + cadena);
         String esquema = null;
@@ -1957,13 +2030,13 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         }
         return esquema;
     }
-
+     */
     public String getSecEmplPorDocumentoYEmpresa(String documento, String nitEmpresa, String cadena) {
         System.out.println("Parametros getEmplPorDocumentoEmpresa(): documento: " + documento + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
         String secuencia = null;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT E.SECUENCIA "
                     + "FROM PERSONAS P, EMPLEADOS E, EMPRESAS EM "
                     + "WHERE "
@@ -1972,7 +2045,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                     + "AND EM.NIT=? "
                     + "AND EMPLEADOCURRENT_PKG.TIPOTRABAJADORCORTE(E.SECUENCIA, SYSDATE)='ACTIVO' ";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
 
             query.setParameter(1, documento);
             query.setParameter(2, nitEmpresa);
@@ -1983,21 +2056,20 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         }
         return secuencia;
     }
-    
-    
-        public String getSecEmplPorCodigo(String codigo, String nitEmpresa, String cadena) {
+
+    public String getSecEmplPorCodigo(String codigo, String nitEmpresa, String cadena) {
         System.out.println("Parametros getEmplPorDocumentoEmpresa(): codigo: " + codigo + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
         String secuencia = null;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT E.SECUENCIA "
                     + "FROM EMPLEADOS E "
                     + "WHERE "
                     + "E.CODIGOEMPLEADO=? "
                     + "AND EMPLEADOCURRENT_PKG.TIPOTRABAJADORCORTE(E.SECUENCIA, SYSDATE)='ACTIVO' ";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
 
             query.setParameter(1, codigo);
             secuencia = query.getSingleResult().toString();
@@ -2028,37 +2100,36 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         }
         return "";
     }
-    
-    
-        @GET
+
+    @GET
     @Path("/obtenerFotoPerfil")
     @Produces({"image/png", "image/jpg", "image/gif"})
-    public Response obtenerFotoPerfil( @QueryParam("cadena") String cadena, @QueryParam("usuario") String usuario, @QueryParam("nit") String nitEmpresa) {
+    public Response obtenerFotoPerfil(@QueryParam("cadena") String cadena, @QueryParam("usuario") String usuario, @QueryParam("nit") String nitEmpresa) {
         System.out.println("Parametros obtenerFotoPerfil(): cadena: " + cadena + ", nitEmpresa: " + nitEmpresa + ", usuario: " + usuario);
         FileInputStream fis = null;
         File file = null;
-        String RUTAFOTO = getPathFoto(nitEmpresa, cadena);
-        
+        String RUTAFOTO = this.persisGenKio.getPathFoto(nitEmpresa, cadena);
+
         String imagen = null;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            String secEmpl = getSecuenciaEmplPorSeudonimo(usuario, nitEmpresa, cadena);
-            if(secEmpl == null){
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            String secEmpl = this.persisConKio.getSecuenciaEmplPorSeudonimo(usuario, nitEmpresa, cadena);
+            if (secEmpl == null) {
                 secEmpl = getSecEmplPorCodigo(usuario, nitEmpresa, cadena);
             }
             System.out.println("esto es una prueba de secuencia: " + secEmpl);
-            setearPerfil(esquema, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT CK.FOTOPERFIL FROM CONEXIONESKIOSKOS CK, EMPLEADOS E WHERE CK.EMPLEADO=E.SECUENCIA AND E.SECUENCIA=?";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpl);
             imagen = (String) query.getSingleResult();
             System.out.println("Imagen foto perfil: " + imagen);
-            System.out.println("Ruta foto: "+RUTAFOTO);
+            System.out.println("Ruta foto: " + RUTAFOTO);
             try {
-            fis = new FileInputStream(new File(RUTAFOTO + imagen));
-            file = new File(RUTAFOTO + imagen);
-            System.out.println("imagen cargada"+file);
-        } catch (FileNotFoundException ex) {
+                fis = new FileInputStream(new File(RUTAFOTO + imagen));
+                file = new File(RUTAFOTO + imagen);
+                System.out.println("imagen cargada" + file);
+            } catch (FileNotFoundException ex) {
                 System.out.println("imagen no encontrada:" + ex);
                 try {
                     fis = new FileInputStream(new File(RUTAFOTO + "sinFoto.jpg"));
@@ -2068,28 +2139,23 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                     System.getProperty("user.dir");
                     System.out.println("Ruta del proyecto: " + this.getClass().getClassLoader().getResource("").getPath());;
                 }
-            
-        } finally {
-            try {
-                fis.close();
-            } catch (IOException ex) {
-                Logger.getLogger(ConexionesKioskosFacadeREST.class.getName()).log(Level.SEVERE, "Error cerrando fis " + imagen, ex);
+
+            } finally {
+                try {
+                    fis.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(ConexionesKioskosFacadeREST.class.getName()).log(Level.SEVERE, "Error cerrando fis " + imagen, ex);
+                }
             }
-        }
-        Response.ResponseBuilder responseBuilder = Response.ok((Object) file);
-        responseBuilder.header("Content-Disposition", "attachment; filename=\"" + imagen + "\"");
-        return responseBuilder.build();
-            
+            Response.ResponseBuilder responseBuilder = Response.ok((Object) file);
+            responseBuilder.header("Content-Disposition", "attachment; filename=\"" + imagen + "\"");
+            return responseBuilder.build();
+
         } catch (Exception ex) {
-            System.out.println("Error "+this.getClass().getName()+".getProvisiones: " + ex);
+            System.out.println("Error " + this.getClass().getName() + ".getProvisiones: " + ex);
             return Response.status(Response.Status.OK).entity(0).build();
         }
-        
-       
-        
+
     }
-    
-    
-    
 
 }

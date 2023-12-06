@@ -1,13 +1,5 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package co.com.designer.services;
 
-import co.com.designer.kiosko.entidades.ConexionesKioskos;
-import co.com.designer.kiosko.entidades.OpcionesKioskosApp;
-import java.math.BigDecimal;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -23,7 +15,7 @@ import javax.ws.rs.core.Response;
 
 /**
  *
- * @author thali
+ * @author Thalia Manrique
  */
 @Stateless
 @Path("cadenaskioskos")

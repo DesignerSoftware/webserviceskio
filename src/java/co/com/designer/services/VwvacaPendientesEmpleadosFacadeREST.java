@@ -16,15 +16,15 @@ import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.json.Json;
 import javax.json.JsonObject;
-import javax.persistence.Entity;
+//import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+//import javax.persistence.GeneratedValue;
+//import javax.persistence.GenerationType;
+//import javax.persistence.Id;
 import javax.persistence.Persistence;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
-import javax.persistence.TemporalType;
+//import javax.persistence.TemporalType;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -49,7 +49,6 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
         super(VwVacaPendientesEmpleados.class);
     }          
             
-    @Override
     protected EntityManager getEntityManager() {
         String unidadPersistencia="wsreportePU";
         EntityManager em = Persistence.createEntityManagerFactory(unidadPersistencia).createEntityManager();
@@ -62,7 +61,6 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
         return em;
     }
     
-    @Override
     protected void setearPerfil() {
         try {
             String rol = "ROLKIOSKO";
@@ -1493,20 +1491,20 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
             String estadoPasado=estado.equals("CANCELADO")?"canceló":
                     estado.equals("AUTORIZADO")?"pre-aprobó":
                     estado.equals("RECHAZADO")?"rechazó":estado;
-            String mensaje="Nos permitimos informar que se acaba de "+estadoVerbo+" una solicitud de vacaciones";
+            String mensaje="<div style=\"color: white;\"><p>Nos permitimos informar que se acaba de "+estadoVerbo+" una solicitud de vacaciones";
                     if (estado.equals("RECHAZADO") || estado.equals("AUTORIZADO")){
                         mensaje+=" creada para "+getApellidoNombreXsecEmpl(secEmplSolicita, nitEmpresa, cadena, esquema);
                     }
-                    mensaje+=" en el módulo de Kiosco Nómina Designer. Por favor llevar el caso desde su cuenta de usuario en el portal de Kiosco y continuar con el proceso."
+                    mensaje+=" en el módulo de Kiosco Nómina Designer. Por favor llevar el caso desde su cuenta de usuario en el portal de Kiosco y continuar con el proceso.</p>"
                     + "<br><br>"
-                    + "La persona que "+estadoPasado.toUpperCase()+" LA SOLICITUD es: "+getApellidoNombreXsecEmpl(secEmplEjecuta, nitEmpresa, cadena, esquema)+"<br>";
+                    + "<p>La persona que "+estadoPasado.toUpperCase()+" LA SOLICITUD es: "+getApellidoNombreXsecEmpl(secEmplEjecuta, nitEmpresa, cadena, esquema)+"</p><br>";
                     if (estado.equals("CANCELADO")) {
                         mensaje += "La persona a cargo de HACER EL SEGUIMIENTO es: " + nombreAutorizaSolici + "<br>";
                     }
                     mensaje+= "Por favor seguir el proceso en: <a style='color: white !important;' target='_blank' href="+urlKio+">"+urlKio+"</a><br><br>"
                     + "Si no puede ingresar, necesitará instalar la última versión de su navegador, la cual podrá descargar de forma gratuita.<br><br>"
                     + "En caso de que haya olvidado su clave podrá generar una nueva haciendo clic en ¿Olvidó su clave? en el módulo Kiosco o a través del link: "
-                    + "<br><a style='color: white !important;' href='" + urlKioOlvidoClave + "'>" + urlKioOlvidoClave + "</a>";
+                    + "<br><a style='color: white !important;' href='" + urlKioOlvidoClave + "'>" + urlKioOlvidoClave + "</a></div>";
                     
            String fechaInicioDisfrute = getFechaInicioXsecKioEstadoSolici(secKioEstadoSolici, nitEmpresa, cadena);
            System.out.println("url Kiosco: "+urlKio);

@@ -28,7 +28,6 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
         super(OpcionesKioskosApp.class);
     }
     
-    @Override
     protected EntityManager getEntityManager() {
         String unidadPersistencia="wsreportePU";
         EntityManager em = Persistence.createEntityManagerFactory(unidadPersistencia).createEntityManager();
@@ -41,7 +40,6 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
         return em;
     }
     
-    @Override
     protected void setearPerfil() {
         try {
             String rol = "ROLKIOSKO";

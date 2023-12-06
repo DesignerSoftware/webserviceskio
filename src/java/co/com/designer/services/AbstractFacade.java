@@ -1,71 +1,71 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package co.com.designer.services;
 
+import co.com.designer.persistencia.implementacion.PersistenciaPerfiles;
+import co.com.designer.persistencia.interfaz.IPersistenciaConexiones;
+import co.com.designer.persistencia.interfaz.IPersistenciaPerfiles;
 import java.util.List;
-import javax.persistence.EntityManager;
 
 /**
  *
- * @author usuario
+ * @author Thalia Manrique
  */
 public abstract class AbstractFacade<T> {
 
     private Class<T> entityClass;
+    private IPersistenciaPerfiles rolesBD;
+    private IPersistenciaConexiones persistenciaConexiones;
 
     public AbstractFacade(Class<T> entityClass) {
         this.entityClass = entityClass;
+        this.rolesBD = new PersistenciaPerfiles();
     }
 
-    protected abstract EntityManager getEntityManager();
-    protected abstract void setearPerfil();
+    //protected abstract EntityManager getEntityManager();
+    //protected abstract void setearPerfil();
 
     public void create(T entity) {
-        setearPerfil();
-        getEntityManager().persist(entity);
+        this.rolesBD.setearPerfil();
+        this.persistenciaConexiones.getEntityManager().persist(entity);
     }
 
     public void edit(T entity) {
-        setearPerfil();
-        getEntityManager().merge(entity);
+        this.rolesBD.setearPerfil();
+        this.persistenciaConexiones.getEntityManager().merge(entity);
     }
 
     public void remove(T entity) {
-        setearPerfil();
-        getEntityManager().remove(getEntityManager().merge(entity));
+        this.rolesBD.setearPerfil();
+        this.persistenciaConexiones.getEntityManager().remove(this.persistenciaConexiones.getEntityManager().merge(entity));
     }
 
     public T find(Object id) {
-        setearPerfil();
-        return getEntityManager().find(entityClass, id);
+        this.rolesBD.setearPerfil();
+        return this.persistenciaConexiones.getEntityManager().find(entityClass, id);
     }
 
     public List<T> findAll() {
-        setearPerfil();
-        javax.persistence.criteria.CriteriaQuery cq = getEntityManager().getCriteriaBuilder().createQuery();
+        this.rolesBD.setearPerfil();
+        javax.persistence.criteria.CriteriaQuery cq = this.persistenciaConexiones.getEntityManager().getCriteriaBuilder().createQuery();
         cq.select(cq.from(entityClass));
-        return getEntityManager().createQuery(cq).getResultList();
+        return this.persistenciaConexiones.getEntityManager().createQuery(cq).getResultList();
     }
 
     public List<T> findRange(int[] range) {
-        setearPerfil();
-        javax.persistence.criteria.CriteriaQuery cq = getEntityManager().getCriteriaBuilder().createQuery();
+        this.rolesBD.setearPerfil();
+        javax.persistence.criteria.CriteriaQuery cq = this.persistenciaConexiones.getEntityManager().getCriteriaBuilder().createQuery();
         cq.select(cq.from(entityClass));
-        javax.persistence.Query q = getEntityManager().createQuery(cq);
+        javax.persistence.Query q = this.persistenciaConexiones.getEntityManager().createQuery(cq);
         q.setMaxResults(range[1] - range[0] + 1);
         q.setFirstResult(range[0]);
         return q.getResultList();
     }
 
     public int count() {
-        setearPerfil();
-        javax.persistence.criteria.CriteriaQuery cq = getEntityManager().getCriteriaBuilder().createQuery();
+        this.rolesBD.setearPerfil();
+        javax.persistence.criteria.CriteriaQuery cq = this.persistenciaConexiones.getEntityManager().getCriteriaBuilder().createQuery();
         javax.persistence.criteria.Root<T> rt = cq.from(entityClass);
-        cq.select(getEntityManager().getCriteriaBuilder().count(rt));
-        javax.persistence.Query q = getEntityManager().createQuery(cq);
+        cq.select(this.persistenciaConexiones.getEntityManager().getCriteriaBuilder().count(rt));
+        javax.persistence.Query q = this.persistenciaConexiones.getEntityManager().createQuery(cq);
         return ((Long) q.getSingleResult()).intValue();
     }
     
