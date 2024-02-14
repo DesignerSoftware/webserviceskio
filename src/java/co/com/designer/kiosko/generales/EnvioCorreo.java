@@ -2,6 +2,7 @@ package co.com.designer.kiosko.generales;
 
 import co.com.designer.kiosko.entidades.ConfiCorreoKiosko;
 import co.com.designer.persistencia.implementacion.PersistenciaCadenasKioskosApp;
+import co.com.designer.persistencia.implementacion.PersistenciaConexiones;
 import co.com.designer.persistencia.implementacion.PersistenciaConfiCorreoKiosko;
 import co.com.designer.persistencia.implementacion.PersistenciaPerfiles;
 import com.sun.mail.util.MailConnectException;
@@ -48,6 +49,8 @@ public class EnvioCorreo {
     public EnvioCorreo() {
         this.rolesBD = new PersistenciaPerfiles();
         this.cadenasKio = new PersistenciaCadenasKioskosApp();
+        this.persistenciaConexiones = new PersistenciaConexiones();
+        this.persisConfiCorreoKiosko = new PersistenciaConfiCorreoKiosko();
     }
 
     private void imprimirPropiedades(Properties propiedades) {

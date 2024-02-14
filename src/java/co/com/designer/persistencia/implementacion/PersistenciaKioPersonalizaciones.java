@@ -5,7 +5,6 @@ import co.com.designer.persistencia.interfaz.IPersistenciaConexiones;
 import co.com.designer.persistencia.interfaz.IPersistenciaEmpresas;
 import co.com.designer.persistencia.interfaz.IPersistenciaKioPersonalizaciones;
 import co.com.designer.persistencia.interfaz.IPersistenciaPerfiles;
-import java.math.BigDecimal;
 import java.util.List;
 import javax.persistence.Query;
 

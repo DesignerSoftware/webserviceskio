@@ -4,9 +4,7 @@ import co.com.designer.kiosko.entidades.ConfiCorreoKiosko;
 import co.com.designer.persistencia.interfaz.IPersistenciaCadenasKioskosApp;
 import co.com.designer.persistencia.interfaz.IPersistenciaConexiones;
 import co.com.designer.persistencia.interfaz.IPersistenciaConfiCorreoKiosko;
-import co.com.designer.persistencia.interfaz.IPersistenciaEmpresas;
 import co.com.designer.persistencia.interfaz.IPersistenciaPerfiles;
-import java.math.BigDecimal;
 import javax.persistence.Query;
 
 /**
