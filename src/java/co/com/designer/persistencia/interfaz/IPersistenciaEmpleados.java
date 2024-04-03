@@ -1,6 +1,7 @@
 package co.com.designer.persistencia.interfaz;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  *
@@ -9,4 +10,5 @@ import java.math.BigDecimal;
 public interface IPersistenciaEmpleados {
     public BigDecimal getDocumentoXUsuario(String cadena, String usuario);
     public boolean validarCodigoUsuario(String usuario);
+    public List getDatosEmpleadoNit(String empleado, String nit, String cadena);
 }

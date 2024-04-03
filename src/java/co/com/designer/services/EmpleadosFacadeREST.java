@@ -3,6 +3,10 @@ package co.com.designer.services;
 import co.com.designer.kiosko.generales.EnvioCorreo;
 import co.com.designer.kiosko.entidades.ConexionesKioskos;
 import co.com.designer.kiosko.entidades.Recordatorios;
+import co.com.designer.persistencia.implementacion.PersistenciaEmpleados;
+import co.com.designer.persistencia.implementacion.PersistenciaSolucionesNodos;
+import co.com.designer.persistencia.interfaz.IPersistenciaEmpleados;
+import co.com.designer.persistencia.interfaz.IPersistenciaSolucionesNodos;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Writer;
 import com.google.zxing.WriterException;
@@ -51,6 +55,14 @@ import org.json.JSONObject;
 @Path("empleados")
 public class EmpleadosFacadeREST {
 
+    private IPersistenciaEmpleados persisEmpleados;
+    private IPersistenciaSolucionesNodos persisSolNod;
+
+    public EmpleadosFacadeREST() {
+        persisEmpleados = new PersistenciaEmpleados();
+        persisSolNod = new PersistenciaSolucionesNodos();
+    }
+        
     protected EntityManager getEntityManager() {
         String unidadPersistencia = "wsreportePU";
         EntityManager em = Persistence.createEntityManagerFactory(unidadPersistencia).createEntityManager();
@@ -97,9 +109,11 @@ public class EmpleadosFacadeREST {
         System.out.println("parametros getDatosEmpleadosNit():  empleado: " + empleado + " nit: " + nitEmpresa + " cadena " + cadena);
         List s = null;
         try {
+            /*
             String documento = getDocumentoPorSeudonimo(empleado, nitEmpresa, cadena);
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
+            */
             /*
             String sqlQuery = " select  \n"
                     + "e.codigoempleado usuario,   \n"
@@ -150,6 +164,7 @@ public class EmpleadosFacadeREST {
                     + "and p.numerodocumento= ?  \n"
                     + "and em.nit=? ";
              */
+            /*
             String sqlQuery = "select \n"
                     + "e.codigoempleado usuario, \n"
                     + "p.nombre ||' '|| p.primerapellido ||' '|| p.segundoapellido nombres, \n"
@@ -202,6 +217,8 @@ public class EmpleadosFacadeREST {
             query.setParameter(2, nitEmpresa);
 
             s = query.getResultList();
+            */
+            s = this.persisEmpleados.getDatosEmpleadoNit(empleado, nitEmpresa, cadena);
             s.forEach(System.out::println);
             return Response.status(Response.Status.OK).entity(s).build();
         } catch (Exception ex) {
@@ -1601,6 +1618,7 @@ public class EmpleadosFacadeREST {
                 + " seudonimo: " + seudonimo);
         List exLab = null;
         try {
+            /*
             String esquema = getEsquema(nitEmpresa, cadena);
             String secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
@@ -1616,13 +1634,15 @@ public class EmpleadosFacadeREST {
                     + "and c.secuencia = cp.comprobante \n"
                     + "and cp.proceso = p.secuencia \n"
                     + "and p.codigo = 11 \n"
-                    + "and cc.codigo in (44001, 44002, 44003, 44004,99989,99988,99986,99987) \n"
+                    + "and cc.codigo in (44001, 44002, 44003, 44004,99989,99988,99986,99987,99600,99601,99602,99603) \n"
                     + "and sn.ESTADO = 'CERRADO' \n"
                     + "AND sn.FECHAPAGO = cortesprocesos_pkg.CapturarAnteriorCorte(sn.EMPLEADO,11,sysdate) \n"
                     + "ORDER BY CC.descripcion";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpl);
             exLab = query.getResultList();
+            */
+            exLab = this.persisSolNod.getSaldoProvisiones(seudonimo, nitEmpresa, cadena);
             //exLab.forEach(System.out::println);
             return Response.status(Response.Status.OK).entity(exLab).build();
         } catch (Exception ex) {

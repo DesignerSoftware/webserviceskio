@@ -3,10 +3,12 @@ package co.com.designer.persistencia.implementacion;
 import co.com.designer.kiosko.entidades.ConexionesKioskos;
 import co.com.designer.persistencia.interfaz.IPersistenciaCadenasKioskosApp;
 import co.com.designer.persistencia.interfaz.IPersistenciaConexiones;
+import co.com.designer.persistencia.interfaz.IPersistenciaConexionesKioskos;
 import co.com.designer.persistencia.interfaz.IPersistenciaEmpleados;
 import co.com.designer.persistencia.interfaz.IPersistenciaPerfiles;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.List;
 import javax.persistence.Query;
 
 /**
@@ -17,10 +19,15 @@ public class PersistenciaEmpleados implements IPersistenciaEmpleados {
 
 //    private IPersistenciaPerfiles rolesBD;
     private IPersistenciaConexiones persistenciaConexiones;
-//    private IPersistenciaCadenasKioskosApp cadenasKio;
+    private IPersistenciaConexionesKioskos persistenciaConexionesKio;
+    private IPersistenciaPerfiles rolesBD;
+    private IPersistenciaCadenasKioskosApp cadenasKio;
 
     public PersistenciaEmpleados() {
         this.persistenciaConexiones = new PersistenciaConexiones();
+        this.persistenciaConexionesKio = new PersistenciaConexionesKioskos();
+        this.rolesBD = new PersistenciaPerfiles();
+        this.cadenasKio = new PersistenciaCadenasKioskosApp();
     }
 
     @Override
@@ -63,6 +70,70 @@ public class PersistenciaEmpleados implements IPersistenciaEmpleados {
         }
         return resultado;
     }
-    
-    
+
+    @Override
+    public List getDatosEmpleadoNit(String empleado, String nit, String cadena) {
+        
+        try {
+            BigDecimal documento = this.persistenciaConexionesKio.getDocumentoPorSeudonimo(empleado, nit, cadena);
+            String esquema = this.cadenasKio.getEsquema(nit, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
+            String sqlQuery = "select \n"
+                    + "e.codigoempleado usuario, \n"
+                    + "p.nombre ||' '|| p.primerapellido ||' '|| p.segundoapellido nombres, \n"
+                    + "p.primerapellido apellido1, \n"
+                    + "p.segundoapellido apellido2, \n"
+                    + "decode(p.sexo,'M', 'MASCULINO', 'F', 'FEMENINO', '') sexo, \n"
+                    + "to_char(p.FECHANACIMIENTO, 'dd-MM-yyyy') fechaNacimiento, \n"
+                    + "(select nombre from ciudades where secuencia=p.CIUDADNACIMIENTO) ciudadNacimiento, \n"
+                    + "p.GRUPOSANGUINEO grupoSanguineo,\n"
+                    + "p.FACTORRH factorRH, \n"
+                    + "(select nombrelargo from tiposdocumentos where secuencia=p.TIPODOCUMENTO) tipoDocu, \n"
+                    + "p.NUMERODOCUMENTO documento, \n"
+                    + "(select nombre from ciudades where secuencia=p.CIUDADDOCUMENTO) lugarExpediDocu, \n"
+                    + "p.EMAIL email, \n"
+                    + "'DIRECCION' direccion, \n"
+                    + "ck.ULTIMACONEXION ultimaConexion, \n"
+                    + "em.codigo codigoEmpresa, \n"
+                    + "em.nit nitEmpresa, \n"
+                    + "em.nombre nombreEmpresa, \n"
+                    + "empleadocurrent_pkg.descripciontipocontrato(e.secuencia, sysdate) contrato, \n"
+                    + "--trim(to_char(empleadocurrent_pkg.ValorBasicoCorte(e.secuencia, sysdate),'$999G999G999G999G999G999')) salario, \n"
+                    + "trim(to_char(empleadocurrent_pkg.ValorBasicoCorte(e.secuencia, \n"
+                    + "  nvl(GREATEST( \n"
+                    + "      cortesprocesos_pkg.CapturarAnteriorCorte(e.secuencia,1,sysdate), \n"
+                    + "      cortesprocesos_pkg.CapturarAnteriorCorte(e.secuencia,80,sysdate) \n"
+                    + "    ),cortesprocesos_pkg.CapturarAnteriorCorte(e.secuencia,1,sysdate)) \n"
+                    + "  ),'$999G999G999G999G999G999')) salario, \n"
+                    + "empleadocurrent_pkg.DescripcionCargoCorte(e.secuencia, sysdate) cargo, \n"
+                    + "empleadocurrent_pkg.FechaVigenciaTipoContrato(e.secuencia, sysdate) inicioContratoActual, \n"
+                    + "em.logo logoEmpresa, \n"
+                    + "UPPER(empleadocurrent_pkg.DireccionAlternativa(p.secuencia, sysdate)) direccionPersona, \n"
+                    + "empleadocurrent_pkg.CentrocostoNombre(e.secuencia) centroscostos, \n"
+                    + "empleadocurrent_pkg.EdadPersona(p.secuencia, sysdate) || ' AÑOS' edad, \n"
+                    + "EmpleadoCurrent_pkg.Afiliacion(e.secuencia, 3, sysdate-30, sysdate) entidadfp, \n"
+                    + "EmpleadoCurrent_pkg.Afiliacion(e.secuencia, 1, sysdate-30, sysdate) entidadeps, \n"
+                    + "EmpleadoCurrent_pkg.Afiliacion(e.secuencia, 2, sysdate-30, sysdate) entidadarp, \n"
+                    + "EmpleadoCurrent_pkg.Afiliacion(e.secuencia, 12, sysdate-30, sysdate) entidadcesantias, \n"
+                    + "empleadocurrent_pkg.Afiliacion(e.secuencia, 14, sysdate-30, sysdate) cajaCompensacion, \n"
+                    + "to_char(empleadocurrent_pkg.fechaVigenciaTipoContrato(e.secuencia, sysdate), 'dd-MM-yyyy') fechaContratacion \n"
+                    + "from \n"
+                    + "empleados e, conexioneskioskos ck, empresas em, personas p \n"
+                    + "where \n"
+                    + "e.persona=p.secuencia \n"
+                    + "and e.empresa=em.secuencia \n"
+                    + "and ck.empleado=e.secuencia \n"
+                    + "and p.numerodocumento= ? \n"
+                    + "and em.nit=? ";
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, documento);
+            query.setParameter(2, nit);
+            List datosEmpleado = query.getResultList();
+            return datosEmpleado;
+        } catch (Exception e) {
+            System.out.println("getDatosEmpleadoXNit: Error: en algo de la base de datos. " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
+    }
 }

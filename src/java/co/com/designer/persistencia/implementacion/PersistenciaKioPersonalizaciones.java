@@ -16,7 +16,7 @@ public class PersistenciaKioPersonalizaciones implements IPersistenciaKioPersona
     private IPersistenciaPerfiles rolesBD;
     private IPersistenciaConexiones persistenciaConexiones;
     private IPersistenciaCadenasKioskosApp cadenasKio;
-    private IPersistenciaEmpresas persistenciaEmpresas;
+    //private IPersistenciaEmpresas persistenciaEmpresas;
 
     public PersistenciaKioPersonalizaciones() {
         this.rolesBD = new PersistenciaPerfiles();

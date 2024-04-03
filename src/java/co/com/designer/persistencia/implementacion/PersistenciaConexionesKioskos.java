@@ -4,7 +4,6 @@ import co.com.designer.kiosko.entidades.ConexionesKioskos;
 import co.com.designer.persistencia.interfaz.IPersistenciaCadenasKioskosApp;
 import co.com.designer.persistencia.interfaz.IPersistenciaConexiones;
 import co.com.designer.persistencia.interfaz.IPersistenciaConexionesKioskos;
-import co.com.designer.persistencia.interfaz.IPersistenciaEmpleados;
 import co.com.designer.persistencia.interfaz.IPersistenciaPerfiles;
 import co.com.designer.persistencia.interfaz.IPersistenciaPersonas;
 import java.math.BigDecimal;
@@ -19,15 +18,12 @@ public class PersistenciaConexionesKioskos implements IPersistenciaConexionesKio
     private IPersistenciaPerfiles rolesBD;
     private IPersistenciaConexiones persistenciaConexiones;
     private IPersistenciaCadenasKioskosApp cadenasKio;
-    private IPersistenciaEmpleados persisEmple;
     private IPersistenciaPersonas persisPersonas;
 
     public PersistenciaConexionesKioskos() {
         this.rolesBD = new PersistenciaPerfiles();
         this.persistenciaConexiones = new PersistenciaConexiones();
         this.cadenasKio = new PersistenciaCadenasKioskosApp();
-        this.persisEmple = new PersistenciaEmpleados();
-        this.persisPersonas = new PersistenciaPersonas();
     }
 
     @Override
@@ -212,6 +208,7 @@ public class PersistenciaConexionesKioskos implements IPersistenciaConexionesKio
     @Override
     public String updateCorreoSeudonimo(String usuario, String nitEmpresa, String cadena) {
         System.out.println("Parametros validarSeudonimoCorreo() [ seudonimo: " + usuario + ", nitEmpresa: " + nitEmpresa + " cadena: " + cadena + " ]");
+        this.persisPersonas = new PersistenciaPersonas();
         BigDecimal documento = null;
         String correo = null;
         String resultado = null;

@@ -808,13 +808,29 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT K.NOMBRECONTACTO NOMBRE, K.EMAILCONTACTO EMAIL, TELEFONOCONTACTO TELEFONO "
-                    + "FROM KIOPERSONALIZACIONES K, EMPRESAS EM WHERE K.EMPRESA=EM.SECUENCIA AND EM.NIT=?";
+                    + "FROM KIOPERSONALIZACIONES K, EMPRESAS EM "
+                    + "WHERE K.EMPRESA=EM.SECUENCIA "
+                    + "AND K.TIPOCONTACTO = 'NOMINA' "
+                    + "AND EM.NIT= ? ";
             Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
             datos = query.getResultList();
         } catch (Exception ex) {
-            System.out.println("ex: " + ex);
-            res = BigDecimal.ZERO;
+            System.out.println("Usando la consulta tradicional para los datos de contacto");
+            try {
+                String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+                this.rolesBD.setearPerfil(esquema, cadena);
+                String sqlQuery = "SELECT K.NOMBRECONTACTO NOMBRE, K.EMAILCONTACTO EMAIL, TELEFONOCONTACTO TELEFONO "
+                        + "FROM KIOPERSONALIZACIONES K, EMPRESAS EM "
+                        + "WHERE K.EMPRESA=EM.SECUENCIA "
+                        + "AND EM.NIT= ? ";
+                Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+                query.setParameter(1, nitEmpresa);
+                datos = query.getResultList();
+            } catch (Exception exi) {
+                System.out.println("ex: " + exi);
+                res = BigDecimal.ZERO;
+            }
         }
         return Response.status(Response.Status.OK).entity(datos).build();
     }
@@ -1436,7 +1452,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             Object obDocumento = Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwtOriginal).getBody().get("documento");
             if (obDocumento instanceof Integer) {
                 documento = Integer.toString((Integer) obDocumento);
-            } else if (obDocumento instanceof String ){
+            } else if (obDocumento instanceof String) {
                 documento = (String) obDocumento;
             }
             cadenaToken = (String) Jwts.parser().setSigningKey("Manager01".getBytes("UTF-8")).parseClaimsJws(jwtOriginal).getBody().get("cadena");
