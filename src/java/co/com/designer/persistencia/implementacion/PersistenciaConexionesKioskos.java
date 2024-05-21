@@ -77,9 +77,9 @@ public class PersistenciaConexionesKioskos implements IPersistenciaConexionesKio
         }
         return conteo;
     }
-    
+
     @Override
-    public int updateClaveConexionesKioskos(String usuario, String nitEmpresa, String clave, String cadena){
+    public int updateClaveConexionesKioskos(String usuario, String nitEmpresa, String clave, String cadena) {
         int conteo = 0;
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
@@ -99,9 +99,9 @@ public class PersistenciaConexionesKioskos implements IPersistenciaConexionesKio
             System.out.println("Error: " + ex);
             conteo = 0;
         }
-        return conteo; 
+        return conteo;
     }
-    
+
     @Override
     public String getSecuenciaEmplPorSeudonimo(String seudonimo, String nitEmpresa, String cadena) {
         System.out.println("Parametros getSecuenciaEmplPorSeudonimo(): seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
@@ -109,7 +109,11 @@ public class PersistenciaConexionesKioskos implements IPersistenciaConexionesKio
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT E.SECUENCIA SECUENCIAEMPLEADO FROM EMPLEADOS E, CONEXIONESKIOSKOS CK WHERE CK.EMPLEADO=E.SECUENCIA AND CK.SEUDONIMO=? AND CK.NITEMPRESA=?";
+            String sqlQuery = "SELECT E.SECUENCIA SECUENCIAEMPLEADO "
+                    + "FROM EMPLEADOS E, CONEXIONESKIOSKOS CK "
+                    + "WHERE CK.EMPLEADO=E.SECUENCIA "
+                    + "AND CK.SEUDONIMO= ? "
+                    + "AND CK.NITEMPRESA= ? ";
             System.out.println("Query: " + sqlQuery);
             Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
 
@@ -122,41 +126,48 @@ public class PersistenciaConexionesKioskos implements IPersistenciaConexionesKio
         }
         return secuencia;
     }
-    
-    // 13/10/2021
+
     /**
-     * metodo para validar si el correo es diferente al seudonumo
+     * Metodo para validar si el correo es diferente al seudonimo. Creado el
+     * 13/10/2021
      *
+     * @param usuario
+     * @param nitEmpresa
+     * @param cadena
      * @return String Respuesta en formato boolean
      */
     @Override
     public boolean validarSeudonimoCorreo(String usuario, String nitEmpresa, String cadena) {
-        System.out.println("Parametros validarSeudonimoCorreo() [ seudonimo: " + usuario + ", nitEmpresa: " + nitEmpresa + " cadena: " + cadena + " ]");
+        System.out.println("PersistenciaConexionesKioskos" + ".validarSeudonimoCorreo(): " + "Parametros: [ seudonimo: " + usuario + ", nitEmpresa: " + nitEmpresa + " cadena: " + cadena + " ]");
         boolean resultado = false;
+        String sqlQuery = "select count(*) "
+                + "from conexioneskioskos ck, personas p "
+                + "where ck.persona = p.secuencia "
+                + "and lower(ck.seudonimo) = lower(p.email) "
+                + "and lower(ck.seudonimo) = ? "
+                + "and ck.nitempresa = ? ";
+        System.out.println("PersistenciaConexionesKioskos" + ".validarSeudonimoCorreo(): " + "Query: " + sqlQuery);
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "select count(*) "
-                    + "from conexioneskioskos ck, personas p "
-                    + "where ck.persona = p.secuencia "
-                    + "and lower(ck.seudonimo) = lower(p.email) "
-                    + "and lower(ck.seudonimo) = ? ";
-            System.out.println("Query: " + sqlQuery);
             Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, usuario);
+            query.setParameter(2, nitEmpresa);
             BigDecimal retorno = (BigDecimal) query.getSingleResult();
             Integer instancia = retorno.intValueExact();
-            System.out.println("validarSeudonimoCorreo()1 " + retorno);
-            System.out.println("validarSeudonimoCorreo()2 " + instancia);
-            if (instancia > 0) {
+            System.out.println("PersistenciaConexionesKioskos" + ".validarSeudonimoCorreo(): " + "retorno: " + retorno);
+            System.out.println("PersistenciaConexionesKioskos" + ".validarSeudonimoCorreo(): " + "instancia: " + instancia);
+            /*if (instancia > 0) {
                 resultado = true;
             }
+             */
+            resultado = instancia > 0;
         } catch (Exception e) {
-            System.out.println("Error : " + ConexionesKioskos.class.getName() + ".validarUsuarioRegistrado " + e.getMessage());
+            System.out.println("PersistenciaConexionesKioskos" + ".validarSeudonimoCorreo(): " + "Error: " + e.getMessage());
         }
         return resultado;
-    } 
-    
+    }
+
     @Override
     public BigDecimal getDocumentoPorSeudonimo(String seudonimo, String nitEmpresa, String cadena) {
         System.out.println("Parametros getDocumentoPorSeudonimo() seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
@@ -164,7 +175,11 @@ public class PersistenciaConexionesKioskos implements IPersistenciaConexionesKio
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P, CONEXIONESKIOSKOS CK WHERE CK.PERSONA=P.SECUENCIA AND lower(CK.SEUDONIMO)=lower(?) AND CK.NITEMPRESA=?";
+            String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO "
+                    + "FROM PERSONAS P, CONEXIONESKIOSKOS CK "
+                    + "WHERE CK.PERSONA=P.SECUENCIA "
+                    + "AND lower(CK.SEUDONIMO)=lower(?) "
+                    + "AND CK.NITEMPRESA= ? ";
             System.out.println("Query: " + sqlQuery);
             Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
 
@@ -177,7 +192,7 @@ public class PersistenciaConexionesKioskos implements IPersistenciaConexionesKio
         }
         return documento;
     }
-    
+
     @Override
     public BigDecimal getPersonaPorSeudonimo(String seudonimo, String nitEmpresa, String cadena) {
         System.out.println("Parametros getPersonaPorSeudonimo() seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
@@ -198,16 +213,19 @@ public class PersistenciaConexionesKioskos implements IPersistenciaConexionesKio
         }
         return documento;
     }
-    
+
     // 13/10/2021
     /**
      * metodo para validar si el correo es diferente al seudonumo
      *
+     * @param usuario
+     * @param nitEmpresa
+     * @param cadena
      * @return String Respuesta en formato boolean
      */
     @Override
     public String updateCorreoSeudonimo(String usuario, String nitEmpresa, String cadena) {
-        System.out.println("Parametros validarSeudonimoCorreo() [ seudonimo: " + usuario + ", nitEmpresa: " + nitEmpresa + " cadena: " + cadena + " ]");
+        System.out.println("PersistenciaConexionesKioskos" + ".validarSeudonimoCorreo(): " + "Parametros: [ seudonimo: " + usuario + ", nitEmpresa: " + nitEmpresa + " cadena: " + cadena + " ]");
         this.persisPersonas = new PersistenciaPersonas();
         BigDecimal documento = null;
         String correo = null;
@@ -219,13 +237,15 @@ public class PersistenciaConexionesKioskos implements IPersistenciaConexionesKio
             correo = this.persisPersonas.consultarCorreoPersonaEmpresa(documento.toString(), nitEmpresa, cadena);
             String sqlQuery = "update conexioneskioskos set seudonimo = ? "
                     + "where persona = (select secuencia "
-                    + "from personas where numerodocumento = ?) ";
+                    + "from personas where numerodocumento = ? ) "
+                    + "and nitempresa = ? ";
             System.out.println("Query: " + sqlQuery);
             Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             System.out.println("correoPesona " + correo);
             System.out.println("documento " + documento);
             query.setParameter(1, correo);
             query.setParameter(2, documento);
+            query.setParameter(3, nitEmpresa);
             query.executeUpdate();
             //resultado = query.getSingleResult().toString();
             //System.out.println("Resultado " + resultado);

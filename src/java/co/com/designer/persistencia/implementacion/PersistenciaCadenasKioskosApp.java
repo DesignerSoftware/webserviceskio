@@ -25,7 +25,7 @@ public class PersistenciaCadenasKioskosApp implements IPersistenciaCadenasKiosko
 
     @Override
     public String getEsquema(String nitEmpresa, String cadena) {
-        System.out.println("Parametros getEsquema(): nitempresa: " + nitEmpresa + ", cadena: " + cadena);
+        System.out.println("PersistenciaCadenasKioskosApp" + ".getEsquema(): " + "Parametros: nitempresa: " + nitEmpresa + ", cadena: " + cadena);
         String esquema = "";
         String sqlQuery;
         try {
@@ -34,10 +34,10 @@ public class PersistenciaCadenasKioskosApp implements IPersistenciaCadenasKiosko
             query.setParameter(1, nitEmpresa);
             query.setParameter(2, cadena);
             esquema = query.getSingleResult().toString();
-            System.out.println("Esquema: " + esquema);
         } catch (Exception e) {
-            System.out.println("Error " + "PersistenciaCadenasKioskosApp" + ".getEsquema(nitEmpresa, cadena): " + e);
+            System.out.println("PersistenciaCadenasKioskosApp" + ".getEsquema(nitEmpresa, cadena): " + "Error: " + e);
         }
+        System.out.println("PersistenciaCadenasKioskosApp" + ".getEsquema(nitEmpresa, cadena): " + "Esquema: " + esquema);
         return esquema;
     }
 

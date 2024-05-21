@@ -411,10 +411,10 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             } else {
                 String secEmpl = getSecEmplPorDocumentoYEmpresa(documento, nitEmpresa, cadena);
                 String sqlQueryInsert = "INSERT INTO CONEXIONESKIOSKOS (SEUDONIMO, EMPLEADO, PERSONA, PWD, "
-                        + "NITEMPRESA, ACTIVO, ULTIMACONEXION) "
+                        + "NITEMPRESA, ACTIVO, ULTIMACONEXION, FECHADESDE, FECHAHASTA) "
                         + "VALUES (lower(?), ?, "
                         + "(SELECT SECUENCIA FROM PERSONAS WHERE NUMERODOCUMENTO=?), "
-                        + " GENERALES_PKG.ENCRYPT(?), ?, 'P', SYSDATE)";
+                        + " GENERALES_PKG.ENCRYPT(?), ?, 'P', SYSDATE, TRUNC(SYSDATE, 'MM'), LAST_DAY(SYSDATE))";
                 Query queryInsert = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQueryInsert);
                 queryInsert.setParameter(1, seudonimo);
                 queryInsert.setParameter(2, secEmpl);
@@ -1024,14 +1024,16 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT COUNT(*) count FROM EMPLEADOS e, Empresas em, Personas p "
+            String sqlQuery = "SELECT COUNT(*) count "
+                    + " FROM EMPLEADOS e, Empresas em, Personas p "
                     + " WHERE e.empresa = em.secuencia "
                     + " AND P.SECUENCIA=E.PERSONA "
                     //+ "AND e.codigoempleado = ? "
-                    + " AND P.NUMERODOCUMENTO=? "
+                    + " AND P.NUMERODOCUMENTO = ? "
                     + " AND em.nit = ? "
-                    + " AND (EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(e.secuencia, SYSDATE) = 'ACTIVO' "
-                    + " OR EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(e.secuencia, SYSDATE) = 'PENSIONADO')";
+                    //                    + " AND (EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(e.secuencia, SYSDATE) = 'ACTIVO' "
+                    //                    + " OR EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(e.secuencia, SYSDATE) = 'PENSIONADO') "
+                    + " AND (EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(e.secuencia, SYSDATE) IN ('ACTIVO','PENSIONADO')) ";
             System.out.println("validarUsuarioyEmpresa() Parametros[ documento: " + documento + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena + "]");
             System.out.println("Query: " + sqlQuery);
             Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
@@ -1040,6 +1042,25 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
 
             BigDecimal retorno = (BigDecimal) query.getSingleResult();
             Integer instancia = retorno.intValueExact();
+            if (instancia == 0) {
+                sqlQuery = "SELECT COUNT(*) count "
+                        + " FROM KIOAUTORIZADORES e, Personas p "
+                        + " , KioAutorizaSoliciVacas kas, Empleados empl, Empresas em "
+                        + " WHERE P.SECUENCIA=E.PERSONA "
+                        + " AND em.secuencia = empl.empresa "
+                        + " AND empl.secuencia = kas.empleado "
+                        + " AND kas.kioautorizador = e.secuencia "
+                        + " AND P.NUMERODOCUMENTO = ? "
+                        + " AND em.nit = ? ";
+                System.out.println("validarUsuarioyEmpresa() Autorizadores Parametros[ documento: " + documento + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena + "]");
+                System.out.println("Query: " + sqlQuery);
+                query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+                query.setParameter(1, documento);
+                query.setParameter(2, nitEmpresa);
+
+                retorno = (BigDecimal) query.getSingleResult();
+                instancia = retorno.intValueExact();
+            }
             resultado = instancia > 0;
             System.out.println("resultado validarUsuarioyEmpresa: " + instancia);
         } catch (Exception ex) {
@@ -1135,6 +1156,10 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     /**
      * metodo para cambiar el estado del seudonimo
      *
+     * @param usuario
+     * @param nitEmpresa
+     * @param activo
+     * @param cadena
      * @return String Respuesta en formato boolean
      */
     public boolean cambioEstadoSeudonimo(String usuario, String nitEmpresa, String activo, String cadena) {
@@ -1185,10 +1210,11 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT COUNT(*) count "
                     + "FROM CONEXIONESKIOSKOS ck, PERSONAS per, EMPLEADOS e, EMPRESAS em "
-                    + "WHERE ck.EMPLEADO = e.SECUENCIA "
-                    //                    + "WHERE ck.PERSONA = per.SECUENCIA "
+                    //+ "WHERE ck.EMPLEADO = e.SECUENCIA "
+                    + "WHERE ck.PERSONA = per.SECUENCIA "
                     + "AND e.persona = per.secuencia "
                     + "AND e.empresa = em.secuencia "
+                    + "AND em.nit = ck.nitempresa "
                     //+ "AND e.codigoempleado = ? "
                     + "AND per.numerodocumento = ? "
                     + "AND em.nit = ? ";
@@ -1197,10 +1223,32 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             query.setParameter(1, documento);
             query.setParameter(2, nitEmpresa);
             BigDecimal retorno = (BigDecimal) query.getSingleResult();
+            System.out.println("ConexionesKioskosFacadeREST" + ".validarUsuarioRegistrado(): retorno: " + retorno);
+            if (retorno.equals(BigDecimal.ZERO)) {
+                sqlQuery = "SELECT COUNT(*) count "
+                        + " FROM ConexionesKioskos ck, KIOAUTORIZADORES e, Personas p "
+                        + " WHERE P.SECUENCIA=E.PERSONA "
+                        + " AND ck.persona = p.secuencia "
+                        + " AND P.NUMERODOCUMENTO = ? "
+                        + " AND EXISTS (SELECT 'X' "
+                        + "  FROM KioAutorizaSoliciVacas kas, Empleados empl, Empresas em "
+                        + "  WHERE em.secuencia = empl.empresa "
+                        + "  AND empl.secuencia = kas.empleado "
+                        + "  AND kas.kioautorizador = e.secuencia "
+                        + "  AND em.nit = ? ) "
+                        + " AND ck.nitempresa = ? "
+                        ;
+                System.out.println("Query_autorizadores: " + sqlQuery);
+                query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+                query.setParameter(1, documento);
+                query.setParameter(2, nitEmpresa);
+                query.setParameter(3, nitEmpresa);
+                retorno = (BigDecimal) query.getSingleResult();
+            }
             Integer instancia = retorno.intValueExact();
             resultado = instancia > 0;
         } catch (Exception e) {
-            System.out.println("Error : " + ConexionesKioskos.class.getName() + ".validarUsuarioRegistrado " + e.getMessage());
+            System.out.println("Error : " + "ConexionesKioskosFacadeREST" + ".validarUsuarioRegistrado " + e.getMessage());
         }
         return resultado;
     }
@@ -1208,18 +1256,18 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     public boolean validarSeudonimoRegistrado(String seudonimo, String nitEmpresa, String cadena) {
         System.out.println("validarSeudonimoRegistrado()");
         boolean resultado = false;
+        String sqlQuery = "SELECT COUNT(*) count "
+                + "FROM CONEXIONESKIOSKOS ck, PERSONAS per, EMPLEADOS e, EMPRESAS em "
+                + "WHERE "
+                + "ck.persona = per.secuencia "
+                + "AND e.persona = per.secuencia "
+                + "AND e.empresa = em.secuencia "
+                + "AND em.nit = ck.nitempresa "
+                + "AND lower(ck.SEUDONIMO) = ? "
+                + "AND em.nit = ? ";
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT COUNT(*) count "
-                    + "FROM CONEXIONESKIOSKOS ck, PERSONAS per, EMPLEADOS e, EMPRESAS em "
-                    + "WHERE "
-                    + "ck.persona = per.secuencia and "
-                    + "lower(ck.SEUDONIMO) = ? "
-                    //                    + "WHERE ck.PERSONA = per.SECUENCIA "
-                    + "AND e.persona = per.secuencia "
-                    + "AND e.empresa = em.secuencia "
-                    + "AND em.nit = ? ";
             System.out.println("Parametros: validarSeudonimoRegistrado(): [ seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
             System.out.println("Query: " + sqlQuery);
             Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
@@ -1227,9 +1275,42 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             query.setParameter(2, nitEmpresa);
             BigDecimal retorno = (BigDecimal) query.getSingleResult();
             Integer instancia = retorno.intValueExact();
+            if (retorno.equals(BigDecimal.ZERO)) {
+                System.out.println("ConexionesKioskosFacadeREST" + ".validarSeudonimoRegistrado(): " + "Consultado Autorizadores ");
+                sqlQuery = "SELECT COUNT(*) count "
+                        + "FROM ConexionesKioskos ck, Personas p "
+                        + " WHERE ck.persona = p.secuencia "
+                        + " AND LOWER(ck.SEUDONIMO) = ? "
+                        + " AND EXISTS (SELECT 'X' "
+                        + "  FROM KioAutorizadores e, KioAutorizaSoliciVacas kas, Empleados empl, Empresas em "
+                        + "  WHERE em.secuencia = empl.empresa "
+                        + "  AND empl.secuencia = kas.empleado "
+                        + "  AND p.secuencia=e.persona "
+                        + "  AND kas.kioautorizador = e.secuencia "
+                        + "  AND em.nit = ? "
+                        + " )"
+                        + " AND ck.nitempresa = ? "
+                        ;
+                try {
+                    esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+                    this.rolesBD.setearPerfil(esquema, cadena);
+                    System.out.println("Parametros: validarSeudonimoRegistrado(): autorizadores: [ seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
+                    System.out.println("Query_autroizadores: " + sqlQuery);
+                    query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+                    query.setParameter(1, seudonimo);
+                    query.setParameter(2, nitEmpresa);
+                    query.setParameter(3, nitEmpresa);
+                    retorno = (BigDecimal) query.getSingleResult();
+                    instancia = retorno.intValueExact();
+                } catch (Exception ex) {
+                    System.out.println("ConexionesKioskosFacadeREST" + ".validarSeudonimoRegistrado(): " + "Error: " + ex.getMessage());
+                    System.out.println("ConexionesKioskosFacadeREST" + ".validarSeudonimoRegistrado(): " + "Query: " + sqlQuery);
+                }
+            }
             resultado = instancia > 0;
         } catch (Exception e) {
-            System.out.println("Error: " + ConexionesKioskos.class.getName() + ".validarSeudonimoRegistrado(): " + e.getMessage());
+            System.out.println("ConexionesKioskosFacadeREST" + ".validarSeudonimoRegistrado(): " + "Error: " + e.getMessage());
+            System.out.println("ConexionesKioskosFacadeREST" + ".validarSeudonimoRegistrado(): " + "Query: " + sqlQuery);
         }
         return resultado;
     }
@@ -1238,17 +1319,18 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         System.out.println("validarEstadoUsuarioSeudonimo()");
         String retorno = null;
         boolean resultado = false;
+        String sqlQuery = "SELECT ck.ACTIVO estado "
+                + "FROM CONEXIONESKIOSKOS ck, PERSONAS per, EMPLEADOS e, EMPRESAS em "
+                //                    + "WHERE ck.PERSONA = per.SECUENCIA "
+                + "WHERE ck.EMPLEADO = e.SECUENCIA "
+                + "AND per.secuencia = e.persona "
+                + "AND e.empresa = em.secuencia "
+                + "AND ck.nitempresa = em.nit "
+                + "AND lower(ck.seudonimo) = ? "
+                + "AND em.nit = ? ";
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT ACTIVO estado "
-                    + "FROM CONEXIONESKIOSKOS ck, PERSONAS per, EMPLEADOS e, EMPRESAS em "
-                    //                    + "WHERE ck.PERSONA = per.SECUENCIA "
-                    + "WHERE ck.EMPLEADO = e.SECUENCIA "
-                    + "AND per.secuencia = e.persona "
-                    + "AND e.empresa = em.secuencia "
-                    + "AND lower(ck.seudonimo) = ? "
-                    + "AND em.nit = ? ";
             System.out.println("validarEstadoUsuarioSeudonimo() Parametros: [usuario: " + usuario + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena + "]");
             System.out.println("Query: " + sqlQuery);
             Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
@@ -1256,7 +1338,36 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             query.setParameter(2, nitEmpresa);
             retorno = query.getSingleResult().toString();
         } catch (Exception e) {
-            System.out.println("Error validarEstadoUsuarioSeudonimo(): " + e.getMessage());
+            System.out.println("Error: " + "ConexionesKioskosFacadeREST" + ".validarEstadoUsuarioSeudonimo(): " + e.getMessage());
+            System.out.println("ConexionesKioskosFacadeREST" + ".validarEstadoUsuarioSeudonimo(): " + "consultado KioAutorizadores");
+            try {
+                sqlQuery = "SELECT ck.activo estado "
+                        + " FROM ConexionesKioskos ck, Personas p "
+                        + " WHERE ck.persona = p.secuencia "
+                        + " AND p.numerodocumento = ? "
+                        + " AND EXISTS (SELECT 'X' "
+                        + "  FROM KioAutorizadores e, KioAutorizaSoliciVacas kas, Empleados empl, Empresas em "
+                        + "  WHERE em.secuencia = empl.empresa "
+                        + "  AND empl.secuencia = kas.empleado "
+                        + "  AND p.secuencia=e.persona "
+                        + "  AND kas.kioautorizador = e.secuencia "
+                        + "  AND em.nit = ? "
+                        + " )"
+                        + " AND ck.nitempresa = ? "
+                        ;
+                String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+                this.rolesBD.setearPerfil(esquema, cadena);
+                System.out.println("validarEstadoUsuarioSeudonimo() Parametros: [usuario: " + usuario + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena + "]");
+                System.out.println("Query_autorizadores: " + sqlQuery);
+                Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+                query.setParameter(1, usuario);
+                query.setParameter(2, nitEmpresa);
+                query.setParameter(3, nitEmpresa);
+                retorno = query.getSingleResult().toString();
+            } catch (Exception ex) {
+                System.out.println("Error: " + "ConexionesKioskosFacadeREST" + ".validarEstadoUsuarioSeudonimo(): " + e.getMessage());
+                System.out.println("ConexionesKioskosFacadeREST" + ".validarEstadoUsuarioSeudonimo(): " + "consultado KioAutorizadores");
+            }
         }
         return retorno;
     }
@@ -1267,15 +1378,18 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT COUNT(*) count "
-                    + "FROM CONEXIONESKIOSKOS ck, Personas per, EMPLEADOS e "
+                    //+ "FROM CONEXIONESKIOSKOS ck, Personas per, EMPLEADOS e "
+                    + "FROM CONEXIONESKIOSKOS ck, Personas per "
                     + "WHERE ck.PERSONA = per.SECUENCIA "
-                    + "AND per.secuencia = e.persona "
+                    //+ "AND per.secuencia = e.persona "
+                    + "AND ck.activo = 'S' "
                     + "AND lower(ck.seudonimo) = ? "
                     + "AND ck.PWD = GENERALES_PKG.ENCRYPT(?) "
-                    + "AND ck.activo = 'S' "
                     + "AND ck.nitempresa = ? "
-                    + "AND (EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(e.secuencia, SYSDATE) = 'ACTIVO' "
-                    + "OR EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(e.secuencia, SYSDATE) = 'PENSIONADO')";
+                    //+ "AND (EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(e.secuencia, SYSDATE) = 'ACTIVO' "
+                    //+ "OR EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(e.secuencia, SYSDATE) = 'PENSIONADO')"
+                    //+ "AND (EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(e.secuencia, SYSDATE) IN ('ACTIVO','PENSIONADO')) "
+                    ;
             Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, seudonimo);
             query.setParameter(2, clave);

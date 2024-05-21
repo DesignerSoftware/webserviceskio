@@ -63,7 +63,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             Query query = this.persistenciaConexiones.getEntityManager().createNativeQuery(sqlQuery);
             query.executeUpdate();
         } catch (Exception ex) {
-            System.out.println("Error setearPerfil: " + ex);
+            System.out.println("kioCausasAusentismosFacadeREST"+".setearPerfil()-1: "+"Error: " + ex);
         }
     }
 
@@ -74,7 +74,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             Query query = this.persistenciaConexiones.getEntityManager(cadenaPersistencia).createNativeQuery(sqlQuery);
             query.executeUpdate();
         } catch (Exception ex) {
-            System.out.println("Error setearPerfil: " + ex);
+            System.out.println("kioCausasAusentismosFacadeREST"+".setearPerfil-2(): "+"Error: " + ex);
         }
     }
 
@@ -89,7 +89,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
             Query query = this.persistenciaConexiones.getEntityManager(cadenaPersistencia).createNativeQuery(sqlQuery);
             query.executeUpdate();
         } catch (Exception ex) {
-            System.out.println("Error setearPerfil(cadenaPersistencia): " + ex);
+            System.out.println("kioCausasAusentismosFacadeREST"+".setearPerfil-3(): "+"Error: " + ex);
         }
     }
 
@@ -120,7 +120,7 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
                 + " WHERE "
                 + " ka.empresa.nit=:nitempresa ";
         Query query = this.persistenciaConexiones.getEntityManager(cadena).createQuery(sqlQuery);
-        query.setParameter("nitempresa", Long.parseLong(nitEmpresa));
+        query.setParameter("nitempresa", Long.valueOf(nitEmpresa));
         List<OpcionesKioskosApp> lista = query.getResultList();
         return lista;
     }
@@ -146,7 +146,8 @@ public class kioCausasAusentismosFacadeREST extends AbstractFacade<KioCausasAuse
         setearPerfil(esquema, cadena);
         List lista = null;
         String sqlQuery = "SELECT secuencia, codigo, descripcion "
-                + " FROM DIAGNOSTICOSCATEGORIAS order by codigo, descripcion ";
+                + " FROM DIAGNOSTICOSCATEGORIAS "
+                + " ORDER BY codigo, descripcion ";
         Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
         lista = query.getResultList();
         return lista;

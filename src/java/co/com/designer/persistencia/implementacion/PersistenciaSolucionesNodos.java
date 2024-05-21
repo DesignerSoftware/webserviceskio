@@ -6,7 +6,9 @@ import co.com.designer.persistencia.interfaz.IPersistenciaConexionesKioskos;
 import co.com.designer.persistencia.interfaz.IPersistenciaPerfiles;
 import co.com.designer.persistencia.interfaz.IPersistenciaSolucionesNodos;
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
+import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 
 /**
@@ -16,24 +18,23 @@ import javax.persistence.Query;
 public class PersistenciaSolucionesNodos implements IPersistenciaSolucionesNodos {
 
     private IPersistenciaPerfiles rolesBD;
-    private IPersistenciaConexiones persistenciaConexiones;
-    private IPersistenciaConexionesKioskos persistenciaConexionesKio;
+    private IPersistenciaConexiones persisConexiones;
+    private IPersistenciaConexionesKioskos persisConKiosko;
     private IPersistenciaCadenasKioskosApp cadenasKio;
-    
+
     public PersistenciaSolucionesNodos() {
         this.rolesBD = new PersistenciaPerfiles();
-        this.persistenciaConexiones = new PersistenciaConexiones();
-        persistenciaConexionesKio = new PersistenciaConexionesKioskos();
+        this.persisConexiones = new PersistenciaConexiones();
+        persisConKiosko = new PersistenciaConexionesKioskos();
         this.cadenasKio = new PersistenciaCadenasKioskosApp();
-        
+
     }
-    
-    
+
     @Override
     public List getSaldoProvisiones(String empleado, String nit, String cadena) {
-        
+
         try {
-            String secEmpl = this.persistenciaConexionesKio.getSecuenciaEmplPorSeudonimo(empleado, nit, cadena);
+            String secEmpl = this.persisConKiosko.getSecuenciaEmplPorSeudonimo(empleado, nit, cadena);
             String esquema = this.cadenasKio.getEsquema(nit, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "select sn.fechapago, \n"
@@ -52,7 +53,7 @@ public class PersistenciaSolucionesNodos implements IPersistenciaSolucionesNodos
                     + "and sn.ESTADO = 'CERRADO' \n"
                     + "AND sn.FECHAPAGO = cortesprocesos_pkg.CapturarAnteriorCorte(sn.EMPLEADO,11,sysdate) \n"
                     + "ORDER BY CC.descripcion";
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpl);
             List provisiones = query.getResultList();
             return provisiones;
@@ -60,6 +61,39 @@ public class PersistenciaSolucionesNodos implements IPersistenciaSolucionesNodos
             System.out.println("getDatosEmpleadoXNit: Error: en algo de la base de datos. " + e.getMessage());
             e.printStackTrace();
             throw e;
+        }
+    }
+
+    @Override
+    public Date getFechaUltimoPago(String seudonimo, String nitEmpresa, String cadena, String esquema) throws Exception {
+        System.out.println("Parametros getFechaUltimoPago(): seudonimo: " + seudonimo + ", nit: " + nitEmpresa + ", cadena: " + cadena + ", esquema: " + esquema);
+        BigDecimal res = null;
+        try {
+            //String esquema = getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
+//            String secEmpleado = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena, esquema);
+            String secEmpleado = this.persisConKiosko.getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
+            String consulta = "SELECT GREATEST("
+                    + "CORTESPROCESOS_PKG.CAPTURARCORTEPROCESO(?, 1), "
+                    + "NVL( CORTESPROCESOS_PKG.CAPTURARCORTEPROCESO(?, 80), CORTESPROCESOS_PKG.CAPTURARCORTEPROCESO(?, 1)"
+                    + ")) "
+                    + "FROM DUAL ";
+            Date fechaUltimoPago = null;
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(consulta);
+            query.setParameter(1, secEmpleado);
+            query.setParameter(2, secEmpleado);
+            query.setParameter(3, secEmpleado);
+            fechaUltimoPago = (Date) (query.getSingleResult());
+            return fechaUltimoPago;
+        } catch (PersistenceException pe) {
+            System.out.println("Error de persistencia.");
+            throw new Exception(pe.toString());
+        } catch (NullPointerException npee) {
+            System.out.println("Nulo general");
+            throw new Exception(npee.toString());
+        } catch (Exception e) {
+            System.out.println("Error general. " + e);
+            throw new Exception(e.toString());
         }
     }
 }
