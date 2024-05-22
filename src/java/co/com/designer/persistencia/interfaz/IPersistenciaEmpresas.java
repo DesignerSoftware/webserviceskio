@@ -8,4 +8,5 @@ import java.math.BigDecimal;
  */
 public interface IPersistenciaEmpresas {
     public BigDecimal getSecuenciaPorNitEmpresa(String nitEmpresa, String cadena);
+    public String getLogoEmpresa(String nitEmpresa, String cadena);
 }

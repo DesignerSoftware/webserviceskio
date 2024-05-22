@@ -8,6 +8,7 @@ import co.com.designer.persistencia.implementacion.PersistenciaEmpresas;
 import co.com.designer.persistencia.implementacion.PersistenciaKioAutorizaSoliciVacas;
 import co.com.designer.persistencia.implementacion.PersistenciaKioConfigModulos;
 import co.com.designer.persistencia.implementacion.PersistenciaKioVacaciones_pkg;
+import co.com.designer.persistencia.implementacion.PersistenciaManejoFechas;
 import co.com.designer.persistencia.implementacion.PersistenciaPerfiles;
 import co.com.designer.persistencia.implementacion.PersistenciaPersonas;
 import co.com.designer.persistencia.implementacion.PersistenciaSolucionesNodos;
@@ -2016,6 +2017,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
         try {
             boolean res = false;
 //            boolean valFPago = !validaFechaPago(seudonimo, nit, fechainicial, cadena, esquema);
+            this.persisManejoFechas = new PersistenciaManejoFechas();
             Calendar clFechaPago = Calendar.getInstance();
             clFechaPago.setTime(this.persisSolNodos.getFechaUltimoPago(seudonimo, nit, cadena, esquema));
             boolean valFPago = !persisManejoFechas.getDate(fechainicial, cadena).after(clFechaPago.getTime());
@@ -2188,14 +2190,15 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
                     }
 
                 } catch (Exception e) {
-                    System.out.println("Ha ocurrido un error: " + e.getMessage());
+                    System.out.println("VwvacaPendientesEmpleadosFacadeREST" + ".crearSolicitudVacaciones(): Error-1: " + e.getMessage());
                     soliciCreada = false;
                     mensaje = "Ha ocurrido un error, por favor inténtelo de nuevo más tarde.";
                 }
             }
 
         } catch (Exception e) {
-            System.out.println("Error " + this.getClass().getName() + ".crearSolicitud. " + e.getMessage());
+            System.out.println("VwvacaPendientesEmpleadosFacadeREST" + ".crearSolicitudVacaciones(): Error-2: " + e.toString());
+            e.printStackTrace();
         }
 
         JSONObject obj = new JSONObject();

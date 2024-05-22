@@ -89,6 +89,7 @@ public class PersistenciaPersonas implements IPersistenciaPersonas {
         return nombre;
     }
     
+    @Override
     public String getApellidoNombreXsecEmpl(String secEmpl, String nitEmpresa, String cadena, String esquema) {
         System.out.println("getApellidoNombreXsecEmpl()");
         String nombre = null;
@@ -107,5 +108,29 @@ public class PersistenciaPersonas implements IPersistenciaPersonas {
             System.out.println("Error " + this.getClass().getName() + ".getApellidoNombreXsecEmpl(): " + e);
         }
         return nombre;
+    }
+    
+    @Override
+    public String getCorreoConexioneskioskos(String seudonimo, String nitEmpresa, String cadena) {
+        System.out.println("PersistenciaPersonas"+".getCorreoConexioneskioskos(): "+"Parametros: "
+                +"seudonimo: " + seudonimo 
+                + ", empresa: " + nitEmpresa 
+                + ", cadena: " + cadena);
+        String correo = null;
+        String sqlQuery = "SELECT P.EMAIL "
+                    + "FROM PERSONAS P, conexioneskioskos ck "
+                    + "WHERE p.secuencia=ck.persona and "
+                    + " lower(ck.seudonimo)=? and ck.nitempresa=?";
+        try {
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, seudonimo);
+            query.setParameter(2, nitEmpresa);
+            correo = query.getSingleResult().toString();
+        } catch (Exception e) {
+            System.out.println("PersistenciaPersonas" + ".getCorreoConexioneskioskos(): "+"Error-1: " + e.toString());
+        }
+        return correo;
     }
 }

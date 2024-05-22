@@ -55,14 +55,14 @@ public class PersistenciaVacaPendientes implements IPersistenciaVacaPendientes {
             periodos = query.getResultList();
             return periodos;
         } catch (PersistenceException pe) {
-            System.out.println("PersistenciaVacaPendientes" + ".getPeriodosPendientesEmpleado(): Error-1: " + pe.getMessage());
+            System.out.println("PersistenciaVacaPendientes" + ".getPeriodosPendientesEmpleado(): "+"Error-1: " + pe.toString());
 //            throw pe;
             return null;
         } catch (NullPointerException npee) {
-            System.out.println("PersistenciaVacaPendientes" + ".getPeriodosPendientesEmpleado(): Error-2: " + npee.getMessage());
+            System.out.println("PersistenciaVacaPendientes" + ".getPeriodosPendientesEmpleado(): Error-2: " + npee.toString());
             return null;
         } catch (Exception e) {
-            System.out.println("PersistenciaVacaPendientes" + ".getPeriodosPendientesEmpleado(): Error-3: " + e.getMessage());
+            System.out.println("PersistenciaVacaPendientes" + ".getPeriodosPendientesEmpleado(): Error-3: " + e.toString());
 //            throw e;
             return null;
         }
@@ -111,7 +111,7 @@ public class PersistenciaVacaPendientes implements IPersistenciaVacaPendientes {
             query.setParameter(3, secEmpl);
             periodo = query.getResultList();
         } catch (Exception e) {
-            System.out.println("PersistenciaVacaPendientes" + ".consultarPeriodoMasAntiguo(): Error-1: " + e.getMessage());
+            System.out.println("PersistenciaVacaPendientes" + ".consultarPeriodoMasAntiguo(): Error-1: " + e.toString());
         }
         return periodo;
     }
@@ -158,7 +158,7 @@ public class PersistenciaVacaPendientes implements IPersistenciaVacaPendientes {
             query.setParameter(3, secEmpl);
             retorno = (BigDecimal) query.getSingleResult();
         } catch (Exception e) {
-            System.out.println("PersistenciaVacaPendientes" + ".getDiasPendPeriodoMasAntiguo(): Error-1: " + e.getMessage());
+            System.out.println("PersistenciaVacaPendientes" + ".getDiasPendPeriodoMasAntiguo(): Error-1: " + e.toString());
         }
         return retorno;
     }
@@ -180,7 +180,7 @@ public class PersistenciaVacaPendientes implements IPersistenciaVacaPendientes {
             query.setParameter(1, secEmpl);
             retorno = (BigDecimal) query.getSingleResult();
         } catch (Exception e) {
-            System.out.println("PersistenciaVacaPendientes" + ".getDiasPendPeriodoMasAntiguo(): Error-1: " + e.getMessage());
+            System.out.println("PersistenciaVacaPendientes" + ".getDiasPendPeriodoMasAntiguo(): Error-1: " + e.toString());
         }
         return retorno;
     }
@@ -222,7 +222,7 @@ public class PersistenciaVacaPendientes implements IPersistenciaVacaPendientes {
             retorno = (BigDecimal) query.getSingleResult();
             System.out.println("PersistenciaVacaPendientes" + ".getDiasVacacionesSolicitados(): " + "estado: " + estado + " retorno: " + retorno);
         } catch (Exception e) {
-            System.out.println("PersistenciaVacaPendientes" + ".getDiasVacacionesSolicitados(): " + "Error: " + e.getMessage());
+            System.out.println("PersistenciaVacaPendientes" + ".getDiasVacacionesSolicitados(): " + "Error: " + e.toString());
         }
         return retorno;
     }
@@ -246,7 +246,7 @@ public class PersistenciaVacaPendientes implements IPersistenciaVacaPendientes {
             periodo = query.getSingleResult().toString();
             System.out.println("PersistenciaVacaPendientes" + ".getPeriodoVacas(): " + "periodo: " + periodo);
         } catch (Exception e) {
-            System.out.println("PersistenciaVacaPendientes" + ".getPeriodoVacas(): " + "Error: " + e.getMessage());
+            System.out.println("PersistenciaVacaPendientes" + ".getPeriodoVacas(): " + "Error: " + e.toString());
         }
         return periodo;
     }

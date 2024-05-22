@@ -11,8 +11,8 @@ import javax.persistence.Query;
  *
  * @author Edwin Hastamorir
  */
-public class PersistenciaEmpresas implements IPersistenciaEmpresas{
-    
+public class PersistenciaEmpresas implements IPersistenciaEmpresas {
+
     private IPersistenciaPerfiles rolesBD;
     private IPersistenciaConexiones persistenciaConexiones;
     private IPersistenciaCadenasKioskosApp cadenasKio;
@@ -22,7 +22,7 @@ public class PersistenciaEmpresas implements IPersistenciaEmpresas{
         persistenciaConexiones = new PersistenciaConexiones();
         cadenasKio = new PersistenciaCadenasKioskosApp();
     }
-    
+
     @Override
     public BigDecimal getSecuenciaPorNitEmpresa(String nitEmpresa, String cadena) {
         BigDecimal secuencia = null;
@@ -44,8 +44,24 @@ public class PersistenciaEmpresas implements IPersistenciaEmpresas{
             System.out.println("PersistenciaEmpresas" + ".getSecuenciaPorNitEmpresa(): " + "secuencia: " + secuencia);
             secuencia = new BigDecimal(vcSecuencia);
         } catch (Exception e) {
-            System.out.println("PersistenciaEmpresas" + ".getSecuenciaPorNitEmpresa(): " + "Error: " + e.getMessage());
+            System.out.println("PersistenciaEmpresas" + ".getSecuenciaPorNitEmpresa(): " + "Error: " + e.toString());
         }
         return secuencia;
+    }
+
+    @Override
+    public String getLogoEmpresa(String nitEmpresa, String cadena) { 
+        String logo = "";
+        String sqlQuery = "SELECT LOGO FROM EMPRESAS WHERE NIT = ? ";
+        try {
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, nitEmpresa);
+            logo = query.getSingleResult().toString();
+        } catch (Exception e) {
+            System.out.println("PersistenciaEmpresas" + ".getLogoEmpresa(): "+"Error-1: " + e.toString());
+        }
+        return logo;
     }
 }

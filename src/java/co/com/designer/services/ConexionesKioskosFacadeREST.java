@@ -9,11 +9,13 @@ import co.com.designer.persistencia.implementacion.PersistenciaCadenasKioskosApp
 import co.com.designer.persistencia.implementacion.PersistenciaConexiones;
 import co.com.designer.persistencia.implementacion.PersistenciaConexionesKioskos;
 import co.com.designer.persistencia.implementacion.PersistenciaEmpleados;
+import co.com.designer.persistencia.implementacion.PersistenciaEmpresas;
 import co.com.designer.persistencia.implementacion.PersistenciaGeneralesKiosko;
 import co.com.designer.persistencia.implementacion.PersistenciaPersonas;
 import co.com.designer.persistencia.interfaz.IPersistenciaConexiones;
 import co.com.designer.persistencia.interfaz.IPersistenciaConexionesKioskos;
 import co.com.designer.persistencia.interfaz.IPersistenciaEmpleados;
+import co.com.designer.persistencia.interfaz.IPersistenciaEmpresas;
 import co.com.designer.persistencia.interfaz.IPersistenciaGeneralesKiosko;
 import co.com.designer.persistencia.interfaz.IPersistenciaPersonas;
 import java.io.File;
@@ -73,6 +75,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     private IPersistenciaEmpleados perisEmpleados;
     private IPersistenciaEmpleados persisEmple;
     private IPersistenciaPersonas persisPersonas;
+    private IPersistenciaEmpresas persisEmpresas;
 
 //    final String UPLOAD_FILE_SERVER = "E:\\DesignerRHN10\\Basico10\\fotos_empleados\\";
     public ConexionesKioskosFacadeREST() {
@@ -85,6 +88,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         this.persisEmple = new PersistenciaEmpleados();
         this.persisPersonas = new PersistenciaPersonas();
         this.persisConKio = new PersistenciaConexionesKioskos();
+        this.persisEmpresas = new PersistenciaEmpresas();
     }
 
     /*
@@ -186,6 +190,11 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @Path("{usuario}/{pass}@{bd}")
     @Produces(MediaType.TEXT_PLAIN)
     public String validaUsuario(@PathParam("usuario") String usuario, @PathParam("pass") String pass, @PathParam("bd") String bd) {
+        System.out.println("ConexionesKioskosFacadeREST.validaUsuario(): Parametros: "
+                + "usuario: " + usuario
+                + " , pass: " + pass
+                + " , bd" + bd
+        );
         /*
         BigDecimal res = null;
         try {
@@ -409,7 +418,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                 mensaje = "Ya existe el usuario, por favor intente iniciar sesión.";
                 System.out.println("resultado usuarioRegistrado: " + resultado + " Mensaje: " + mensaje);
             } else {
-                String secEmpl = getSecEmplPorDocumentoYEmpresa(documento, nitEmpresa, cadena);
+                String secEmpl = this.perisEmpleados.getSecEmplPorDocumentoYEmpresa(documento, nitEmpresa, cadena);
                 String sqlQueryInsert = "INSERT INTO CONEXIONESKIOSKOS (SEUDONIMO, EMPLEADO, PERSONA, PWD, "
                         + "NITEMPRESA, ACTIVO, ULTIMACONEXION, FECHADESDE, FECHAHASTA) "
                         + "VALUES (lower(?), ?, "
@@ -613,9 +622,9 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         String RUTAFOTO = this.persisGenKio.getPathFoto(nitEmpresa, cadena);
         BigDecimal documento = null;
         try {
-            if (imagen.contains("null") || imagen.equals("") || imagen == null) {
+            if (imagen.contains("null") || imagen.equals("")) { //|| imagen == null) {
                 documento = this.persisConKio.getDocumentoPorSeudonimo(usuario, nitEmpresa, cadena);
-                if (imagen != null) {
+                if (documento != null) {
                     imagen = nitEmpresa + '_' + documento;
                 } else {
                     imagen = "sinFoto.jpg";
@@ -623,34 +632,45 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             }
         } catch (Exception e) {
             imagen = "sinFoto.jpg";
-            System.out.println("Error " + this.getClass().getName() + ".obtenerFoto() " + e.getMessage());
+//            System.out.println("Error " + this.getClass().getName() + ".obtenerFoto() " + e.getMessage());
+            System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFoto(): " + "Error-1: " + e.toString());
         }
-        System.out.println("Imagen foto perfil: " + imagen);
+//        System.out.println("Imagen foto perfil: " + imagen);
+        System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFoto(): Imagen foto perfil: " + imagen);
         try {
             fis = new FileInputStream(new File(RUTAFOTO + imagen));
             file = new File(RUTAFOTO + imagen);
         } catch (FileNotFoundException ex) {
+            System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFoto(): " + "Error-2: " + ex.toString());
             try {
                 imagen = documento.toString();
                 fis = new FileInputStream(new File(RUTAFOTO + imagen));
                 file = new File(RUTAFOTO + imagen);
             } catch (FileNotFoundException e) {
+                System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFoto(): " + "Error-3: " + ex.toString());
                 try {
                     fis = new FileInputStream(new File(RUTAFOTO + "sinFoto.jpg"));
                     file = new File(RUTAFOTO + "sinFoto.jpg");
                 } catch (FileNotFoundException ex1) {
+                    System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFoto(): " + "Error-4: " + ex.toString());
                     Logger.getLogger(ConexionesKioskosFacadeREST.class.getName()).log(Level.SEVERE, "Foto no encontrada: " + imagen, ex1);
                     System.getProperty("user.dir");
-                    System.out.println("Ruta del proyecto: " + this.getClass().getClassLoader().getResource("").getPath());;
+//                    System.out.println("Ruta del proyecto: " + this.getClass().getClassLoader().getResource("").getPath());
+                    System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFoto(): " + "Ruta del proyecto: " + this.getClass().getClassLoader().getResource("").getPath());
                 }
             }
-        } finally {
+        }
+        /* finally {
             try {
                 fis.close();
             } catch (IOException ex) {
+                System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFoto(): " + "Error-5: " + ex.toString());
                 Logger.getLogger(ConexionesKioskosFacadeREST.class.getName()).log(Level.SEVERE, "Error cerrando fis " + imagen, ex);
+            } catch (NullPointerException npe) {
+                System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFoto(): " + "Error-6: " + npe.toString());
+                Logger.getLogger(ConexionesKioskosFacadeREST.class.getName()).log(Level.SEVERE, "Error cerrando fis " + imagen, npe);
             }
-        }
+        } */
         Response.ResponseBuilder responseBuilder = Response.ok((Object) file);
         responseBuilder.header("Content-Disposition", "attachment; filename=\"" + imagen + "\"");
         return responseBuilder.build();
@@ -840,6 +860,11 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @Produces(MediaType.APPLICATION_JSON)
     public Response validarIngresoSeudonimoKiosco(@QueryParam("usuario") String usuario, @QueryParam("clave") String clave,
             @QueryParam("nitEmpresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
+        System.out.println("ConexionesKioskosFacadeREST" + ".validarIngresoSeudonimoKiosco(): " + "Parametros: "
+                + "usuario: " + usuario
+                + " clave: " + clave
+                + " nitEmpresa: " + nitEmpresa
+                + " cadenaConexion: " + cadena);
         boolean ingresoExitoso = false;
         boolean primeringreso = true;
         boolean validaEmail = false;
@@ -847,7 +872,6 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         this.cadenasKio.getEsquema(nitEmpresa, cadena);
         String mensaje = "Error no controlado, por favor inténtelo nuevamente.";
         List rs = null;
-        System.out.println("validarIngresoSeudonimoKiosco() Parametros usuario: " + usuario + " clave: " + clave + " nitEmpresa: " + nitEmpresa + " cadenaConexion: " + cadena);
         BigDecimal documento = null;
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
@@ -1236,8 +1260,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                         + "  AND empl.secuencia = kas.empleado "
                         + "  AND kas.kioautorizador = e.secuencia "
                         + "  AND em.nit = ? ) "
-                        + " AND ck.nitempresa = ? "
-                        ;
+                        + " AND ck.nitempresa = ? ";
                 System.out.println("Query_autorizadores: " + sqlQuery);
                 query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
                 query.setParameter(1, documento);
@@ -1289,8 +1312,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                         + "  AND kas.kioautorizador = e.secuencia "
                         + "  AND em.nit = ? "
                         + " )"
-                        + " AND ck.nitempresa = ? "
-                        ;
+                        + " AND ck.nitempresa = ? ";
                 try {
                     esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
                     this.rolesBD.setearPerfil(esquema, cadena);
@@ -1353,8 +1375,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                         + "  AND kas.kioautorizador = e.secuencia "
                         + "  AND em.nit = ? "
                         + " )"
-                        + " AND ck.nitempresa = ? "
-                        ;
+                        + " AND ck.nitempresa = ? ";
                 String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
                 this.rolesBD.setearPerfil(esquema, cadena);
                 System.out.println("validarEstadoUsuarioSeudonimo() Parametros: [usuario: " + usuario + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena + "]");
@@ -1385,8 +1406,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                     + "AND ck.activo = 'S' "
                     + "AND lower(ck.seudonimo) = ? "
                     + "AND ck.PWD = GENERALES_PKG.ENCRYPT(?) "
-                    + "AND ck.nitempresa = ? "
-                    //+ "AND (EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(e.secuencia, SYSDATE) = 'ACTIVO' "
+                    + "AND ck.nitempresa = ? " //+ "AND (EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(e.secuencia, SYSDATE) = 'ACTIVO' "
                     //+ "OR EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(e.secuencia, SYSDATE) = 'PENSIONADO')"
                     //+ "AND (EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(e.secuencia, SYSDATE) IN ('ACTIVO','PENSIONADO')) "
                     ;
@@ -1771,11 +1791,11 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                 .build();
     }
 
-    public String getLogoEmpresaS(String nitEmpresa, String cadena) { // retorna true si el usuario esta activo
+    public String getLogoEmpresaS(String nitEmpresa, String cadena) {
         ResultSet rs = null;
         String logo = "";
         JSONObject logoE = new JSONObject();
-        try {
+        /*try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT LOGO FROM EMPRESAS WHERE NIT = ?";
@@ -1785,6 +1805,13 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             logoE.put("LOGO", logo.substring(0, logo.length() - 4));
         } catch (Exception e) {
             System.out.println("Error " + this.getClass().getName() + ".getLogoEmpresa(): " + e);
+        }*/
+        try {
+            logo = this.persisEmpresas.getLogoEmpresa(nitEmpresa, cadena);
+            logoE.put("LOGO", logo.substring(0, logo.length() - 4));
+        } catch (JSONException ex) {
+            System.out.println("ConexionesKioskosFacadeREST" + ".getLogoEmpresaS(): " + "Error-1: " + ex.toString());
+            Logger.getLogger(ConexionesKioskosFacadeREST.class.getName()).log(Level.SEVERE, null, ex);
         }
         return logoE.toString();
     }
@@ -1794,7 +1821,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @Produces(MediaType.APPLICATION_JSON)
     public Response getCorreoConexioneskioskoS(@PathParam("usuario") String usuario, @PathParam("nit") String nitEmpresa, @QueryParam("cadena") String cadena) {
         System.out.println("Parametros getCorreoConexioneskioskoS(): usuario: " + usuario + ", nit: " + nitEmpresa + ", cadena: " + cadena);
-        String r = getCorreoConexioneskioskos(usuario, nitEmpresa, cadena);
+        String r = this.persisPersonas.getCorreoConexioneskioskos(usuario, nitEmpresa, cadena);
         String[] parametros = {usuario, nitEmpresa};
         return Response.ok(
                 response("correoConexioneskioskos", "Usuario: " + usuario + ", nit: " + nitEmpresa,
@@ -1802,6 +1829,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                 .build();
     }
 
+    /*
     public String getCorreoConexioneskioskos(String seudonimo, String nitEmpresa, String cadena) {
         System.out.println("Parametros getCorreoConexioneskioskos(): seudonimo: " + seudonimo + ", empresa: " + nitEmpresa + ", cadena: " + cadena);
         String correo = null;
@@ -1809,7 +1837,9 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
-            sqlQuery = "SELECT P.EMAIL FROM PERSONAS P, conexioneskioskos ck WHERE p.secuencia=ck.persona and "
+            sqlQuery = "SELECT P.EMAIL "
+                    + "FROM PERSONAS P, conexioneskioskos ck "
+                    + "WHERE p.secuencia=ck.persona and "
                     + " lower(ck.seudonimo)=? and ck.nitempresa=?";
             Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, seudonimo);
@@ -1820,7 +1850,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         }
         return correo;
     }
-
+     */
     // Validar si el usuario esta activo y pertenece a la empresa
     @GET
     @Path("/restKiosco/validarUsuarioyEmpresa/{usuario}/{nitEmpresa}")
@@ -1869,7 +1899,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         updateClave = actualizarClave(usuario, nitEmpresa, nuevaClave, cadena);
         String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
         this.rolesBD.setearPerfil(esquema, cadena);
-        String correo = getCorreoConexioneskioskos(usuario, nitEmpresa, cadena);
+        String correo = this.persisPersonas.getCorreoConexioneskioskos(usuario, nitEmpresa, cadena);
         System.out.println("este es el corre que se va a enviar" + correo);
         try {
             if (updateClave) {
@@ -2046,7 +2076,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                     getConfigCorreo(nit, "PUERTO", cadena),
                     getConfigCorreo(nit, "AUTENTICADO", cadena),
                     getConfigCorreo(nit, "STARTTLS", cadena), getConfigCorreo(nit, "REMITENTE", cadena), getConfigCorreo(nit, "CLAVE", cadena),
-                    getCorreoConexioneskioskos(usuario, nit, cadena), getNombrePersona(usuario, nit, cadena), usuario, jwt, urlKiosco, nit, cadena);
+                    this.persisPersonas.getCorreoConexioneskioskos(usuario, nit, cadena), getNombrePersona(usuario, nit, cadena), usuario, jwt, urlKiosco, nit, cadena);
         }
         JsonObject json = Json.createObjectBuilder()
                 .add("JWT", jwt)
@@ -2161,6 +2191,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         return esquema;
     }
      */
+ /*
     public String getSecEmplPorDocumentoYEmpresa(String documento, String nitEmpresa, String cadena) {
         System.out.println("Parametros getEmplPorDocumentoEmpresa(): documento: " + documento + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
         String secuencia = null;
@@ -2186,7 +2217,9 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         }
         return secuencia;
     }
+     */
 
+ /*
     public String getSecEmplPorCodigo(String codigo, String nitEmpresa, String cadena) {
         System.out.println("Parametros getEmplPorDocumentoEmpresa(): codigo: " + codigo + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
         String secuencia = null;
@@ -2209,7 +2242,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         }
         return secuencia;
     }
-
+     */
     /**
      * metodo privado para dar formato al JSON de respuesta
      *
@@ -2235,54 +2268,68 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @Path("/obtenerFotoPerfil")
     @Produces({"image/png", "image/jpg", "image/gif"})
     public Response obtenerFotoPerfil(@QueryParam("cadena") String cadena, @QueryParam("usuario") String usuario, @QueryParam("nit") String nitEmpresa) {
-        System.out.println("Parametros obtenerFotoPerfil(): cadena: " + cadena + ", nitEmpresa: " + nitEmpresa + ", usuario: " + usuario);
+        System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFotoPerfil(): Parametros: "
+                + "cadena: " + cadena
+                + " , nitEmpresa: " + nitEmpresa
+                + " , usuario: " + usuario);
         FileInputStream fis = null;
         File file = null;
         String RUTAFOTO = this.persisGenKio.getPathFoto(nitEmpresa, cadena);
-
         String imagen = null;
+        String sqlQuery = "SELECT CK.FOTOPERFIL "
+                + "FROM CONEXIONESKIOSKOS CK, EMPLEADOS E "
+                + "WHERE CK.EMPLEADO=E.SECUENCIA "
+                + "AND E.SECUENCIA = ? "
+                + "AND CK.NITEMPRESA = ? ";
         try {
-            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             String secEmpl = this.persisConKio.getSecuenciaEmplPorSeudonimo(usuario, nitEmpresa, cadena);
             if (secEmpl == null) {
-                secEmpl = getSecEmplPorCodigo(usuario, nitEmpresa, cadena);
+                secEmpl = this.perisEmpleados.getSecEmplPorCodigo(usuario, nitEmpresa, cadena);
             }
-            System.out.println("esto es una prueba de secuencia: " + secEmpl);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT CK.FOTOPERFIL FROM CONEXIONESKIOSKOS CK, EMPLEADOS E WHERE CK.EMPLEADO=E.SECUENCIA AND E.SECUENCIA=?";
             Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpl);
+            query.setParameter(2, nitEmpresa);
             imagen = (String) query.getSingleResult();
-            System.out.println("Imagen foto perfil: " + imagen);
-            System.out.println("Ruta foto: " + RUTAFOTO);
+//            System.out.println("Imagen foto perfil: " + imagen);
+//            System.out.println("Ruta foto: " + RUTAFOTO);
+            System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFotoPerfil(): imagen: " + imagen);
+            System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFotoPerfil(): RUTAFOTO: " + RUTAFOTO);
             try {
                 fis = new FileInputStream(new File(RUTAFOTO + imagen));
                 file = new File(RUTAFOTO + imagen);
-                System.out.println("imagen cargada" + file);
+//                System.out.println("imagen cargada" + file);
             } catch (FileNotFoundException ex) {
-                System.out.println("imagen no encontrada:" + ex);
+//                System.out.println("imagen no encontrada:" + ex);
+                System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFotoPerfil(): imagen no encontrada ");
+                System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFotoPerfil(): Error-1: " + ex.toString());
                 try {
                     fis = new FileInputStream(new File(RUTAFOTO + "sinFoto.jpg"));
                     file = new File(RUTAFOTO + "sinFoto.jpg");
                 } catch (FileNotFoundException ex1) {
-                    Logger.getLogger(ConexionesKioskosFacadeREST.class.getName()).log(Level.SEVERE, "Foto no encontrada: " + imagen, ex1);
+                    System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFotoPerfil(): sinFoto.jpg no encontrada ");
+                    System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFotoPerfil(): Error-2: " + ex1.toString());
+                    Logger.getLogger(ConexionesKioskosFacadeREST.class.getName()).log(Level.SEVERE, "sinFoto.jpg no encontrada: " + imagen, ex1);
                     System.getProperty("user.dir");
-                    System.out.println("Ruta del proyecto: " + this.getClass().getClassLoader().getResource("").getPath());;
+//                    System.out.println("Ruta del proyecto: " + this.getClass().getClassLoader().getResource("").getPath());
+                    System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFotoPerfil(): " + " Ruta del proyecto: " + this.getClass().getClassLoader().getResource("").getPath());
                 }
 
-            } finally {
+            }
+            /*finally {
                 try {
                     fis.close();
                 } catch (IOException ex) {
                     Logger.getLogger(ConexionesKioskosFacadeREST.class.getName()).log(Level.SEVERE, "Error cerrando fis " + imagen, ex);
                 }
-            }
+            }*/
             Response.ResponseBuilder responseBuilder = Response.ok((Object) file);
             responseBuilder.header("Content-Disposition", "attachment; filename=\"" + imagen + "\"");
             return responseBuilder.build();
 
         } catch (Exception ex) {
-            System.out.println("Error " + this.getClass().getName() + ".getProvisiones: " + ex);
+            System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFotoPerfil(): " + "Error: " + ex.toString());
             return Response.status(Response.Status.OK).entity(0).build();
         }
 

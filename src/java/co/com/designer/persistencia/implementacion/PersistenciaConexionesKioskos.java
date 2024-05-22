@@ -104,7 +104,10 @@ public class PersistenciaConexionesKioskos implements IPersistenciaConexionesKio
 
     @Override
     public String getSecuenciaEmplPorSeudonimo(String seudonimo, String nitEmpresa, String cadena) {
-        System.out.println("Parametros getSecuenciaEmplPorSeudonimo(): seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
+        System.out.println("PersistenciaConexionesKioskos.getSecuenciaEmplPorSeudonimo(): Parametros: "
+                +"seudonimo: " + seudonimo 
+                + " , nitEmpresa: " + nitEmpresa 
+                + " , cadena: " + cadena);
         String secuencia = null;
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);

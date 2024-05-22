@@ -11,6 +11,7 @@ import javax.persistence.Query;
  * @author Edwin Hastamorir
  */
 public class PersistenciaGeneralesKiosko implements IPersistenciaGeneralesKiosko {
+
     private IPersistenciaPerfiles rolesBD;
     private IPersistenciaConexiones persistenciaConexiones;
     private IPersistenciaCadenasKioskosApp cadenasKio;
@@ -24,18 +25,22 @@ public class PersistenciaGeneralesKiosko implements IPersistenciaGeneralesKiosko
 
     @Override
     public String getPathFoto(String nitEmpresa, String cadena) {
-        System.out.println("getPathFoto(): parametros: cadena: " + cadena);
+        System.out.println("PersistenciaGeneralesKiosko" + ".getPathFoto(): " + "Parametros: "
+                + "nitEmpresa: " + nitEmpresa
+                + " cadena: " + cadena);
         String rutaFoto = UPLOAD_FILE_SERVER;
+        String sqlQuery = "SELECT PATHFOTO FROM GENERALESKIOSKO WHERE ROWNUM<=1";
+//            System.out.println("getPathFoto: Query: " + sqlQuery);
+        System.out.println("PersistenciaGeneralesKiosko" + ".getPathFoto(): " + "sqlQuery: " + sqlQuery);
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT PATHFOTO FROM GENERALESKIOSKO WHERE ROWNUM<=1";
-            System.out.println("getPathFoto: Query: " + sqlQuery);
             Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             rutaFoto = query.getSingleResult().toString();
-            System.out.println("getPathFoto: rutaFotos: " + rutaFoto);
+//            System.out.println("getPathFoto: rutaFotos: " + rutaFoto);
         } catch (Exception e) {
-            System.out.println("getPathFoto(): Error: " + e.getMessage());
+//            System.out.println("getPathFoto(): Error: " + e.getMessage());
+            System.out.println("PersistenciaGeneralesKiosko" + ".getPathFoto(): " + "Error: " + e.toString());
         }
         return rutaFoto;
     }

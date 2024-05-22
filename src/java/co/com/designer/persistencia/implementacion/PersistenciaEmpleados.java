@@ -73,7 +73,7 @@ public class PersistenciaEmpleados implements IPersistenciaEmpleados {
 
     @Override
     public List getDatosEmpleadoNit(String empleado, String nit, String cadena) {
-        
+
         try {
             BigDecimal documento = this.persistenciaConexionesKio.getDocumentoPorSeudonimo(empleado, nit, cadena);
             String esquema = this.cadenasKio.getEsquema(nit, cadena);
@@ -135,5 +135,56 @@ public class PersistenciaEmpleados implements IPersistenciaEmpleados {
             e.printStackTrace();
             throw e;
         }
+    }
+
+    @Override
+    public String getSecEmplPorCodigo(String codigo, String nitEmpresa, String cadena) {
+        System.out.println("PersistenciaEmpleados" + ".getEmplPorDocumentoEmpresa(): " + "Parametros: "
+                + "codigo: " + codigo
+                + ", nitEmpresa: "
+                + nitEmpresa + ", cadena: " + cadena);
+        String secuencia = null;
+        try {
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
+            String sqlQuery = "SELECT E.SECUENCIA "
+                    + "FROM EMPLEADOS E "
+                    + "WHERE E.CODIGOEMPLEADO=? "
+                    + "AND EMPLEADOCURRENT_PKG.TIPOTRABAJADORCORTE(E.SECUENCIA, SYSDATE) in ('ACTIVO', 'PENSIONADO') ";
+            System.out.println("Query: " + sqlQuery);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, codigo);
+            secuencia = query.getSingleResult().toString();
+        } catch (Exception e) {
+            System.out.println("PersistenciaEmpleados" + ".getSecEmplPorCodigo: " + "Error: " + e.toString());
+        }
+        return secuencia;
+    }
+
+    public String getSecEmplPorDocumentoYEmpresa(String documento, String nitEmpresa, String cadena) {
+        System.out.println("PersistenciaEmpleados" + ".getEmplPorDocumentoEmpresa(): " + "Parametros: "
+                + "documento: " + documento
+                + " , nitEmpresa: " + nitEmpresa
+                + " , cadena: " + cadena);
+        String secuencia = null;
+        String sqlQuery = "SELECT E.SECUENCIA "
+                + "FROM PERSONAS P, EMPLEADOS E, EMPRESAS EM "
+                + "WHERE E.PERSONA=P.SECUENCIA "
+                + "AND E.EMPRESA=EM.SECUENCIA "
+                + "AND P.NUMERODOCUMENTO=? "
+                + "AND EM.NIT=? "
+                + "AND EMPLEADOCURRENT_PKG.TIPOTRABAJADORCORTE(E.SECUENCIA, SYSDATE) IN ('ACTIVO', 'PENSIONADO') ";
+        System.out.println("PersistenciaEmpleados" + ".getEmplPorDocumentoEmpresa(): " + "sqlQuery: " + sqlQuery);
+        try {
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, documento);
+            query.setParameter(2, nitEmpresa);
+            secuencia = query.getSingleResult().toString();
+        } catch (Exception e) {
+            System.out.println("PersistenciaEmpleados" + ".getSecEmplPorDocumentoYEmpresa: " + "Error: " + e.toString());
+        }
+        return secuencia;
     }
 }

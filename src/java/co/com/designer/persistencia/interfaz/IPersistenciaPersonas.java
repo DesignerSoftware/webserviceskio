@@ -15,4 +15,5 @@ public interface IPersistenciaPersonas {
      */
     public String getApellidoNombreXSecPer(String secPersona, String nitEmpresa, String cadena, String esquema);
     public String getApellidoNombreXsecEmpl(String secEmpl, String nitEmpresa, String cadena, String esquema);
+    public String getCorreoConexioneskioskos(String seudonimo, String nitEmpresa, String cadena);
 }
