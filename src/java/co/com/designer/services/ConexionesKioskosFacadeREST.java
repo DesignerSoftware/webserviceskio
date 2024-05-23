@@ -616,13 +616,17 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     @Path("/obtenerFoto/{imagen}")
     @Produces({"image/png", "image/jpg", "image/gif"})
     public Response obtenerFoto(@PathParam("imagen") String imagen, @QueryParam("cadena") String cadena, @QueryParam("usuario") String usuario, @QueryParam("empresa") String nitEmpresa) {
-        System.out.println("Parametros obtenerFoto(): imagen: " + imagen + ", cadena: " + cadena + ", nitEmpresa: " + nitEmpresa + ", usuario: " + usuario);
+        System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFoto(): " + "Parametros: "
+                + "imagen: " + imagen
+                + " cadena: " + cadena
+                + " nitEmpresa: " + nitEmpresa
+                + " usuario: " + usuario);
         FileInputStream fis = null;
         File file = null;
         String RUTAFOTO = this.persisGenKio.getPathFoto(nitEmpresa, cadena);
         BigDecimal documento = null;
         try {
-            if (imagen.contains("null") || imagen.equals("")) { //|| imagen == null) {
+            if (imagen == null || imagen.contains("null") || imagen.equals("")) {
                 documento = this.persisConKio.getDocumentoPorSeudonimo(usuario, nitEmpresa, cadena);
                 if (documento != null) {
                     imagen = nitEmpresa + '_' + documento;
@@ -643,21 +647,14 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         } catch (FileNotFoundException ex) {
             System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFoto(): " + "Error-2: " + ex.toString());
             try {
-                imagen = documento.toString();
-                fis = new FileInputStream(new File(RUTAFOTO + imagen));
-                file = new File(RUTAFOTO + imagen);
-            } catch (FileNotFoundException e) {
-                System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFoto(): " + "Error-3: " + ex.toString());
-                try {
-                    fis = new FileInputStream(new File(RUTAFOTO + "sinFoto.jpg"));
-                    file = new File(RUTAFOTO + "sinFoto.jpg");
-                } catch (FileNotFoundException ex1) {
-                    System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFoto(): " + "Error-4: " + ex.toString());
-                    Logger.getLogger(ConexionesKioskosFacadeREST.class.getName()).log(Level.SEVERE, "Foto no encontrada: " + imagen, ex1);
-                    System.getProperty("user.dir");
+                fis = new FileInputStream(new File(RUTAFOTO + "sinFoto.jpg"));
+                file = new File(RUTAFOTO + "sinFoto.jpg");
+            } catch (FileNotFoundException ex1) {
+                System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFoto(): " + "Error-4: " + ex.toString());
+                Logger.getLogger(ConexionesKioskosFacadeREST.class.getName()).log(Level.SEVERE, "Foto no encontrada: " + imagen, ex1);
+                System.getProperty("user.dir");
 //                    System.out.println("Ruta del proyecto: " + this.getClass().getClassLoader().getResource("").getPath());
-                    System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFoto(): " + "Ruta del proyecto: " + this.getClass().getClassLoader().getResource("").getPath());
-                }
+                System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFoto(): " + "Ruta del proyecto: " + this.getClass().getClassLoader().getResource("").getPath());
             }
         }
         /* finally {
@@ -672,7 +669,9 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             }
         } */
         Response.ResponseBuilder responseBuilder = Response.ok((Object) file);
-        responseBuilder.header("Content-Disposition", "attachment; filename=\"" + imagen + "\"");
+
+        responseBuilder.header(
+                "Content-Disposition", "attachment; filename=\"" + imagen + "\"");
         return responseBuilder.build();
     }
 
@@ -692,14 +691,18 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             try {
                 fis = new FileInputStream(new File(RUTAFOTO + "logodesigner.png"));
                 file = new File(RUTAFOTO + "logodesigner.png");
+
             } catch (FileNotFoundException ex1) {
-                Logger.getLogger(ConexionesKioskosFacadeREST.class.getName()).log(Level.SEVERE, "Logo no encontrado: " + imagen, ex1);
+                Logger.getLogger(ConexionesKioskosFacadeREST.class
+                        .getName()).log(Level.SEVERE, "Logo no encontrado: " + imagen, ex1);
             }
         } finally {
             try {
                 fis.close();
+
             } catch (IOException ex) {
-                Logger.getLogger(ConexionesKioskosFacadeREST.class.getName()).log(Level.SEVERE, "Error cerrando fis " + imagen, ex);
+                Logger.getLogger(ConexionesKioskosFacadeREST.class
+                        .getName()).log(Level.SEVERE, "Error cerrando fis " + imagen, ex);
             }
         }
         Response.ResponseBuilder responseBuilder = Response.ok((Object) file);
@@ -757,9 +760,11 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                 System.out.println("modificado");
             } else {
                 System.out.println("no modificado: " + resultado);
+
             }
         } catch (Exception e) {
-            System.out.println("Error " + ConexionesKioskos.class.getName() + ".cargarFoto(): " + e.getMessage());
+            System.out.println("Error " + ConexionesKioskos.class
+                    .getName() + ".cargarFoto(): " + e.getMessage());
             mensaje = "Ha ocurrido un error al subir la foto " + e.getMessage();
         }
 
@@ -1012,8 +1017,10 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                 query.setParameter(2, usuario);
             }
             documento = new BigDecimal(query.getSingleResult().toString());
+
         } catch (Exception e) {
-            System.out.println("Error: " + ConexionesKioskosFacadeREST.class.getName() + " getDocumentoCorreoODocumento: " + e.getMessage());
+            System.out.println("Error: " + ConexionesKioskosFacadeREST.class
+                    .getName() + " getDocumentoCorreoODocumento: " + e.getMessage());
             /*
             try {
                 String sqlQuery2 = "SELECT P.NUMERODOCUMENTO DOCUMENTO "
@@ -1087,8 +1094,10 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             }
             resultado = instancia > 0;
             System.out.println("resultado validarUsuarioyEmpresa: " + instancia);
+
         } catch (Exception ex) {
-            System.out.println("Error: " + ConexionesKioskos.class.getName() + " validarUsuarioyEmpresa: " + ex.getMessage());
+            System.out.println("Error: " + ConexionesKioskos.class
+                    .getName() + " validarUsuarioyEmpresa: " + ex.getMessage());
         }
         return resultado;
     }
@@ -1209,9 +1218,11 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                 System.out.println("modificado");
             } else {
                 System.out.println("no modificado: " + resultado);
+
             }
         } catch (Exception e) {
-            System.out.println("Error " + ConexionesKioskos.class.getName() + ".cambioEstadoUsuario(): " + e.getMessage());
+            System.out.println("Error " + ConexionesKioskos.class
+                    .getName() + ".cambioEstadoUsuario(): " + e.getMessage());
             mensaje = "Ha ocurrido un error " + e.getMessage();
         }
 
@@ -1701,7 +1712,8 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             }
 
         } catch (UnsupportedEncodingException ex) {
-            System.out.println("Error " + ConexionesKioskos.class.getName() + "validarJWT: " + ex.getMessage());
+            System.out.println("Error " + ConexionesKioskos.class
+                    .getName() + "validarJWT: " + ex.getMessage());
         } catch (io.jsonwebtoken.ExpiredJwtException ie) {
             System.out.println("Error Expiración de token: " + ie.getMessage());
             mensaje = "El enlace se ha expirado, intente iniciar sesión nuevamente para generar uno nuevo.";
@@ -1811,7 +1823,9 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             logoE.put("LOGO", logo.substring(0, logo.length() - 4));
         } catch (JSONException ex) {
             System.out.println("ConexionesKioskosFacadeREST" + ".getLogoEmpresaS(): " + "Error-1: " + ex.toString());
-            Logger.getLogger(ConexionesKioskosFacadeREST.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(ConexionesKioskosFacadeREST.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return logoE.toString();
     }
@@ -1951,8 +1965,10 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             resCon = query.executeUpdate();
             resultado = resCon > 0;
             System.out.println("resultado actualizarClave: " + resultado);
+
         } catch (Exception e) {
-            System.out.println("Error " + ConexionesKioskos.class.getName() + ".actualizarClave: " + e.getMessage());
+            System.out.println("Error " + ConexionesKioskos.class
+                    .getName() + ".actualizarClave: " + e.getMessage());
         }
         return resultado;
     }
@@ -1974,8 +1990,10 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
             Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, documento);
             nombre = query.getSingleResult().toString();
+
         } catch (Exception e) {
-            System.out.println("Error " + ConexionesKioskos.class.getName() + ".getNombrePersona(): " + e);
+            System.out.println("Error " + ConexionesKioskos.class
+                    .getName() + ".getNombrePersona(): " + e);
         }
         return nombre;
     }
@@ -2310,7 +2328,9 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
                 } catch (FileNotFoundException ex1) {
                     System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFotoPerfil(): sinFoto.jpg no encontrada ");
                     System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFotoPerfil(): Error-2: " + ex1.toString());
-                    Logger.getLogger(ConexionesKioskosFacadeREST.class.getName()).log(Level.SEVERE, "sinFoto.jpg no encontrada: " + imagen, ex1);
+                    Logger
+                            .getLogger(ConexionesKioskosFacadeREST.class
+                                    .getName()).log(Level.SEVERE, "sinFoto.jpg no encontrada: " + imagen, ex1);
                     System.getProperty("user.dir");
 //                    System.out.println("Ruta del proyecto: " + this.getClass().getClassLoader().getResource("").getPath());
                     System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFotoPerfil(): " + " Ruta del proyecto: " + this.getClass().getClassLoader().getResource("").getPath());

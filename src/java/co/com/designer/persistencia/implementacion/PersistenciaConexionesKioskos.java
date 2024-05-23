@@ -173,7 +173,10 @@ public class PersistenciaConexionesKioskos implements IPersistenciaConexionesKio
 
     @Override
     public BigDecimal getDocumentoPorSeudonimo(String seudonimo, String nitEmpresa, String cadena) {
-        System.out.println("Parametros getDocumentoPorSeudonimo() seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
+        System.out.println("PersistenciaConexionesKioskos"+".getDocumentoPorSeudonimo(): "+"Parametros: "
+                +"seudonimo: " + seudonimo 
+                + " nitEmpresa: " + nitEmpresa 
+                + " cadena: " + cadena);
         BigDecimal documento = null;
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);

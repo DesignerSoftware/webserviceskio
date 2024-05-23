@@ -314,58 +314,67 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response getSoliciSinProcesarJefe(@PathParam("nit") String nitEmpresa, @PathParam("jefe") String jefe,
             @PathParam("estado") String estado, @QueryParam("cadena") String cadena) {
-        System.out.println("parametros getSoliciSinProcesarJefe(): nit: " + nitEmpresa + " jefe " + jefe + " estado: " + estado + " cadena " + cadena);
+        System.out.println("VwvacaPendientesEmpleadosFacadeREST" + ".getSoliciSinProcesarJefe(): " + "Parametros: "
+                + "nit: " + nitEmpresa
+                + " jefe " + jefe
+                + " estado: " + estado
+                + " cadena " + cadena);
         List s = null;
+        String sqlQuery = "SELECT \n"
+                + " empl.codigoempleado documento \n"
+                + ", REPLACE(TRIM(per.primerApellido||' '||per.segundoApellido||' '||per.nombre), '  ', ' ') nombre \n"
+                + ", empl.secuencia \n"
+                + ", TO_CHAR(ksv.fechaGeneracion, 'DD/MM/YYYY HH:MI:SS') SOLICITUD \n"
+                + ", TO_CHAR(kns.fechaInicialDisfrute,'DD/MM/YYYY' ) INICIALDISFRUTEM \n"
+                + ", TO_CHAR(kes.fechaProcesamiento, 'DD/MM/YYYY HH:MI:SS') FECHAULTMODIF \n"
+                + ", kes.estado \n"
+                + ", kes.motivoProcesa \n"
+                + ", kes.novedadSistema \n"
+                + ", kes.empleadoEjecuta \n"
+                + ", kes.personaEjecuta \n"
+                + ", kes.kioSoliciVaca \n"
+                + ", TO_CHAR(kns.adelantaPagoHasta, 'DD/MM/YYYY') FECHAFIN \n"
+                + ", TO_CHAR(kns.fechaSiguienteFinVaca,'DD/MM/YYYY') FECHAREGRESO \n"
+                + ", kns.dias \n"
+                + ", v.inicialCausacion||' a '||v.finalCausacion PERIODOCAUSADO \n"
+                + ", (SELECT perJ.primerApellido||' '||perJ.segundoApellido||' '||perJ.nombre \n"
+                + "   FROM Personas perJ, Empleados jefe \n"
+                + "   WHERE perJ.secuencia = jefe.persona \n"
+                + "   and jefe.secuencia = ksv.empleadoJefe) empleadoJefe \n"
+                + ", kns.fechaPago FECHAPAGO \n"
+                + ", kes.secuencia secuencia \n"
+                + "FROM Empresas em, Empleados empl, Personas per \n"
+                + ", KioSoliciVacas ksv, KioNovedadesSolici kns, KioEstadosSolici kes \n"
+                + ", VwVacaPendientesEmpleados v \n"
+                + "WHERE empl.empresa = em.secuencia \n"
+                + "AND per.secuencia = empl.persona \n"
+                + "AND ksv.empleado = empl.secuencia \n"
+                + "AND ksv.kioNovedadSolici = kns.secuencia \n"
+                + "AND kes.kioSoliciVaca = ksv.secuencia \n"
+                + "AND v.empleado = empl.secuencia \n"
+                + "AND v.rfVacacion = kns.vacacion \n"
+                + "AND kes.secuencia = (SELECT MAX(kesi.secuencia) \n"
+                + "  FROM KioEstadosSolici kesi \n"
+                + "  WHERE kesi.kioSoliciVaca = kes.kioSoliciVaca ) \n"
+                + "AND v.inicialCausacion >= empleadocurrent_pkg.fechavigenciatipocontrato(empl.secuencia, sysdate) \n"
+                + "AND kes.estado = ? \n"
+                + "AND ksv.empleadoJefe = ? \n"
+                + "AND em.nit = ? \n"
+                + "ORDER BY \n"
+                + "kns.fechaInicialDisfrute, ksv.fechaGeneracion, kes.fechaProcesamiento";
         String esquema = getEsquema(nitEmpresa, cadena);
         this.rolesBD.setearPerfil(esquema, cadena);
         try {
 //            String secuenciaJefe = getSecuenciaEmplPorSeudonimo(jefe, nitEmpresa, cadena, esquema);
             String secuenciaJefe = this.persisConKiosko.getSecuenciaEmplPorSeudonimo(jefe, nitEmpresa, cadena);
-            BigDecimal secuenciaEmpresa = this.persisEmpresa.getSecuenciaPorNitEmpresa(nitEmpresa, cadena);
+//            BigDecimal secuenciaEmpresa = this.persisEmpresa.getSecuenciaPorNitEmpresa(nitEmpresa, cadena);
             //String esquema = getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT \n"
-                    + " t1.codigoempleado documento, REPLACE(TRIM(P.PRIMERAPELLIDO||' '||P.SEGUNDOAPELLIDO||' '||P.NOMBRE), '  ', ' ') NOMBRE,\n"
-                    + " t0.SECUENCIA, \n"
-                    + " TO_CHAR(t0.FECHAPROCESAMIENTO, 'DD/MM/YYYY HH:MI:SS') SOLICITUD, \n"
-                    + " TO_CHAR(KNS.FECHAINICIALDISFRUTE,'DD/MM/YYYY' ) INICIALDISFRUTEM,"
-                    + " TO_CHAR(T0.FECHAPROCESAMIENTO, 'DD/MM/YYYY HH:MI:SS') FECHAULTMODIF,\n"
-                    + " t0.ESTADO, \n"
-                    + " t0.MOTIVOPROCESA, t0.NOVEDADSISTEMA, t0.EMPLEADOEJECUTA, t0.PERSONAEJECUTA, t0.KIOSOLICIVACA,\n"
-                    + " TO_CHAR(KNS.ADELANTAPAGOHASTA, 'DD/MM/YYYY') FECHAFIN,\n"
-                    + " TO_CHAR(KNS.FECHASIGUIENTEFINVACA,'DD/MM/YYYY') FECHAREGRESO,\n"
-                    + " KNS.DIAS,\n"
-                    + " TO_CHAR(V.INICIALCAUSACION, 'DD/MM/YYYY') ||' a '|| TO_CHAR(V.FINALCAUSACION, 'DD/MM/YYYY') PERIODOCAUSADO,\n"
-                    + " (SELECT PER.PRIMERAPELLIDO||' '||PER.SEGUNDOAPELLIDO||' '||PER.NOMBRE FROM PERSONAS PER, EMPLEADOS EMPL\n"
-                    + " WHERE EMPL.PERSONA=PER.SECUENCIA\n"
-                    + " AND EMPL.SECUENCIA=JEFE.SECUENCIA) EMPLEADOJEFE,\n"
-                    + " KNS.FECHAPAGO FECHAPAGO,\n"
-                    + " t0.secuencia secuencia"
-                    + " FROM \n"
-                    + " KIOESTADOSSOLICI t0, \n"
-                    + " KIOSOLICIVACAS t2, \n"
-                    + " EMPLEADOS t1, \n"
-                    + " PERSONAS P,\n"
-                    + " KIONOVEDADESSOLICI KNS,\n"
-                    + " VwVacaPendientesEmpleados V, \n"
-                    + " EMPLEADOS JEFE\n"
-                    + " WHERE \n"
-                    + " (((((t1.EMPRESA = ?) AND (t0.ESTADO = ?)) AND (t2.EMPLEADOJEFE =?)) \n"
-                    + " AND (t0.SECUENCIA = (SELECT MAX(t3.SECUENCIA) FROM KIOSOLICIVACAS t4, KIOESTADOSSOLICI t3 \n"
-                    + " WHERE ((t4.SECUENCIA = t2.SECUENCIA) AND (t4.SECUENCIA = t3.KIOSOLICIVACA))))) \n"
-                    + " AND ((t2.SECUENCIA = t0.KIOSOLICIVACA) AND (t1.SECUENCIA = t2.EMPLEADO))) \n"
-                    + " AND T1.PERSONA=P.SECUENCIA\n"
-                    + " AND t2.KIONOVEDADSOLICI=KNS.SECUENCIA\n"
-                    + " AND KNS.VACACION=v.RFVACACION\n"
-                    + " AND t2.EMPLEADOJEFE=JEFE.SECUENCIA\n"
-                    + //        " AND V.INICIALCAUSACION>=empleadocurrent_pkg.FECHAINICIALCONTRATO(t1.secuencia, sysdate)" +        
-                    " AND V.INICIALCAUSACION>=EMPLEADOCURRENT_PKG.FECHATIPOCONTRATO(t1.secuencia, sysdate)"
-                    + " ORDER BY t0.FECHAPROCESAMIENTO DESC\n";
             Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, secuenciaEmpresa);
-            query.setParameter(2, estado);
-            query.setParameter(3, secuenciaJefe);
-
+//            query.setParameter(1, secuenciaEmpresa);
+            query.setParameter(1, estado);
+            query.setParameter(2, secuenciaJefe);
+            query.setParameter(3, nitEmpresa);
             s = query.getResultList();
             s.forEach(System.out::println);
             return Response.status(Response.Status.OK).entity(s).build();
@@ -470,8 +479,52 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
     @Path("/soliciSinProcesarAutorizador")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response getSoliciSinProcesarAutorizador(@QueryParam("usuario") String seudonimo, @QueryParam("empresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
-        System.out.println("parametros getSoliciSinProcesarJefe(): nit: " + nitEmpresa + " seudonimo autorizador: " + seudonimo + " cadena " + cadena);
+        System.out.println("VwvacaPendientesEmpleadosFacadeREST" + ".getSoliciSinProcesarAutorizador(): " + "Parametros: "
+                + "nit: " + nitEmpresa
+                + " seudonimo autorizador: " + seudonimo
+                + " cadena " + cadena);
         List s = null;
+        String sqlQuery = "SELECT \n"
+                + " empl.codigoempleado documento \n"
+                + ", REPLACE(TRIM(per.primerApellido||' '||per.segundoApellido||' '||per.nombre), '  ', ' ') nombre \n"
+                + ", empl.secuencia \n"
+                + ", TO_CHAR(ksv.fechaGeneracion, 'DD/MM/YYYY HH:MI:SS') SOLICITUD \n"
+                + ", TO_CHAR(kns.fechaInicialDisfrute,'DD/MM/YYYY' ) INICIALDISFRUTEM \n"
+                + ", TO_CHAR(kes.fechaProcesamiento, 'DD/MM/YYYY HH:MI:SS') FECHAULTMODIF \n"
+                + ", kes.estado \n"
+                + ", kes.motivoProcesa \n"
+                + ", kes.novedadSistema \n"
+                + ", kes.empleadoEjecuta \n"
+                + ", kes.personaEjecuta \n"
+                + ", kes.kioSoliciVaca \n"
+                + ", TO_CHAR(kns.adelantaPagoHasta, 'DD/MM/YYYY') FECHAFIN \n"
+                + ", TO_CHAR(kns.fechaSiguienteFinVaca,'DD/MM/YYYY') FECHAREGRESO \n"
+                + ", kns.dias \n"
+                + ", v.inicialCausacion||' a '||v.finalCausacion PERIODOCAUSADO \n"
+                + ", (SELECT perAut.primerApellido||' '||perAut.segundoApellido||' '||perAut.nombre \n"
+                + "   FROM Personas perAut \n"
+                + "   WHERE perAut.secuencia = ksv.autorizador) autorizador \n"
+                + ", kns.fechaPago FECHAPAGO \n"
+                + ", kes.secuencia secuencia \n"
+                + "FROM Empresas em, Empleados empl, Personas per \n"
+                + ", KioSoliciVacas ksv, KioNovedadesSolici kns, KioEstadosSolici kes \n"
+                + ", VwVacaPendientesEmpleados v \n"
+                + "WHERE empl.empresa = em.secuencia \n"
+                + "AND per.secuencia = empl.persona \n"
+                + "AND ksv.empleado = empl.secuencia \n"
+                + "AND ksv.kioNovedadSolici = kns.secuencia \n"
+                + "AND kes.kioSoliciVaca = ksv.secuencia \n"
+                + "AND v.empleado = empl.secuencia \n"
+                + "AND v.rfVacacion = kns.vacacion \n"
+                + "AND kes.secuencia = (SELECT MAX(kesi.secuencia) \n"
+                + "  FROM KioEstadosSolici kesi \n"
+                + "  WHERE kesi.kioSoliciVaca = kes.kioSoliciVaca ) \n"
+                + "AND kes.estado = 'ENVIADO' \n"
+                + "AND v.inicialCausacion >= empleadocurrent_pkg.fechavigenciatipocontrato(empl.secuencia, sysdate) \n"
+                + "AND ksv.autorizador = ? \n"
+                + "AND em.nit = ? \n"
+                + "ORDER BY \n"
+                + "kns.fechaInicialDisfrute, ksv.fechaGeneracion, kes.fechaProcesamiento";
         try {
             String esquema = null;
             try {
@@ -482,41 +535,15 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
             String secPerAutorizador = getSecPersonaPorSeudonimo(seudonimo, nitEmpresa, cadena, esquema);
             //String esquema = getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = " SELECT\n"
-                    + " t3.codigoempleado documento, REPLACE(TRIM(P.PRIMERAPELLIDO||' '||P.SEGUNDOAPELLIDO||' '||P.NOMBRE), '  ', ' ') NOMBRE,\n"
-                    + "t3.SECUENCIA,\n"
-                    + "TO_CHAR(t1.FECHAPROCESAMIENTO, 'DD/MM/YYYY HH:MI:SS') SOLICITUD, \n"
-                    + "TO_CHAR(KNS.FECHAINICIALDISFRUTE,'DD/MM/YYYY' ) INICIALDISFRUTEM,\n"
-                    + "TO_CHAR(t1.FECHAPROCESAMIENTO, 'DD/MM/YYYY HH:MI:SS') FECHAULTMODIF,\n"
-                    + "t1.ESTADO, \n"
-                    + "t1.MOTIVOPROCESA, t1.NOVEDADSISTEMA, t1.EMPLEADOEJECUTA, t1.PERSONAEJECUTA, t1.KIOSOLICIVACA,\n"
-                    + "TO_CHAR(KNS.ADELANTAPAGOHASTA, 'DD/MM/YYYY') FECHAFIN,\n"
-                    + "TO_CHAR(KNS.FECHASIGUIENTEFINVACA,'DD/MM/YYYY') FECHAREGRESO,\n"
-                    + "KNS.DIAS,\n"
-                    + "V.INICIALCAUSACION||' a '||V.FINALCAUSACION PERIODOCAUSADO,\n"
-                    + "(SELECT PER.PRIMERAPELLIDO||' '||PER.SEGUNDOAPELLIDO||' '||PER.NOMBRE FROM PERSONAS PER\n"
-                    + "WHERE P.SECUENCIA=T4.AUTORIZADOR) AUTORIZADOR,\n"
-                    + "KNS.FECHAPAGO FECHAPAGO,\n"
-                    + "t1.secuencia secuencia\n"
-                    + " FROM KIOSOLICIVACAS t4, EMPLEADOS t3, PERSONAS P, PERSONAS AUTORIZADOR,\n"
-                    + "EMPRESAS t2, KIOESTADOSSOLICI t1, EMPRESAS t0, kionovedadessolici KNS,  VwVacaPendientesEmpleados v\n"
-                    + "WHERE (((((t2.SECUENCIA = t0.SECUENCIA) AND (t1.ESTADO = 'ENVIADO')) AND (t4.AUTORIZADOR = ?)) \n"
-                    + "AND (t1.SECUENCIA = (SELECT MAX(t5.SECUENCIA) FROM KIOESTADOSSOLICI t5, KIOSOLICIVACAS t6 \n"
-                    + "WHERE ((t6.SECUENCIA = t4.SECUENCIA) AND (t6.SECUENCIA = t5.KIOSOLICIVACA))))) \n"
-                    + "AND (((t4.SECUENCIA = t1.KIOSOLICIVACA) AND (t3.SECUENCIA = t4.EMPLEADO)) AND (t2.SECUENCIA = t3.EMPRESA))) \n"
-                    + "AND t3.PERSONA=P.SECUENCIA "
-                    + "and t4.KIONOVEDADSOLICI = KNS.secuencia "
-                    + "and KNS.vacacion=v.RFVACACION\n"
-                    + "and t4.AUTORIZADOR=AUTORIZADOR.SECUENCIA "
-                    + "AND V.INICIALCAUSACION>=empleadocurrent_pkg.fechavigenciatipocontrato(t3.secuencia, sysdate)"
-                    + " ORDER BY t1.FECHAPROCESAMIENTO DESC ";
             Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secPerAutorizador);
+            query.setParameter(2, nitEmpresa);
             s = query.getResultList();
             s.forEach(System.out::println);
             return Response.status(Response.Status.OK).entity(s).build();
         } catch (Exception ex) {
-            System.out.println("Error " + this.getClass().getName() + ".getSoliciSinProcesarAutorizador: " + ex);
+//            System.out.println("Error " + this.getClass().getName() + ".getSoliciSinProcesarAutorizador: " + ex);
+            System.out.println("VwvacaPendientesEmpleadosFacadeREST" + ".getSoliciSinProcesarAutorizador(): " + "Error: " + ex.toString());
             return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
         }
     }
@@ -983,9 +1010,49 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSolicitudesProcesadasAutorizador(@QueryParam("autorizador") String autorizador,
             @QueryParam("empresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
+        System.out.println("VwvacaPendientesEmpleadosFacadeREST" + ".getSolicitudesProcesadasAutorizador(): " + "Parametros: "
+                + "autorizador: " + autorizador
+                + " empresa: " + nitEmpresa
+                + " cadena: " + cadena);
         int conteo = 0;
         List s = null;
-        System.out.println("Webservice: getSolicitudesProcesadasAutorizador Parametros: autorizador: " + autorizador + ", empresa: " + nitEmpresa + ", cadena: " + cadena);
+        String sqlQuery = "SELECT \n"
+                + " empl.codigoEmpleado cedula \n"
+                + ", per.numeroDocumento cedulaP \n"
+                + ", REPLACE(TRIM(per.primerApellido||' '||per.segundoApellido||' '||per.nombre), '  ', ' ') nombreCompleto \n"
+                + ", TO_CHAR(ksv.fechaGeneracion, 'DD/MM/YYYY HH:MI:SS') solicitud \n"
+                + ", TO_CHAR(kns.fechaInicialDisfrute,'DD/MM/YYYY' ) fechaInicialDisfrute \n"
+                + ", TO_CHAR(kes.fechaProcesamiento, 'DD/MM/YYYY HH:MI:SS') fechaProcesamiento \n"
+                + ", kes.secuencia \n"
+                + ", NVL(kes.motivoProcesa, 'N/A') motivo \n"
+                + ", TO_CHAR(kns.adelantaPagoHasta, 'DD/MM/YYYY HH:mm:ss') fechafinvacaciones \n"
+                + ", TO_CHAR(kns.fechaSiguienteFinVaca,'DD/MM/YYYY') fechaRegresoLaborar \n"
+                + ", kns.dias \n"
+                + ", (SELECT perAut.primerApellido||' '||perAut.segundoApellido||' '||perAut.nombre \n"
+                + "   FROM Personas perAut \n"
+                + "   WHERE perAut.secuencia = ksv.autorizador) personaAuto \n"
+                + ", TO_CHAR(kns.fechapago, 'DD/MM/YYYY') fechaPago \n"
+                + ", kes.estado \n"
+                + ", TO_CHAR(v.inicialcausacion, 'DD/MM/YYYY')||' a '||TO_CHAR(v.finalcausacion, 'DD/MM/YYYY') periodo \n"
+                + "FROM Empresas em, Empleados empl, Personas per \n"
+                + ", KioSoliciVacas ksv, KioNovedadesSolici kns, KioEstadosSolici kes \n"
+                + ", VwVacaPendientesEmpleados v \n"
+                + "WHERE empl.empresa = em.secuencia \n"
+                + "AND per.secuencia = empl.persona \n"
+                + "AND ksv.empleado = empl.secuencia \n"
+                + "AND ksv.kioNovedadSolici = kns.secuencia \n"
+                + "AND kes.kioSoliciVaca = ksv.secuencia \n"
+                + "AND v.empleado = empl.secuencia \n"
+                + "AND v.rfVacacion = kns.vacacion \n"
+                + "AND kes.secuencia = (SELECT MAX(kesi.secuencia) \n"
+                + "  FROM KioEstadosSolici kesi \n"
+                + "  WHERE kesi.kioSoliciVaca = kes.kioSoliciVaca ) \n"
+                + "AND v.inicialCausacion >= empleadocurrent_pkg.fechavigenciatipocontrato(empl.secuencia, sysdate) \n"
+                + "AND kes.estado in ('AUTORIZADO', 'RECHAZADO','LIQUIDADO') \n"
+                + "AND ksv.autorizador = ? \n"
+                + "AND em.nit = ? \n"
+                + "ORDER BY \n"
+                + "kns.fechaInicialDisfrute, ksv.fechaGeneracion, kes.fechaProcesamiento ";
         try {
             String esquema = null;
             try {
@@ -996,37 +1063,11 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
             String secPerAutorizador = getSecPersonaPorSeudonimo(autorizador, nitEmpresa, cadena, esquema);
             //String esquema = getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT\n"
-                    + "t1.CODIGOEMPLEADO cedula,\n"
-                    + "p.numerodocumento cedulaP,\n"
-                    + "p.PRIMERAPELLIDO||' '||p.SEGUNDOAPELLIDO||' '||p.NOMBRE NOMBRECOMPLETO, \n"
-                    + "to_char(t2.FECHAGENERACION, 'DD/MM/YYYY HH:mm:ss') solicitud, \n"
-                    + "to_char(kn.FECHAINICIALDISFRUTE, 'DD/MM/YYYY HH:mm:ss') FECHAINICIALDISFRUTE, \n"
-                    + "to_char(T0.FECHAPROCESAMIENTO, 'DD/MM/YYYY HH:mm:ss') FECHAPROCESAMIENTO, \n"
-                    + "t0.SECUENCIA, \n"
-                    + "NVL(t0.MOTIVOPROCESA, 'N/A') motivo, \n"
-                    + "to_char(kn.ADELANTAPAGOHASTA, 'DD/MM/YYYY HH:mm:ss') FECHAFINVACACIONES, \n"
-                    + "to_char(kn.fechaSiguienteFinVaca, 'DD/MM/YYYY HH:mm:ss') fecharegresolaborar, \n"
-                    + "kn.dias, \n"
-                    + "pei.primerapellido||' '||pei.segundoapellido||' '||pei.nombre personaAuto, \n"
-                    + "TO_CHAR(kn.FECHAPAGO, 'DD/MM/YYYY') FECHAPAGO, \n"
-                    + "t0.ESTADO ESTADO, \n"
-                    + "TO_CHAR(v.INICIALCAUSACION, 'DD/MM/YYYY')||' a '||TO_CHAR(v.FINALCAUSACION, 'DD/MM/YYYY') periodo \n"
-                    + "FROM KIOESTADOSSOLICI t0, KIOSOLICIVACAS t2, EMPLEADOS t1, PERSONAS P, kionovedadessolici kn, personas pei,VwVacaPendientesEmpleados v \n"
-                    + "WHERE \n"
-                    + "( t0.ESTADO IN ('AUTORIZADO', 'RECHAZADO','LIQUIDADO')) \n"
-                    + "AND (t0.SECUENCIA = (SELECT MAX(t3.SECUENCIA) FROM KIOSOLICIVACAS t4, KIOESTADOSSOLICI t3 \n"
-                    + "WHERE ((t4.SECUENCIA = t2.SECUENCIA) AND (t4.SECUENCIA = t3.KIOSOLICIVACA)))) \n"
-                    + "AND ((t2.SECUENCIA = t0.KIOSOLICIVACA) AND (t1.SECUENCIA = t2.EMPLEADO)) \n"
-                    + "AND t1.PERSONA = P.SECUENCIA \n"
-                    + "and t2.KIONOVEDADSOLICI = kn.secuencia \n"
-                    + "and kn.vacacion=v.RFVACACION \n"
-                    + "and (t2.EMPLEADOJEFE = pei.secuencia or t2.autorizador = pei.secuencia) \n"
-                    + "and t2.autorizador = ? \n"
-                    + "order by T0.FECHAPROCESAMIENTO desc";
+
             //Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secPerAutorizador);
+            query.setParameter(2, nitEmpresa);
             s = query.getResultList();
             s.forEach(System.out::println);
 
