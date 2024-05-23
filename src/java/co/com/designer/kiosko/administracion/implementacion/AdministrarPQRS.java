@@ -91,9 +91,7 @@ public class AdministrarPQRS implements IAdministrarPQRS {
             ex.printStackTrace();
         }
 
-//        return obj.toString();
         return obj;
-        //return "";
     }
 
     private String limpiezaTildes(String texto) {

@@ -55,6 +55,7 @@ public class GestionPqrsFacadeREST {
             creada = (boolean) (res.get("PQRS_Creada"));
             enviada = (boolean) ( res.get("correoEnviado") );
         } catch (JSONException je) {
+            System.out.println("GestionPqrsFacadeREST"+".crearPqrs(): "+"Error: "+je.toString());
             je.printStackTrace();
         }
         if (creada && enviada) {

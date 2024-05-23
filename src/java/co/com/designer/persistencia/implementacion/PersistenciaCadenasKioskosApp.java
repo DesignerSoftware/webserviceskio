@@ -1,8 +1,6 @@
 package co.com.designer.persistencia.implementacion;
 
 import co.com.designer.persistencia.interfaz.IPersistenciaPerfiles;
-//import javax.ejb.EJB;
-//import javax.ejb.Stateless;
 import javax.persistence.Query;
 import co.com.designer.persistencia.interfaz.IPersistenciaCadenasKioskosApp;
 import co.com.designer.persistencia.interfaz.IPersistenciaConexiones;
@@ -11,10 +9,8 @@ import co.com.designer.persistencia.interfaz.IPersistenciaConexiones;
  *
  * @author Edwin Hastamorir
  */
-//@Stateless
 public class PersistenciaCadenasKioskosApp implements IPersistenciaCadenasKioskosApp {
 
-//    @EJB
     private IPersistenciaPerfiles rolesBD;
     private IPersistenciaConexiones persistenciaConexiones;
 

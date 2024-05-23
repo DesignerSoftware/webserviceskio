@@ -52,7 +52,8 @@ public class CadenasKioskosFacadeREST {
         System.out.println("Parametros: Grupo: " + grupo + ", Dominio: " + dominio);
         try {
             String sqlQuery = "SELECT CODIGO, DESCRIPCION, NITEMPRESA, GRUPO, CADENA, EMPLNOMINA, ESQUEMA, ESTADO, OBSERVACION "
-                    + "FROM CADENASKIOSKOSAPP WHERE GRUPO=? and ? LIKE '%'||DOMINIO||'%'";
+                    + "FROM CADENASKIOSKOSAPP "
+                    + "WHERE GRUPO=? and ? LIKE '%'||DOMINIO||'%'";
             Query query = getEntityManager().createNativeQuery(sqlQuery);
             query.setParameter(1, grupo);
             query.setParameter(2, dominio);
@@ -85,7 +86,9 @@ public class CadenasKioskosFacadeREST {
             return Response.status(Response.Status.OK).entity(s).build();
         } else {
             try {
-                String sqlQuery = "SELECT CODIGO, DESCRIPCION, NITEMPRESA, GRUPO, CADENA, EMPLNOMINA, ESQUEMA, ESTADO, OBSERVACION FROM CADENASKIOSKOSAPP WHERE GRUPO=? AND NITEMPRESA=?";
+                String sqlQuery = "SELECT CODIGO, DESCRIPCION, NITEMPRESA, GRUPO, CADENA, EMPLNOMINA, ESQUEMA, ESTADO, OBSERVACION "
+                        + "FROM CADENASKIOSKOSAPP "
+                        + "WHERE GRUPO=? AND NITEMPRESA=?";
                 Query query = getEntityManager().createNativeQuery(sqlQuery);
                 query.setParameter(1, grupo);
                 query.setParameter(2, nitEmpresa);
@@ -107,7 +110,10 @@ public class CadenasKioskosFacadeREST {
         Long res = null;
         System.out.println("Parametros: Grupo: " + grupo);
         try {
-            String sqlQuery = "SELECT COUNT(*) FROM CADENASKIOSKOSAPP WHERE GRUPO=? AND ESTADO='INACTIVO' ";
+            String sqlQuery = "SELECT COUNT(*) "
+                    + "FROM CADENASKIOSKOSAPP "
+                    + "WHERE GRUPO=? "
+                    + "AND ESTADO='INACTIVO' ";
             Query query = getEntityManager().createNativeQuery(sqlQuery);
             query.setParameter(1, grupo);
             res = (Long) query.getSingleResult();

@@ -109,115 +109,6 @@ public class EmpleadosFacadeREST {
         System.out.println("parametros getDatosEmpleadosNit():  empleado: " + empleado + " nit: " + nitEmpresa + " cadena " + cadena);
         List s = null;
         try {
-            /*
-            String documento = getDocumentoPorSeudonimo(empleado, nitEmpresa, cadena);
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
-            */
-            /*
-            String sqlQuery = " select  \n"
-                    + "e.codigoempleado usuario,   \n"
-                    + "p.nombre ||' '|| p.primerapellido ||' '|| p.segundoapellido nombres,  \n"
-                    + "p.primerapellido apellido1,  \n"
-                    + "p.segundoapellido apellido2,   \n"
-                    + "decode(p.sexo,'M', 'MASCULINO', 'F', 'FEMENINO', '') sexo,   \n"
-                    + "to_char(p.FECHANACIMIENTO, 'dd-MM-yyyy') fechaNacimiento,  \n"
-                    + "(select nombre from ciudades where secuencia=p.CIUDADNACIMIENTO) ciudadNacimiento,  \n"
-                    + "p.GRUPOSANGUINEO grupoSanguineo,  \n"
-                    + "p.FACTORRH factorRH,  \n"
-                    + "(select nombrelargo from tiposdocumentos where secuencia=p.TIPODOCUMENTO) tipoDocu,  \n"
-                    + "p.NUMERODOCUMENTO documento,   \n"
-                    + "(select nombre from ciudades where secuencia=p.CIUDADDOCUMENTO) lugarExpediDocu,  \n"
-                    + "p.EMAIL email,  \n"
-                    + "'DIRECCION' direccion,   \n"
-                    + "ck.ULTIMACONEXION ultimaConexion,\n"
-                    + "em.codigo codigoEmpresa,  \n"
-                    + "em.nit nitEmpresa,   \n"
-                    + "em.nombre nombreEmpresa,  \n"
-                    + "empleadocurrent_pkg.descripciontipocontrato(e.secuencia, sysdate) contrato,  \n"
-                    + "trim(to_char(empleadocurrent_pkg.ValorBasicoCorte(e.secuencia, sysdate),'$999G999G999G999G999G999')) salario,    \n"
-                    + "empleadocurrent_pkg.DescripcionCargoCorte(e.secuencia, sysdate) cargo,  \n"
-                    //+ "         DIAS360(empleadocurrent_pkg.FechaVigenciaTipoContrato(e.secuencia, sysdate), sysdate) diasW,    +\n"
-                    + "empleadocurrent_pkg.FechaVigenciaTipoContrato(e.secuencia, sysdate) inicioContratoActual,\n"
-                    //+ "         (select nombre from estructuras where secuencia=empleadocurrent_pkg.estructuracargocorte(e.secuencia, sysdate)) estructura,   +\n"
-                    + "em.logo logoEmpresa,  \n"
-                    + "UPPER(empleadocurrent_pkg.DireccionAlternativa(p.secuencia, sysdate)) direccionPersona,   \n"
-                    + "empleadocurrent_pkg.CentrocostoNombre(e.secuencia) centroscostos,   \n"
-                    + "empleadocurrent_pkg.EdadPersona(p.secuencia, sysdate) || ' AÑOS' edad,   \n"
-                    + "empleadocurrent_pkg.entidadafp(e.secuencia) entidadfp,\n"
-                    + "empleadocurrent_pkg.entidadeps(e.secuencia) entidadeps,  \n"
-                    + "empleadocurrent_pkg.entidadarp(e.secuencia)  entidadarp,\n"
-                    + "empleadocurrent_pkg.entidadcesantias(e.secuencia, sysdate) entidadcesantias,\n"
-                   // + "empleadocurrent_pkg.Afiliacion(e.secuencia , te.codigo, sysdate, sysdate) cajaCompensacion,           \n"
-                    + "empleadocurrent_pkg.Afiliacion(e.secuencia , 14, sysdate, sysdate) cajaCompensacion,           \n"
-                    + "to_char(empleadocurrent_pkg.fechaVigenciaTipoContrato(e.secuencia, sysdate), 'dd-MM-yyyy') fechaContratacion    \n"
-                    + "from   \n"
-                    + "empleados e, conexioneskioskos ck, empresas em, personas p "
-                   // + "VigenciasAfiliaciones V , tiposentidades te  \n"
-                    + "where  \n"
-                    + "e.persona=p.secuencia   \n"
-                    + "and e.empresa=em.secuencia    \n"
-                    + "and ck.empleado=e.secuencia \n"
-                  //  + "and e.secuencia(+) = v.empleado \n"
-                  //  + "and te.secuencia= v.tipoentidad (+)\n"
-                  //  + "and te.codigo = 14 \n"
-                    + "and p.numerodocumento= ?  \n"
-                    + "and em.nit=? ";
-             */
-            /*
-            String sqlQuery = "select \n"
-                    + "e.codigoempleado usuario, \n"
-                    + "p.nombre ||' '|| p.primerapellido ||' '|| p.segundoapellido nombres, \n"
-                    + "p.primerapellido apellido1, \n"
-                    + "p.segundoapellido apellido2, \n"
-                    + "decode(p.sexo,'M', 'MASCULINO', 'F', 'FEMENINO', '') sexo, \n"
-                    + "to_char(p.FECHANACIMIENTO, 'dd-MM-yyyy') fechaNacimiento, \n"
-                    + "(select nombre from ciudades where secuencia=p.CIUDADNACIMIENTO) ciudadNacimiento, \n"
-                    + "p.GRUPOSANGUINEO grupoSanguineo,\n"
-                    + "p.FACTORRH factorRH, \n"
-                    + "(select nombrelargo from tiposdocumentos where secuencia=p.TIPODOCUMENTO) tipoDocu, \n"
-                    + "p.NUMERODOCUMENTO documento, \n"
-                    + "(select nombre from ciudades where secuencia=p.CIUDADDOCUMENTO) lugarExpediDocu, \n"
-                    + "p.EMAIL email, \n"
-                    + "'DIRECCION' direccion, \n"
-                    + "ck.ULTIMACONEXION ultimaConexion, \n"
-                    + "em.codigo codigoEmpresa, \n"
-                    + "em.nit nitEmpresa, \n"
-                    + "em.nombre nombreEmpresa, \n"
-                    + "empleadocurrent_pkg.descripciontipocontrato(e.secuencia, sysdate) contrato, \n"
-                    + "--trim(to_char(empleadocurrent_pkg.ValorBasicoCorte(e.secuencia, sysdate),'$999G999G999G999G999G999')) salario, \n"
-                    + "trim(to_char(empleadocurrent_pkg.ValorBasicoCorte(e.secuencia, \n"
-                    + "  nvl(GREATEST( \n"
-                    + "      cortesprocesos_pkg.CapturarAnteriorCorte(e.secuencia,1,sysdate), \n"
-                    + "      cortesprocesos_pkg.CapturarAnteriorCorte(e.secuencia,80,sysdate) \n"
-                    + "    ),cortesprocesos_pkg.CapturarAnteriorCorte(e.secuencia,1,sysdate)) \n"
-                    + "  ),'$999G999G999G999G999G999')) salario, \n"
-                    + "empleadocurrent_pkg.DescripcionCargoCorte(e.secuencia, sysdate) cargo, \n"
-                    + "empleadocurrent_pkg.FechaVigenciaTipoContrato(e.secuencia, sysdate) inicioContratoActual, \n"
-                    + "em.logo logoEmpresa, \n"
-                    + "UPPER(empleadocurrent_pkg.DireccionAlternativa(p.secuencia, sysdate)) direccionPersona, \n"
-                    + "empleadocurrent_pkg.CentrocostoNombre(e.secuencia) centroscostos, \n"
-                    + "empleadocurrent_pkg.EdadPersona(p.secuencia, sysdate) || ' AÑOS' edad, \n"
-                    + "EmpleadoCurrent_pkg.Afiliacion(e.secuencia, 3, sysdate-30, sysdate) entidadfp, \n"
-                    + "EmpleadoCurrent_pkg.Afiliacion(e.secuencia, 1, sysdate-30, sysdate) entidadeps, \n"
-                    + "EmpleadoCurrent_pkg.Afiliacion(e.secuencia, 2, sysdate-30, sysdate) entidadarp, \n"
-                    + "EmpleadoCurrent_pkg.Afiliacion(e.secuencia, 12, sysdate-30, sysdate) entidadcesantias, \n"
-                    + "empleadocurrent_pkg.Afiliacion(e.secuencia, 14, sysdate-30, sysdate) cajaCompensacion, \n"
-                    + "to_char(empleadocurrent_pkg.fechaVigenciaTipoContrato(e.secuencia, sysdate), 'dd-MM-yyyy') fechaContratacion \n"
-                    + "from \n"
-                    + "empleados e, conexioneskioskos ck, empresas em, personas p \n"
-                    + "where \n"
-                    + "e.persona=p.secuencia \n"
-                    + "and e.empresa=em.secuencia \n"
-                    + "and ck.empleado=e.secuencia \n"
-                    + "and p.numerodocumento= ? \n"
-                    + "and em.nit=? ";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, documento);
-            query.setParameter(2, nitEmpresa);
-
-            s = query.getResultList();
-            */
             s = this.persisEmpleados.getDatosEmpleadoNit(empleado, nitEmpresa, cadena);
             s.forEach(System.out::println);
             return Response.status(Response.Status.OK).entity(s).build();
@@ -408,7 +299,11 @@ public class EmpleadosFacadeREST {
         try {
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO FROM PERSONAS P, CONEXIONESKIOSKOS CK WHERE CK.PERSONA=P.SECUENCIA AND lower(CK.SEUDONIMO)=lower(?) AND CK.NITEMPRESA=?";
+            String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO "
+                    + "FROM PERSONAS P, CONEXIONESKIOSKOS CK "
+                    + "WHERE CK.PERSONA=P.SECUENCIA "
+                    + "AND lower(CK.SEUDONIMO)=lower(?) "
+                    + "AND CK.NITEMPRESA=?";
             System.out.println("Query: " + sqlQuery);
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
 
@@ -428,7 +323,11 @@ public class EmpleadosFacadeREST {
         try {
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT E.SECUENCIA SECUENCIAEMPLEADO FROM EMPLEADOS E, CONEXIONESKIOSKOS CK WHERE CK.EMPLEADO=E.SECUENCIA AND CK.SEUDONIMO= ? AND CK.NITEMPRESA= ? ";
+            String sqlQuery = "SELECT E.SECUENCIA SECUENCIAEMPLEADO "
+                    + "FROM EMPLEADOS E, CONEXIONESKIOSKOS CK "
+                    + "WHERE CK.EMPLEADO=E.SECUENCIA "
+                    + "AND CK.SEUDONIMO= ? "
+                    + "AND CK.NITEMPRESA= ? ";
             System.out.println("Query: " + sqlQuery);
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
 
@@ -447,7 +346,9 @@ public class EmpleadosFacadeREST {
         try {
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT EM.SECUENCIA SECUENCIAEMPRESA FROM EMPRESAS EM WHERE EM.NIT= ? ";
+            String sqlQuery = "SELECT EM.SECUENCIA SECUENCIAEMPRESA "
+                    + "FROM EMPRESAS EM "
+                    + "WHERE EM.NIT= ? ";
             System.out.println("Query: " + sqlQuery);
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
@@ -461,9 +362,8 @@ public class EmpleadosFacadeREST {
 
     public boolean validarCodigoUsuario(String usuario) {
         boolean resultado = false;
-        BigInteger numUsuario;
         try {
-            numUsuario = new BigInteger(usuario);
+            BigInteger numUsuario = new BigInteger(usuario);
             resultado = true;
         } catch (NumberFormatException nfe) {
             resultado = false;
@@ -478,8 +378,6 @@ public class EmpleadosFacadeREST {
         System.out.println("Parametros getSecuencia(): usuario: " + usuario + ", cadena: " + cadena);
         BigDecimal res = null;
         try {
-            //String esquema = getEsquema(nitEmpresa, cadena);
-            //setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT EMPLEADO FROM CONEXIONESKIOSKOS WHERE SEUDONIMO= ? ";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, usuario);
@@ -504,17 +402,13 @@ public class EmpleadosFacadeREST {
         Query query = null;
         BigDecimal codigoJornada;
         String secEmpleado = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
-        /*SimpleDateFormat formatoFecha = new SimpleDateFormat("ddMMyyyy");
-        String strFechaDisfrute = formatoFecha.format(fechaDisfrute);*/
         System.out.println("secuencia: " + secEmpleado);
-        //System.out.println("fecha en txt: " + strFechaDisfrute);
         System.out.println("fecha en txt: " + fechaDisfrute);
         try {
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
             query = getEntityManager(cadena).createNativeQuery(consulta);
             query.setParameter(1, secEmpleado);
-            //query.setParameter(2, strFechaDisfrute);
             query.setParameter(2, fechaDisfrute);
             codigoJornada = new BigDecimal(query.getSingleResult().toString());
             return codigoJornada;
@@ -523,7 +417,6 @@ public class EmpleadosFacadeREST {
             throw new Exception(pe.toString());
         } catch (NullPointerException npee) {
             System.out.println("Nulo general");
-//            throw new Exception(npee.toString());
             return null;
         } catch (Exception e) {
             System.out.println("Error general. " + e);
@@ -546,8 +439,8 @@ public class EmpleadosFacadeREST {
             String secEmpleado = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
             String consulta = "SELECT GREATEST("
                     + "CORTESPROCESOS_PKG.CAPTURARCORTEPROCESO(?, 1), "
-                    + "NVL( CORTESPROCESOS_PKG.CAPTURARCORTEPROCESO(?, 80), CORTESPROCESOS_PKG.CAPTURARCORTEPROCESO(?, 1)"
-                    + ")) "
+                    + "NVL( CORTESPROCESOS_PKG.CAPTURARCORTEPROCESO(?, 80)"
+                    + ", CORTESPROCESOS_PKG.CAPTURARCORTEPROCESO(?, 1))) "
                     + "FROM DUAL ";
             Date fechaUltimoPago = null;
             Query query = getEntityManager(cadena).createNativeQuery(consulta);
@@ -673,14 +566,11 @@ public class EmpleadosFacadeREST {
         Query query = null;
         BigDecimal conteoDiaFestivo;
         boolean esDiaFestivo;
-        /*SimpleDateFormat formatoFecha = new SimpleDateFormat("ddMMyyyy");
-        String strFechaDisfrute = formatoFecha.format(fechaDisfrute);*/
         try {
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
             query = getEntityManager(cadena).createNativeQuery(consulta);
             query.setParameter(1, "COLOMBIA");
-            //query.setParameter(2, strFechaDisfrute);
             query.setParameter(2, fechaDisfrute);
             conteoDiaFestivo = new BigDecimal(query.getSingleResult().toString());
             esDiaFestivo = !conteoDiaFestivo.equals(BigDecimal.ZERO);
@@ -695,7 +585,6 @@ public class EmpleadosFacadeREST {
             System.out.println("Error verificarFestivo(): fechaDisfrute: " + fechaDisfrute + ", cadena: " + cadena + e);
             throw new Exception(e.toString());
         }
-//        return false;
     }
 
     public BigDecimal consultaTraslapamientos(
@@ -716,8 +605,6 @@ public class EmpleadosFacadeREST {
             setearPerfil(esquema, cadena);
             query = getEntityManager(cadena).createNativeQuery(consulta);
             query.setParameter(1, secEmpleado);
-            //query.setParameter(2, fechaIniVaca, TemporalType.DATE);
-            //query.setParameter(3, fechaFinVaca, TemporalType.DATE);
             query.setParameter(2, fechaFinVaca);
             query.setParameter(3, fechaFinVaca);
             contTras = (BigDecimal) (query.getSingleResult());
@@ -747,8 +634,6 @@ public class EmpleadosFacadeREST {
         String secEmpleado = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
         System.out.println("verificaExistenciaSolicitud-secEmpleado: " + secEmpleado);
         System.out.println("verificaExistenciaSolicitud-fechaIniVaca: " + fechaIniVaca);
-        /*SimpleDateFormat formato = new SimpleDateFormat("ddMMyyyy");
-        String txtFecha = formato.format(fechaIniVaca);*/
         String consulta = "SELECT "
                 + "KIOVACACIONES_PKG.VERIFICAEXISTESOLICITUD(?, to_date(?,'DDMMYYYY') ) "
                 + "FROM DUAL ";
@@ -761,7 +646,6 @@ public class EmpleadosFacadeREST {
                 setearPerfil(esquema, cadena);
                 query = getEntityManager(cadena).createNativeQuery(consulta);
                 query.setParameter(1, secEmpleado);
-                // query.setParameter(2, txtFecha);
                 query.setParameter(2, fechaIniVaca);
             } catch (NullPointerException npe) {
                 throw new Exception("verificaExistenciaSolicitud: EntiyManager, query o consulta nulos.");
@@ -776,7 +660,6 @@ public class EmpleadosFacadeREST {
             }
         } catch (Exception e) {
             System.out.println("verificaExistenciaSolicitud-excepcion: " + e);
-//            throw e;
             throw new Exception("Error verificando si la solicitud ya existe " + e);
         }
         System.out.println("verificaExistenciaSolicitud-conteo: " + conteo);
@@ -825,7 +708,6 @@ public class EmpleadosFacadeREST {
         String mensaje = "";
         boolean valido = true;
         try {
-            BigDecimal codigoJornada = consultarCodigoJornada(seudonimo, nitEmpresa, fechainicialdisfrute, cadena);
             if (!validaFechaPago(seudonimo, nitEmpresa, fechainicialdisfrute, cadena)) {
                 mensaje += "La fecha seleccionada es inferior a la última fecha de pago.";
                 valido = false;
@@ -883,7 +765,6 @@ public class EmpleadosFacadeREST {
         asunto += " de " + nombreEmpl + " " + fecha;
         try {
             EnvioCorreo e = new EnvioCorreo();
-            //if (e.enviarCorreoInformativo("Módulo Kiosco: Reporte de corrección de información de "+nombreEmpl+" "+fecha,
             if (e.enviarCorreoInformativo(asunto,
                     "Estimado personal de Nómina y RRHH:", mensaje, nitEmpresa, urlKiosco + "#/login/" + grupo, cadena, getCorreoSoporteKiosco(nitEmpresa, cadena), correoUsuario)) {
                 enviado = true;
@@ -913,7 +794,6 @@ public class EmpleadosFacadeREST {
             query.setParameter(1, nitEmpresa);
             emailSoporte = query.getResultList();
             Iterator<String> it = emailSoporte.iterator();
-            //System.out.println("obtener " + correoDestinatarioMain.get(0));
             System.out.println("size: " + emailSoporte.size());
             while (it.hasNext()) {
                 String correoenviar = it.next();
@@ -922,9 +802,7 @@ public class EmpleadosFacadeREST {
                 if (it.hasNext()) {
                     correoDestinatarios += ",";
                 }
-                //c.pruebaEnvio2("smtp.gmail.com","587","pruebaskiosco534@gmail.com","Nomina01", "S", correoenviar,
             }
-            //emailSoporte =  query.getSingleResult().toString();
             System.out.println("Emails soporte: " + correoDestinatarios);
         } catch (Exception e) {
             System.out.println("Error: getCorreoSoporteKiosco: " + e.getMessage());
@@ -981,7 +859,6 @@ public class EmpleadosFacadeREST {
                     + "and vf.profesion = p.secuencia "
                     + "and vf.institucion = i.secuencia(+) "
                     + "and ad.secuencia(+)=vf.adiestramientof "
-                    //      + "and vf.FECHAVIGENCIA>=empleadocurrent_pkg.FechaVigenciaTipoContrato(e.secuencia, sysdate) "
                     + "and e.secuencia=? "
                     + "order by vf.fechavigencia DESC ";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
@@ -1005,7 +882,6 @@ public class EmpleadosFacadeREST {
                         + "and vf.profesion = p.secuencia "
                         + "and vf.institucion = i.secuencia(+) "
                         + "and ad.secuencia(+)=vf.adiestramientof "
-                        //      + "and vf.FECHAVIGENCIA>=empleadocurrent_pkg.FechaVigenciaTipoContrato(e.secuencia, sysdate) "
                         + "and e.secuencia=? "
                         + "order by vf.fechavigencia desc";
             } catch (Exception e) {
@@ -1053,7 +929,6 @@ public class EmpleadosFacadeREST {
     @Path("/getNotificaciones")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response getNotificaciones(@QueryParam("usuario") String seudonimo, @QueryParam("tipoNotificacion") String tipoNotificacion, @QueryParam("empresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
-        //System.out.println("parametros getNotificaciones(): usuario: "+seudonimo+" tipoNotificacion: "+tipoNotificacion+" nitEmpresa: "+nitEmpresa+ " cadena "+cadena);
         List s = null;
         String secEmpl = null;
         try {
@@ -1141,13 +1016,11 @@ public class EmpleadosFacadeREST {
     public List obtenerAnexosDocumentos(@QueryParam("empleado") String empleado, @QueryParam("cadena") String cadena, @QueryParam("empresa") String nitEmpresa) {
         System.out.println("Parametros obtenerAnexosDocumentos(): empleado: " + empleado + ", cadena: " + cadena + ", nitEmpresa: " + nitEmpresa);
         File carpeta = null;
-        String esquema = null;
         String secEmpresa = null;
         String secEmpleado = null;
         List documentos = new ArrayList();
-        String rutaArchivo = getPathDocumentos(nitEmpresa, cadena)/* "E:\\DesignerRHN10\\Basico10\\Reportes\\kiosko\\documentosAnexos"/*"E:\\DesignerRHN10\\Instalacion\\Kiosko\\prueba"/* "E:\\CLIENTES\\CONSTRUCTORA DE MARCAS S.A.S"*/;
+        String rutaArchivo = getPathDocumentos(nitEmpresa, cadena);
         try {
-            esquema = getEsquema(nitEmpresa, cadena);
             secEmpresa = getSecuenciaPorNitEmpresa(nitEmpresa, cadena);
             secEmpleado = getSecuenciaEmplPorSeudonimo(empleado, nitEmpresa, cadena);
             carpeta = new File(rutaArchivo + "\\" + secEmpresa + "\\" + secEmpleado + "\\");
@@ -1202,10 +1075,8 @@ public class EmpleadosFacadeREST {
                 + "nitEmpresa: " + nitEmpresa + " usuario " + usuario);
         FileInputStream fis = null;
         File file = null;
-        String esquema = null;
         String secEmpresa = null;
         String secEmpleado = null;
-        esquema = getEsquema(nitEmpresa, cadena);
         secEmpresa = getSecuenciaPorNitEmpresa(nitEmpresa, cadena);
         secEmpleado = getSecuenciaEmplPorSeudonimo(usuario, nitEmpresa, cadena);
         String rutaArchivo = getPathDocumentos(nitEmpresa, cadena) + "\\" + secEmpresa + "\\" + secEmpleado + "\\" /* "E:\\CLIENTES\\CONSTRUCTORA DE MARCAS S.A.S"*/;
@@ -1264,16 +1135,12 @@ public class EmpleadosFacadeREST {
         int qr_image_height = 200;
         String IMAGE_FORMAT = "png";
         String secEmpleado = getSecuenciaEmplPorSeudonimo(documento, nitEmpresa, cadena);
-        String IMG_PATH = "C:\\Users\\UPC007\\Downloads\\qrcode6.png";
         BufferedImage image;
         String pathReprotes = getPathReportes(nitEmpresa, cadena);
         System.out.println("Path Img: " + pathReprotes);
         String nomArchivo = documento + "QR.png";
         String pathQR = pathReprotes + nomArchivo;
         String nombre = getNombreApellidoXsecEmpleado(secEmpleado, nitEmpresa, cadena);
-        //String celular = getNumeroCelular(documento, nitEmpresa, cadena);
-        //String correo = getCorreoConexioneskioskos(documento, nitEmpresa, cadena);
-        //String empresa = get(documento, nitEmpresa, cadena);
         String data = nombre + " \n"
                 + "Número: " + celular + " \n"
                 + "Correo: " + correo + " \n"
@@ -1389,7 +1256,6 @@ public class EmpleadosFacadeREST {
             file = new File(rutaFOTO);
             System.out.println("file.exists(): " + file.exists());
             System.out.println(file);
-            //System.out.println("file.exists(): " + file.delete());
             if (file.exists()) {
                 System.out.println("Archivo encontrado");
                 foto = true;
@@ -1431,7 +1297,10 @@ public class EmpleadosFacadeREST {
         String esquema = null;
         String sqlQuery;
         try {
-            sqlQuery = "SELECT ESQUEMA FROM CADENASKIOSKOSAPP WHERE NITEMPRESA= ? AND CADENA= ? ";
+            sqlQuery = "SELECT ESQUEMA "
+                    + "FROM CADENASKIOSKOSAPP "
+                    + "WHERE NITEMPRESA= ? "
+                    + "AND CADENA= ? ";
             Query query = getEntityManager("wscadenaskioskosPU").createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
             query.setParameter(2, cadena);
@@ -1503,7 +1372,6 @@ public class EmpleadosFacadeREST {
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery, Recordatorios.class);
 
             exLab = query.getResultList();
-            //exLab.forEach(System.out::println);
             return Response.status(Response.Status.OK).entity(exLab).build();
         } catch (Exception ex) {
             System.out.println("Error " + this.getClass().getName() + ".getProverbios: " + ex);
@@ -1531,34 +1399,6 @@ public class EmpleadosFacadeREST {
             String esquema = getEsquema(nitEmpresa, cadena);
             String secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
-            /*
-            String sqlQuery = "SELECT \n" +
-                            "SOLUCIONESNODOS.FECHAPAGO FECHACORTE,\n" +
-                            "TRIM(to_char(SOLUCIONESNODOS.FECHAPAGO,'dd-Mon','nls_date_language=spanish')) FechaCorte1,\n" +
-                            "trim(replace(to_char(sum (DECODE(SOLUCIONESNODOS.TIPO, \n" +
-                            "'PAGO', SOLUCIONESNODOS.VALOR, -SOLUCIONESNODOS.VALOR)),'$999G999G999G999G999G999'), ',','.')) NETO,\n" +
-                            "sum (DECODE(SOLUCIONESNODOS.TIPO, \n" +
-                            "'PAGO', SOLUCIONESNODOS.VALOR, -SOLUCIONESNODOS.VALOR)) NETO1\n" +
-                            "FROM \n" +
-                            "SOLUCIONESNODOS, CONCEPTOS, CONEXIONESKIOSKOS PARAMETROSREPORTES\n" +
-                            "WHERE\n" +
-                            "SOLUCIONESNODOS.CONCEPTO = CONCEPTOS.SECUENCIA\n" +
-                            "AND PARAMETROSREPORTES.EMPLEADO = SOLUCIONESNODOS.EMPLEADO\n" +
-                            "AND SOLUCIONESNODOS.TIPO IN ('PAGO', 'DESCUENTO')\n" +
-                            "AND PARAMETROSREPORTES.EMPLEADO = ? \n" +
-                            "AND (SOLUCIONESNODOS.FECHAPAGO BETWEEN \n" +
-                            "(ADD_MONTHS(NVL(EMPLEADOCURRENT_PKG.FechaRetiro(SOLUCIONESNODOS.EMPLEADO,sysdate),cortesprocesos_pkg.CapturarAnteriorCorte(SOLUCIONESNODOS.EMPLEADO,1,sysdate+1)),-6)+1) \n" +
-                            "AND nvl(EMPLEADOCURRENT_PKG.FechaRetiro(SOLUCIONESNODOS.EMPLEADO,sysdate),cortesprocesos_pkg.CapturarAnteriorCorte(SOLUCIONESNODOS.EMPLEADO,1,sysdate+1)))\n" +
-                            "and exists (select 'x' \n" +
-                            "            from cortesprocesos cp, procesos p, tipospagos tp \n" +
-                            "            where cp.proceso = p.secuencia and cp.secuencia = solucionesnodos.corteproceso\n" +
-                            "            and tp.secuencia = p.tipopago and tp.codigo=1 AND p.codigo in (1,5,10,4,21,80))  \n" +
-                            "AND SOLUCIONESNODOS.ESTADO='CERRADO' \n" +
-                            "group by \n" +
-                            "SOLUCIONESNODOS.FECHAPAGO, \n" +
-                            "TRIM(to_char(SOLUCIONESNODOS.FECHAPAGO,'dd-Mon','nls_date_language=spanish'))\n" +
-                            "ORDER BY SOLUCIONESNODOS.FECHAPAGO  \n";
-             */
             String sqlQuery = "SELECT \n"
                     + "SN.FECHAPAGO FECHACORTE, \n"
                     + "TRIM(to_char(SN.FECHAPAGO,'dd-Mon','nls_date_language=spanish')) FechaCorte1, \n"
@@ -1593,7 +1433,6 @@ public class EmpleadosFacadeREST {
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpl);
             exLab = query.getResultList();
-            //exLab.forEach(System.out::println);
             return Response.status(Response.Status.OK).entity(exLab).build();
         } catch (Exception ex) {
             System.out.println("Error " + this.getClass().getName() + ".getUltimosPagos: " + ex);
@@ -1618,32 +1457,7 @@ public class EmpleadosFacadeREST {
                 + " seudonimo: " + seudonimo);
         List exLab = null;
         try {
-            /*
-            String esquema = getEsquema(nitEmpresa, cadena);
-            String secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
-            String sqlQuery = "select sn.fechapago, \n"
-                    + "trim(replace(to_char(sn.SALDO,'$999G999G999G999G999G999'), ',','.')) valor, \n"
-                    + "sn.unidades, cc.descripcion, cc.codigo \n"
-                    + "from comprobantes c, procesos p, empleados e, solucionesnodos sn, cortesprocesos cp, conceptos cc \n"
-                    + "where c.empleado = e.secuencia \n"
-                    + "and cc.secuencia = sn.concepto \n"
-                    + "and sn.empleado = e.secuencia \n"
-                    + "and e.secuencia = ? \n"
-                    + "and sn.corteproceso = cp.secuencia \n"
-                    + "and c.secuencia = cp.comprobante \n"
-                    + "and cp.proceso = p.secuencia \n"
-                    + "and p.codigo = 11 \n"
-                    + "and cc.codigo in (44001, 44002, 44003, 44004,99989,99988,99986,99987,99600,99601,99602,99603) \n"
-                    + "and sn.ESTADO = 'CERRADO' \n"
-                    + "AND sn.FECHAPAGO = cortesprocesos_pkg.CapturarAnteriorCorte(sn.EMPLEADO,11,sysdate) \n"
-                    + "ORDER BY CC.descripcion";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, secEmpl);
-            exLab = query.getResultList();
-            */
             exLab = this.persisSolNod.getSaldoProvisiones(seudonimo, nitEmpresa, cadena);
-            //exLab.forEach(System.out::println);
             return Response.status(Response.Status.OK).entity(exLab).build();
         } catch (Exception ex) {
             System.out.println("Error " + this.getClass().getName() + ".getProvisiones: " + ex);

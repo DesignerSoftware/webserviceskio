@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package passwordGenerator;
 
 import java.security.SecureRandom;
@@ -70,7 +65,8 @@ public class GeneradorClave {
            SecureRandom random = new SecureRandom();
 
            int passwordLength = 5 + random.nextInt(3);
-           StringBuffer password = new StringBuffer(passwordLength + 1);
+//           StringBuffer password = new StringBuffer(passwordLength + 1);
+           StringBuilder password = new StringBuilder(passwordLength + 1);
 
            for (int p = 0; p <= passwordLength; p++) {
                char[] randomSet = null;

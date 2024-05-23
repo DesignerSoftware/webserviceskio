@@ -39,9 +39,7 @@ public class PersistenciaOpcionesKioskosAPP implements IPersistenciaOpcionesKios
             Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
             query.setParameter(2, secuencia);
-            //objArray.put(query.getResultList());
             lista = query.getResultList();
-            // lista.forEach(System.out::println);
             Iterator<String> it = lista.iterator();
             while (it.hasNext()) {
                 System.out.println(it.next().toString());
@@ -84,9 +82,7 @@ public class PersistenciaOpcionesKioskosAPP implements IPersistenciaOpcionesKios
         Query query = this.persisConexiones.getEntityManager(cadena).createQuery(sqlQuery);
         query.setParameter("nitempresa", Long.parseLong(nitEmpresa));
         List<OpcionesKioskosApp> lista = query.getResultList();
-        /*list for (int i = 0; i < lista.size(); i++) {
-                    System.out.println("Recorre 2 "+lista.get(1));
-                }*/
+
         return lista;
     }
 }

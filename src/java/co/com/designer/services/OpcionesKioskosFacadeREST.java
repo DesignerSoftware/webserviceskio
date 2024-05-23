@@ -42,58 +42,12 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
         persisCadenasKio = new PersistenciaCadenasKioskosApp();
     }
 
-    /*
-    protected EntityManager getEntityManager() {
-        String unidadPersistencia="wsreportePU";
-        EntityManager em = Persistence.createEntityManagerFactory(unidadPersistencia).createEntityManager();
-        return em;
-    }
-     */
- /*
-    protected EntityManager getEntityManager(String persistence) {
-        String unidadPersistencia=persistence;
-        EntityManager em = Persistence.createEntityManagerFactory(unidadPersistencia).createEntityManager();
-        return em;
-    }
-     */
- /*
-    protected void setearPerfil() {
-        try {
-            String rol = "ROLKIOSKO";
-            String sqlQuery = "SET ROLE " + rol + " IDENTIFIED BY RLKSK ";
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
-            query.executeUpdate();
-        } catch (Exception ex) {
-            System.out.println("Error setearPerfil: " + ex);
-        }
-    }
-     */
- /*
-    protected void setearPerfil(String esquema, String cadenaPersistencia) {
-        try {
-            String rol = "ROLKIOSKO";
-            if (esquema != null && !esquema.isEmpty()) {
-                rol = rol + esquema.toUpperCase();
-            }
-            System.out.println("setearPerfil(esquema, cadena)");
-            String sqlQuery = "SET ROLE " + rol + " IDENTIFIED BY RLKSK ";
-            Query query = getEntityManager(cadenaPersistencia).createNativeQuery(sqlQuery);
-            query.executeUpdate();
-        } catch (Exception ex) {
-            System.out.println("Error setearPerfil(cadenaPersistencia): " + ex);
-        }
-    }  
-     */
     @GET
     @Path("/{nitEmpresa}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getOpcioneskioskos(@PathParam("nitEmpresa") String nitEmpresa, @QueryParam("seudonimo") String seudonimo, @QueryParam("cadena") String cadena) {
         List r = getOpcioneskioskosApp(nitEmpresa, seudonimo, cadena);
         return Response.ok(r, MediaType.APPLICATION_JSON)
-                /*.header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "POST, GET, PUT, UPDATE, OPTIONS, HEAD")
-                    .header("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With")
-                    .header("'Access-Control-Allow-Credentials'", false)*/
                 .build();
     }
 
@@ -101,46 +55,9 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
     @Path("/opciones")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public List findAlls(@QueryParam("seudonimo") String seudonimo, @QueryParam("nitempresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
-        //nitEmpresa, cadena, roles, 
         String roles = determinarRol(seudonimo, nitEmpresa, cadena);
-        /*String esquema = getEsquema(nitEmpresa, cadena);
-        this.persisPerfiles.setearPerfil(esquema, cadena);
-        String sqlQuery = "SELECT ok "
-                + " FROM OpcionesKioskosApp ok "
-                + " WHERE "
-                + " ok.empresa.nit=:nitempresa ";
-        System.out.println("Roles: " + roles);
-        if (!roles.contains("NOMINA")) {
-            sqlQuery += " and ok.kiorol.nombre not in ('NOMINA') ";
-        }
-        if (!roles.contains("EMPLEADO")) {
-            sqlQuery += " and ok.kiorol.nombre not in ('EMPLEADO') ";
-        }
-        if (!roles.contains("JEFE")) {
-            sqlQuery += " and ok.kiorol.nombre not in ('JEFE') ";
-        }
-        if (!roles.contains("AUTORIZADOR")) {
-            sqlQuery += " and ok.kiorol.nombre not in ('AUTORIZADOR') ";
-        }
-        if (!roles.contains("AUTORIZAAUSENTISMOS")) {
-            sqlQuery += " and ok.kiorol.nombre not in ('AUTORIZAAUSENTISMOS') ";
-        }
-        if (!roles.contains("RRHH")) {
-            sqlQuery += " and ok.kiorol.nombre not in ('RRHH') ";
-        }
-        sqlQuery += " order by ok.codigo asc";
-
-        Query query = this.persisConexiones.getEntityManager(cadena).createQuery(sqlQuery);
-        query.setParameter("nitempresa", Long.parseLong(nitEmpresa));
-        List<OpcionesKioskosApp> lista = query.getResultList();*/
-        /*list for (int i = 0; i < lista.size(); i++) {
-                    System.out.println("Recorre 2 "+lista.get(1));
-                }*/
-        //return lista;
         List res = this.persisOpcionesKio.buscarTodos(nitEmpresa, cadena, roles);
         return res;
-        //return super.findAll();
-        //return Response.ok(getOpcioneskioskosApp("900937674", "1033696091"), MediaType.APPLICATION_JSON).build();
     }
 
     /**
@@ -186,27 +103,10 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
         Query query = this.persisConexiones.getEntityManager(cadena).createQuery(sqlQuery);
         query.setParameter("nitempresa", Long.parseLong(nitEmpresa));
         List<OpcionesKioskosApp> lista = query.getResultList();
-        /*list for (int i = 0; i < lista.size(); i++) {
-                    System.out.println("Recorre 2 "+lista.get(1));
-                }*/
+
         return lista;
-        //return super.findAll();
-        //return Response.ok(getOpcioneskioskosApp("900937674", "1033696091"), MediaType.APPLICATION_JSON).build();
     }
 
-    /* @GET
-    @Path("/pruebaopciones")
-    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})    
-    public List obtenerOpciones() {
-            setearPerfil();
-            String sqlQuery = "SELECT ok FROM OpcionesKioskosApp ok "
-                   + " WHERE ok.empresa.codigo=1"
-                   + " order by ok.codigo asc";
-            determinarRol("", "", "");
-            Query query = getEntityManager().createQuery(sqlQuery);
-            List<OpcionesKioskosApp> lista = query.getResultList();
-            return lista;
-    }*/
     public List getOpcioneskioskosApp(String nitEmpresa, String seudonimo, String cadena) { // retorna true si el usuario esta activo
         String datos = null;
         List lista = null;
@@ -214,9 +114,7 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
         String documento = getDocumentoPorSeudonimo(seudonimo, nitEmpresa, cadena);
         System.out.println("Documento asociado a seudonimo: " + documento);
         String[] codigosNoAutorizados = this.getCodigosfiltrarOpcionesKioscosApp(documento, nitEmpresa, cadena); // primer parametro documento
-        /*for (int i = 0; i < codigosNoAutorizados.length; i++) {
-            System.out.println("codigos: "+codigosNoAutorizados[i]);
-        }*/
+
         List lista2 = null;
         try {
             String esquema = this.persisCadenasKio.getEsquema(nitEmpresa, cadena);
@@ -224,68 +122,12 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
             String sqlQuery = "SELECT * FROM OPCIONESKIOSKOSAPP OKA, EMPRESAS EM WHERE OKA.EMPRESA=EM.SECUENCIA AND OKA.CLASE='MENU' AND EM.NIT=? ORDER BY OKA.CODIGO ASC";
             Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
-            //objArray.put(query.getResultList());
             lista = (List) (OpcionesKioskosApp) query.getResultList();
-            // lista.forEach(System.out::println);
-            /*Iterator<String> it= lista.iterator();
-            while(it.hasNext()) {
-              System.out.println(it.next());
-              String secuencia = it.next();
-              //lista2.add(getOpciones(nitEmpresa, String.valueOf(it.next())));
-            }*/
- /* while (rs.next()) {
-                    if (addCodigo(codigosNoAutorizados, rs.getString("CODIGO"))) {
-                        JSONObject obj = new JSONObject();
-                        obj.put("SECUENCIA", rs.getString("SECUENCIA"));
-                        obj.put("CODIGO", rs.getString("CODIGO"));
-                        obj.put("DESCRIPCION", rs.getString("DESCRIPCION"));
-                        obj.put("EMPRESA", rs.getString("NIT"));
-                        obj.put("AYUDA", rs.getString("AYUDA"));
-                        obj.put("NOMBRERUTA", rs.getString("NOMBRERUTA"));
-                        obj.put("REQDESTINO", rs.getString("REQDESTINO"));
-                        obj.put("ICONO", rs.getString("ICONO"));
-                        obj.put("OPCIONKIOSKOPADRE", rs.getString("OPCIONKIOSKOPADRE"));
-                        // obj.put("REQFECHAS", rs.getString("REQFECHAS"));
-                        obj.put("SUBOPCION", this.getSubOpcioneskioskosApp(rs.getString("SECUENCIA"), nitEmpresa, codigosNoAutorizados));
-                        System.out.println("OPCION AÑADIDA: "+rs.getString("CODIGO")+//" REQFECHAS: "+rs.getString("REQFECHAS")+
-                                " descripcion: "+rs.getString("DESCRIPCION"));
-                        objArray.put(obj);
-                    }
-                
-            }*/
         } catch (Exception e) {
             System.out.println("Error " + this.getClass().getName() + "getOpcioneskioskosApp(): " + e);
         }
         return lista;
     }
-
-    /*
-    public List getOpciones(String nitEmpresa, String secuencia, String cadena) { // retorna true si el usuario esta activo
-        System.out.println("Parametros getOpciones(): nitEmpresa: " + nitEmpresa + ", secuencia: " + secuencia + ", cadena: " + cadena);
-        List lista = null;
-        try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            this.persisPerfiles.setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT OKA.CODIGO, OKA.DESCRIPCION "
-                    + "FROM OPCIONESKIOSKOSAPP OKA, "
-                    + "EMPRESAS EM WHERE OKA.EMPRESA=EM.SECUENCIA AND OKA.CLASE='MENU' AND EM.NIT=? "
-                    + "AND OKA.SECUENCIA=? ORDER BY OKA.CODIGO ASC";
-            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, nitEmpresa);
-            query.setParameter(2, secuencia);
-            //objArray.put(query.getResultList());
-            lista = query.getResultList();
-            // lista.forEach(System.out::println);
-            Iterator<String> it = lista.iterator();
-            while (it.hasNext()) {
-                System.out.println(it.next().toString());
-            }
-        } catch (Exception e) {
-            System.out.println("Error " + this.getClass().getName() + "getOpciones(): " + e);
-        }
-        return lista;
-    }
-    */
 
     public String buscarTodos(String id) {
         return "";
@@ -294,38 +136,8 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
     private String[] getCodigosfiltrarOpcionesKioscosApp(String documento, String nit, String cadena) {
         System.out.println(this.getClass().getName() + ".filtrarOpcionesKioskosApp()");
         String[] codigos = null;
-        //System.out.println("antes: " + recorreOpciones(opcionesPrincipales));
         String roles = determinarRol(documento, nit, cadena);
         System.out.println("Roles: " + roles);
-        /*List<String> opcionesPrincipales = new ArrayList<String>();
-        opcionesPrincipales.add("20");
-        opcionesPrincipales.add("21");
-        opcionesPrincipales.add("22");
-        opcionesPrincipales.add("0121");
-        opcionesPrincipales.add("0136");
-        opcionesPrincipales.add("0122");
-        opcionesPrincipales.add("0123");*/
-
- /*if (!roles.contains("NOMINA")) {
-            //recorrer la lista de opciones en profundidad con el fin de encontrar las opciones propias de la nomina
-            //y quitarlas.
-            System.out.println("no es rol nomina.");
-            if (codigos == null) {
-                codigos = new String[3];
-                codigos[0] = "0136";
-                codigos[1] = "0137";
-                codigos[2] = "0138";
-            } else {
-                String[] tmp = new String[codigos.length + 3];
-                for (int j = 0; j < codigos.length; j++) {
-                    tmp[j] = codigos[j];
-                }
-                tmp[tmp.length - 3] = "0136";
-                tmp[tmp.length - 2] = "0137";
-                tmp[tmp.length - 1] = "0138";
-                codigos = tmp;
-            }
-        }*/
         if (!roles.contains("JEFE")) {
             //recorrer la lista de opciones en profundidad con el fin de encontrar las opciones propias del jefe
             //y quitarlas.
@@ -354,7 +166,6 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
         }
         if (!roles.contains("EMPLEADO")) {
             System.out.println("no es rol empleado.");
-//            System.out.println("es rol autorizador.");
             if (codigos == null) {
                 codigos = new String[13];
                 codigos[0] = "0121";
@@ -419,13 +230,6 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
             }
         }
 
-        /*if (codigos != null && codigos.length > 0) {
-            for (String codigo : codigos) {
-               // retirarOpcion(opcionesPrincipales, codigo);
-            }
-        }*/
-//        String[] codRoles = roles.split(";");
-        //System.out.println("despues: " + recorreOpciones(opcionesPrincipales));
         return codigos;
     }
 
@@ -450,7 +254,6 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
     }
 
     public String determinarRol(String seudonimo, String nitEmpresa, String cadena) {
-        // String documento = getDocumentoCorreoODocumento(seudonimo, nitEmpresa, cadena);
         String documento = getDocumentoPorSeudonimo(seudonimo, nitEmpresa, cadena);
         String rol = "";
         try {
@@ -477,10 +280,6 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
                 rol = rol + ";RRHH";
             }
 
-            /*Habilitación de módulo ausentismo de acuerdo a registro en tabla KIOAUTORIZADORES*/
- /*if (esAutorizadorAusentismos(documento, nitEmpresa, cadena)) {
-                rol = rol + ";AUTORIZAAUSENTISMOS";
-            }*/
             System.out.println("rol:" + rol);
             return rol;
         } catch (Exception ex) {
@@ -548,30 +347,6 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
         return retorno;
     }
 
-    /*public boolean esAutorizadorAusentismos(String documento, String nitEmpresa, String cadena) {
-        boolean retorno = false;
-        String esquema = getEsquema(nitEmpresa, cadena);
-        setearPerfil(esquema, cadena);
-        String sqlQuery = "select count(*) count \n"
-                + "from kioautorizadores ka, personas p, kiomodulos km\n"
-                + "where \n"
-                + "ka.persona=p.secuencia\n"
-                + "and ka.kiomodulo=km.secuencia\n"
-                + "and km.nombre='REPORTEAUSENTISMOS'\n"
-                + "and p.numerodocumento = ? ";
-        try {
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, documento);
-            BigDecimal conteo = BigDecimal.ZERO;
-            conteo = (BigDecimal) query.getSingleResult();
-            System.out.println("Conteo de esAutorizadorAusentismos: " + conteo);
-            return conteo.compareTo(BigDecimal.ZERO) > 0;
-        } catch (Exception e) {
-            System.out.println("Error esAutorizadorAusentismos: " + e.getMessage());
-        }
-        return retorno;
-    }*/
-
     public String getDocumentoCorreoODocumento(String usuario, String nitEmpresa, String cadena) {
         System.out.println("Parametros getDocumentoCorreoODocumento() usuario: " + usuario + ", cadena: " + cadena);
         String documento = null;
@@ -619,9 +394,8 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
 
     public boolean validarCodigoUsuario(String usuario) {
         boolean resultado = false;
-        BigInteger numUsuario;
         try {
-            numUsuario = new BigInteger(usuario);
+            BigInteger numUsuario = new BigInteger(usuario);
             resultado = true;
         } catch (NumberFormatException nfe) {
             resultado = false;
@@ -711,25 +485,6 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
         }
         return retorno;
     }
-
-    /*
-    public String getEsquema(String nitEmpresa, String cadena) {
-        System.out.println("Parametros getEsquema(): nitempresa: " + nitEmpresa + ", cadena: " + cadena);
-        String esquema = null;
-        String sqlQuery;
-        try {
-            sqlQuery = "SELECT ESQUEMA FROM CADENASKIOSKOSAPP WHERE NITEMPRESA=? AND CADENA=?";
-            Query query = this.persisConexiones.getEntityManager("wscadenaskioskosPU").createNativeQuery(sqlQuery);
-            query.setParameter(1, nitEmpresa);
-            query.setParameter(2, cadena);
-            esquema = query.getSingleResult().toString();
-            System.out.println("Esquema: " + esquema);
-        } catch (Exception e) {
-            System.out.println("Error " + this.getClass().getName() + ".getEsquema(): " + e);
-        }
-        return esquema;
-    }
-*/
 
     @GET
     @Path("/kiovigenciasCIR")

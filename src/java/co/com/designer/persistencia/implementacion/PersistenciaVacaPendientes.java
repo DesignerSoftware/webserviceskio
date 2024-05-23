@@ -189,7 +189,6 @@ public class PersistenciaVacaPendientes implements IPersistenciaVacaPendientes {
     public BigDecimal getDiasVacacionesSolicitados(BigDecimal documento, String nitEmpresa, String estado, String cadena) {
         System.out.println("PersistenciaVacaPendientes" + ".getDiasVacacionesSolicitados(): " + "Parametros: documento: " + documento + ", nitEmpresa: " + nitEmpresa + ", estado: " + estado + ", cadena: " + cadena);
         BigDecimal retorno = BigDecimal.ZERO;
-//        String esquema = null;
         String consulta = "select "
                 + "nvl(sum(kn.dias), 0) dias \n"
                 + "from KioEstadosSolici e, KioSoliciVacas ks, KioNovedadesSolici kn, VwVacaPendientesEmpleados v \n"

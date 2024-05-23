@@ -24,7 +24,10 @@ public class PersistenciaPersonas implements IPersistenciaPersonas {
 
     @Override
     public String consultarCorreoPersonaEmpresa(String documento, String nitEmpresa, String cadena) {
-        System.out.println("Parametros consultarCorreoPersonaEmpresa(): documento: " + documento + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
+        System.out.println("PersistenciaPersonas"+".consultarCorreoPersonaEmpresa(): Parametros: "
+                +"documento: " + documento 
+                + ", nitEmpresa: " + nitEmpresa 
+                + ", cadena: " + cadena);
         String datos = null;
         String sqlQuery = "SELECT lower(P.EMAIL) email "
                 + "FROM EMPLEADOS e, Empresas em, personas p "
@@ -32,8 +35,6 @@ public class PersistenciaPersonas implements IPersistenciaPersonas {
                 + "and p.secuencia=e.persona "
                 + "AND p.numerodocumento = ? "
                 + "AND em.nit = ? "
-                //+ "AND (EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(e.secuencia, SYSDATE) = 'ACTIVO' "
-                //+ "OR EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(e.secuencia, SYSDATE) = 'PENSIONADO')"
                 + "AND (EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(e.secuencia, SYSDATE) IN ('ACTIVO','PENSIONADO') )";
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
@@ -58,12 +59,10 @@ public class PersistenciaPersonas implements IPersistenciaPersonas {
                 this.rolesBD.setearPerfil(esquema, cadena);
                 Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
                 query.setParameter(1, documento);
-//                query.setParameter(2, nitEmpresa);
                 datos = query.getSingleResult().toString();
             } catch (Exception ex) {
-                System.out.println("Error: " + "PersistenciaPersonas" + ".consultarCorreoPersonaEmpresa(): " + ex.getMessage());
+                System.out.println("Error: " + "PersistenciaPersonas" + ".consultarCorreoPersonaEmpresa(): " + ex.toString());
                 System.out.println("Error: " + "PersistenciaPersonas" + ".consultarCorreoPersonaEmpresa(): \n" + sqlQuery);
-                ex.printStackTrace();
             }
         }
         return datos;
@@ -93,7 +92,6 @@ public class PersistenciaPersonas implements IPersistenciaPersonas {
     public String getApellidoNombreXsecEmpl(String secEmpl, String nitEmpresa, String cadena, String esquema) {
         System.out.println("getApellidoNombreXsecEmpl()");
         String nombre = null;
-        //String esquema = getEsquema(nitEmpresa, cadena);
         this.rolesBD.setearPerfil(esquema, cadena);
         try {
             String sqlQuery = "SELECT UPPER(P.PRIMERAPELLIDO||' '||P.SEGUNDOAPELLIDO||' '||P.NOMBRE) NOMBRE "

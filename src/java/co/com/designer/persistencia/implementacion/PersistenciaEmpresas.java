@@ -26,13 +26,6 @@ public class PersistenciaEmpresas implements IPersistenciaEmpresas {
     @Override
     public BigDecimal getSecuenciaPorNitEmpresa(String nitEmpresa, String cadena) {
         BigDecimal secuencia = null;
-        /*String esquema = null;
-        try {
-            esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
-        } catch (Exception e) {
-            System.out.println("crearPqrs: Error: No se pudo consultar esquema. " + e.getMessage());
-            e.printStackTrace();
-        }*/
         String sqlQuery = "SELECT EM.SECUENCIA SECUENCIAEMPRESA FROM EMPRESAS EM WHERE EM.NIT = ? ";
         System.out.println("PersistenciaEmpresas" + ".getSecuenciaPorNitEmpresa(): " + "Query: " + sqlQuery);
         try {

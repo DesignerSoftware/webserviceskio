@@ -25,8 +25,7 @@ public class PersistenciaKioPQRS implements IPersistenciaKioPQRS {
         this.rolesBD = new PersistenciaPerfiles();
         this.persistenciaConexiones = new PersistenciaConexiones();
         this.cadenasKio = new PersistenciaCadenasKioskosApp();
-        this.persistenciaEmpresas = new PersistenciaEmpresas();
-        this.persisConexionesKioskos = new PersistenciaConexionesKioskos();
+
     }
 
     @Override
@@ -41,7 +40,8 @@ public class PersistenciaKioPQRS implements IPersistenciaKioPQRS {
         BigDecimal secPersona = null;
         BigDecimal secEmpresa = null;
         String esquema = null;
-
+        this.persistenciaEmpresas = new PersistenciaEmpresas();
+        this.persisConexionesKioskos = new PersistenciaConexionesKioskos();
         try {
             esquema = this.cadenasKio.getEsquema(nit, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
@@ -57,9 +57,8 @@ public class PersistenciaKioPQRS implements IPersistenciaKioPQRS {
             conteo = query.executeUpdate();
         } catch (Exception e) {
             System.out.println("crearPqrs: Error: en algo de la base de datos. " + e.getMessage());
-//            e.printStackTrace();
             throw e;
-        } 
+        }
         return conteo;
     }
 }

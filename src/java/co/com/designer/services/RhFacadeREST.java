@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package co.com.designer.services;
 
 import co.com.designer.kiosko.entidades.RrHh;
@@ -14,7 +9,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-//import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
@@ -25,15 +19,12 @@ import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
-//import javax.ws.rs.core.Context;
-//import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-//import javax.ws.rs.PUT;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -78,23 +69,18 @@ public class RhFacadeREST {
                     + "AND EM.NIT = ? \n"
                     + "AND EMPLEADOCURRENT_PKG.TIPOTRABAJADORCORTE(E.SECUENCIA, SYSDATE)='ACTIVO'\n"
                     + "AND P.EMAIL IS NOT NULL ";
-            //System.out.println("Query: " + sqlQuery);
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
             emailSoporte = query.getResultList();
             Iterator<String> it = emailSoporte.iterator();
-            //System.out.println("obtener " + correoDestinatarioMain.get(0));
             System.out.println("size: " + emailSoporte.size());
             while (it.hasNext()) {
                 String correoenviar = it.next();
-                //System.out.println("correo auditoria: " + correoenviar);
                 correoDestinatarios += correoenviar;
                 if (it.hasNext()) {
                     correoDestinatarios += ",";
                 }
-                //c.pruebaEnvio2("smtp.gmail.com","587","pruebaskiosco534@gmail.com","Nomina01", "S", correoenviar,
             }
-            //emailSoporte =  query.getSingleResult().toString();
             System.out.println("Emails soporte: " + correoDestinatarios);
         } catch (Exception e) {
             System.out.println("Error: getCorreoRecursosHumanos: " + e.getMessage());
@@ -162,7 +148,6 @@ public class RhFacadeREST {
         System.out.println("Parametros getSecuenciaEmplPorSeudonimo(): seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
         String secuencia = null;
         try {
-            //String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT E.SECUENCIA SECUENCIAEMPLEADO FROM EMPLEADOS E, CONEXIONESKIOSKOS CK WHERE CK.EMPLEADO=E.SECUENCIA AND CK.SEUDONIMO=? AND CK.NITEMPRESA=?";
             System.out.println("Query: " + sqlQuery);
@@ -180,7 +165,6 @@ public class RhFacadeREST {
     public String getSecuenciaPorNitEmpresa(String nitEmpresa, String cadena, String esquema) {
         String secuencia = null;
         try {
-            //String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT EM.SECUENCIA SECUENCIAEMPRESA FROM EMPRESAS EM WHERE EM.NIT=?";
             System.out.println("Query: " + sqlQuery);
@@ -202,7 +186,6 @@ public class RhFacadeREST {
         String secEmpleado = null;
         String secEmpresa = null;
         try {
-            //String esquema = getEsquema(nit, cadena);
             setearPerfil(esquema, cadena);
             secEmpleado = getSecuenciaEmplPorSeudonimo(seudonimo, nit, cadena, esquema);
             secEmpresa = getSecuenciaPorNitEmpresa(nit, cadena, esquema);
@@ -240,7 +223,6 @@ public class RhFacadeREST {
         String secEmpleado = null;
         String secEmpresa = null;
         try {
-            //String esquema = getEsquema(nit, cadena);
             setearPerfil(esquema, cadena);
             secEmpleado = getSecuenciaEmplPorSeudonimo(seudonimo, nit, cadena, esquema);
             String sql = "UPDATE KIOMENSAJESRRHH \n"
@@ -274,7 +256,6 @@ public class RhFacadeREST {
                 + ", cadena: " + cadena + ", secuenciamsj: " + secuenciamsj);
         int conteo = 0;
         try {
-            //String esquema = getEsquema(nit, cadena);
             setearPerfil(esquema, cadena);
             String sql = "DELETE KIOMENSAJESRRHH \n"
                     + "WHERE SECUENCIA = ? ";
@@ -309,7 +290,6 @@ public class RhFacadeREST {
     private String writeToFileServer(InputStream inputStream, String fileName, String nitEmpresa, String cadena) throws IOException {
 
         OutputStream outputStream = null;
-        //String qualifiedUploadFilePath = UPLOAD_FILE_SERVER + fileName;
         String qualifiedUploadFilePath = getPathFoto(nitEmpresa, cadena) + "rrhh\\" + fileName;
         System.out.println("fichero de subir archivo " + qualifiedUploadFilePath);
         try {
@@ -360,7 +340,6 @@ public class RhFacadeREST {
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery, RrHh.class);
             query.setParameter(1, nitEmpresa);
             s = query.getResultList();
-            //s.forEach(System.out::println);
             return Response.status(Response.Status.OK).entity(s).build();
         } catch (Exception ex) {
             System.out.println("Error " + this.getClass().getName() + "getDatosEmpleadoNit: " + ex);
@@ -404,7 +383,6 @@ public class RhFacadeREST {
             System.out.println("Error " + this.getClass().getName() + "getDatosEmpleadoNit: " + ex);
             return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
         }
-
     }
 
     @POST
@@ -428,7 +406,6 @@ public class RhFacadeREST {
         String esquema = null;
         String nombreAnexo = null; // nombre con el que debe guardarse el campo del documento anexo
         try {
-            //esquema = getEsquema(esquema, cadena);
             esquema = getEsquema(nit, cadena);
         } catch (Exception e) {
             System.out.println("Error: No se pudo consultar esquema. " + e.getMessage());
@@ -456,7 +433,6 @@ public class RhFacadeREST {
                     String asunto = "¡Nuevo Comunicado Disponible! " + fechaGeneracion1;
                     try {
                         EnvioCorreo e = new EnvioCorreo();
-                        //if (e.enviarCorreoInformativo("Módulo Kiosco: Reporte de corrección de información de "+nombreEmpl+" "+fecha,
                         if (e.enviarCorreoComunicado(asunto, "Estimados Colaboradores:", mensajeCorreo,
                                 nit, cadena, getCorreosXempleadosActivos(nit, cadena, esquema), url)) {
                             soliciCreada = true;
@@ -517,7 +493,6 @@ public class RhFacadeREST {
         String esquema = null;
         String nombreAnexo = null; // nombre con el que debe guardarse el campo del documento anexo
         try {
-            //esquema = getEsquema(esquema, cadena);
             esquema = getEsquema(nit, cadena);
         } catch (Exception e) {
             System.out.println("Error: No se pudo consultar esquema. " + e.getMessage());
@@ -574,7 +549,6 @@ public class RhFacadeREST {
         String esquema = null;
         String mensaje = null;
         try {
-            //esquema = getEsquema(esquema, cadena);
             esquema = getEsquema(nit, cadena);
         } catch (Exception e) {
             System.out.println("Error: No se pudo consultar esquema. " + e.getMessage());
@@ -718,7 +692,6 @@ public class RhFacadeREST {
         boolean sendEmail = false;
         String esquema = null;
         try {
-            //esquema = getEsquema(esquema, cadena);
             esquema = getEsquema(nit, cadena);
         } catch (Exception e) {
             System.out.println("Error: No se pudo consultar esquema. " + e.getMessage());
@@ -734,7 +707,6 @@ public class RhFacadeREST {
             String asunto = "¡Nuevo Comunicado Disponible! " + fechaGeneracion;
             try {
                 EnvioCorreo e = new EnvioCorreo();
-                //if (e.enviarCorreoInformativo("Módulo Kiosco: Reporte de corrección de información de "+nombreEmpl+" "+fecha,
                 if (e.enviarCorreoComunicado(asunto, "Estimado Usuarios", mensajeCorreo,
                         nit, cadena, getCorreosXempleadosActivos(nit, cadena, esquema), url)) {
                     sendEmail = true;

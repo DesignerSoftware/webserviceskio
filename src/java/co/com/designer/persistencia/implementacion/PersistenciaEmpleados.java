@@ -17,7 +17,6 @@ import javax.persistence.Query;
  */
 public class PersistenciaEmpleados implements IPersistenciaEmpleados {
 
-//    private IPersistenciaPerfiles rolesBD;
     private IPersistenciaConexiones persistenciaConexiones;
     private IPersistenciaConexionesKioskos persistenciaConexionesKio;
     private IPersistenciaPerfiles rolesBD;
@@ -161,6 +160,7 @@ public class PersistenciaEmpleados implements IPersistenciaEmpleados {
         return secuencia;
     }
 
+    @Override
     public String getSecEmplPorDocumentoYEmpresa(String documento, String nitEmpresa, String cadena) {
         System.out.println("PersistenciaEmpleados" + ".getEmplPorDocumentoEmpresa(): " + "Parametros: "
                 + "documento: " + documento

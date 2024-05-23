@@ -38,6 +38,7 @@ public class PersistenciaKioVacaciones_pkg implements IPersistenciaKioVacaciones
                 + "fechaIniVaca: " + fechaIniVaca
                 + "cadena: " + cadena
         );
+        
         String secEmpleado = this.persisConKiosko.getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
         System.out.println("PersistenciaKioVacaciones_pkg" + ".verificaExistenciaSolicitud(): secEmpleado: " + secEmpleado);
 

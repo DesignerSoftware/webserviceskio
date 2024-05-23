@@ -1,12 +1,8 @@
 package co.com.designer.services;
 
-//import co.com.designer.kiosko.entidades.ConexionesKioskos;
 import co.com.designer.kiosko.generales.EnvioCorreo;
 import co.com.designer.kiosko.reportes.IniciarReporte;
 import java.io.File;
-//import java.io.FileInputStream;
-//import java.io.FileNotFoundException;
-//import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -15,26 +11,19 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-//import java.util.logging.Level;
-//import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-//import javax.imageio.ImageIO;
-//import javax.json.Json;
-//import javax.json.JsonObject;
 import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-//import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-//import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
@@ -49,8 +38,6 @@ public class ReportesFacadeREST {
     @EJB
     private IniciarReporte iniciarReporte;
 
-//    @PersistenceContext(unitName = "wsreportePU")
-//    private EntityManager em;
     protected EntityManager getEntityManager() {
         String unidadPersistencia = "wsreportePU";
         EntityManager em = Persistence.createEntityManagerFactory(unidadPersistencia).createEntityManager();
@@ -98,7 +85,6 @@ public class ReportesFacadeREST {
             @QueryParam("codigoReporte") String codigoReporte, @QueryParam("nit") String nitEmpresa,
             @QueryParam("cadena") String cadena, @QueryParam("usuario") String seudonimo, @QueryParam("grupo") String grupo, @QueryParam("urlKiosco") String urlKiosco) {
         System.out.println("generaReporte() codigo: " + codigoReporte + " nit: " + nitEmpresa);
-        //this.getEntityManager(cadena);
         String esquema = getEsquema(nitEmpresa, cadena);
         setearPerfil(esquema, cadena);
         String urlKio = urlKiosco + "#/login/" + grupo;
@@ -108,14 +94,9 @@ public class ReportesFacadeREST {
                 + "\n seudonimo: " + seudonimo + ", grupo: " + grupo + ", urlKiosco: " + urlKiosco + "]");
         Map parametros = new HashMap();
         parametros.put("secuenciaempleado", secEmpl);
-//        String rutaGenerado = iniciarReporte.ejecutarReporte("kioCertificacionStrabag", "C:\\DesignerRHN\\Basico\\Reportes\\", "C:\\DesignerRHN\\Reportes\\ArchivosPlanos\\", "rep_2003122037.pdf", "PDF", parametros, getEntityManager());
-        //String rutaGenerado = iniciarReporte.ejecutarReporte(reporte, "C:\\DesignerRHN\\Basico\\Reportes\\", "C:\\DesignerRHN\\Reportes\\ArchivosPlanos\\", "rep_2003122037.pdf", "PDF", parametros, getEntityManager());
         long tiempo = System.currentTimeMillis();
-        //String nombreReporte = reporte+"_"+id+"_"+tiempo+".pdf";
         String nombreReporte = reporte + "_" + secEmpl + "_" + tiempo + ".pdf";
         System.out.println("nombreReporte:" + nombreReporte);
-//        String rutaGenerado = iniciarReporte.ejecutarReporte(reporte, "C:\\DesignerRHN10\\Basico10\\reportesKiosko\\", "C:\\DesignerRHN10\\Reportes\\ArchivosPlanosKiosko\\", nombreReporte, "PDF", parametros, getEntityManager());
-        //String rutaGenerado = iniciarReporte.ejecutarReporte(reporte, "C:\\DesignerRHN12\\Basico12\\ReportesKiosko\\", "C:\\DesignerRHN12\\Reportes\\ArchivosPlanosRHNPKKiosko\\", nombreReporte, "PDF", parametros, getEntityManager());
         String rutaGenerado = iniciarReporte.ejecutarReporte(reporte, getPathReportes(nitEmpresa, cadena), getPathArchivosPlanos(nitEmpresa, cadena), nombreReporte, "PDF", parametros, getEntityManager(cadena));
         File file = new File(rutaGenerado);
         System.out.println("Ruta generado: " + rutaGenerado);
@@ -126,13 +107,10 @@ public class ReportesFacadeREST {
         String autenticado = getConfigCorreo(nitEmpresa, "AUTENTICADO", cadena);
         EnvioCorreo c = new EnvioCorreo();
         try {
-            // String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
             // valida si el reporte tiene auditoria
             BigDecimal retorno = null;
             String query1 = "select count(*) from kioconfigmodulos where codigoopcion=? and nitempresa=?";
-            // Query query = getEntityManager(cadena).createNativeQuery(query1);
-            //System.out.println("Query: "+query1);
             Query query = getEntityManager(cadena).createNativeQuery(query1);
             query.setParameter(1, codigoReporte);
             query.setParameter(2, nitEmpresa);
@@ -150,7 +128,6 @@ public class ReportesFacadeREST {
                         + " en el módulo de Kiosco Nómina Designer. "
                         + "La persona que GENERÓ el reporte es: " + getNombrePersonaXSeudonimo(seudonimo, nitEmpresa, cadena);
                 String sqlQuery = "select email from kioconfigmodulos where codigoopcion=? and nitempresa=?";
-                //Query query2 = getEntityManager(cadena).createNativeQuery(sqlQuery);
                 System.out.println("Query2: " + sqlQuery);
                 Query query2 = getEntityManager(cadena).createNativeQuery(sqlQuery);
                 query2.setParameter(1, codigoReporte);
@@ -162,7 +139,6 @@ public class ReportesFacadeREST {
                 while (it.hasNext()) {
                     String correoenviar = it.next();
                     System.out.println("correo auditoria: " + correoenviar);
-                    //c.pruebaEnvio2("smtp.gmail.com","587","pruebaskiosco534@gmail.com","Nomina01", "S", correoenviar,
                     System.out.println("codigoopcion: " + codigoReporte);
                     c.pruebaEnvio2(servidorSmtp, puerto,
                             remitente, clave, autenticado, correoenviar,
@@ -176,18 +152,13 @@ public class ReportesFacadeREST {
             }
 
             System.out.println("nombreReporte recibido: " + reporte + " codigo: " + codigoReporte);
-            /*if (reporte.equals("Kio_CertificaQue") || reporte.equals("kiodesigner01") || reporte.equals("kiodesigner02")) {
-                setearPerfil();      
-            }*/
+            
             if (envioCorreo == true) {
                 System.out.println("Se debe enviar correo al empleado: " + correo);
                 ConexionesKioskosFacadeREST ck = new ConexionesKioskosFacadeREST();
                 // Enviar correo
 
                 c.pruebaEnvio2(servidorSmtp, puerto, remitente, clave, autenticado, correo,
-                        /*c.pruebaEnvio2("smtp.gmail.com", "587" ,"pruebaskiosco534@gmail.com",
-                    "Nomina01", 
-                    "S", correo,*/
                         rutaGenerado, nombreReporte,
                         "Reporte Kiosco - " + descripcionReporte, "", getPathFoto(nitEmpresa, cadena), grupo, urlKio);
             }
@@ -202,9 +173,7 @@ public class ReportesFacadeREST {
 
         } catch (Exception e) {
             System.out.println("Error: " + this.getClass().getName() + ":" + e.getMessage());
-        } finally {
-            //this.getEntityManager().close();
-        }
+        } 
         return Response.status(Response.Status.NOT_FOUND).build();
     }
 
@@ -213,7 +182,6 @@ public class ReportesFacadeREST {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getFile1(@PathParam("documento") String documento, @QueryParam("nit") String nitEmpresa, @QueryParam("cadena") String cadena) {
         System.out.println("getFile1() path: generaFoto1");
-        //File file = new File("C:\\DesignerRHN12\\Basico12\\fotos_empleados\\"+documento+".jpg");
         String rutaFoto = getPathFoto(nitEmpresa, cadena);
         File file = new File(rutaFoto + documento + ".jpg");
         return Response.ok(file, MediaType.APPLICATION_OCTET_STREAM)
@@ -221,23 +189,11 @@ public class ReportesFacadeREST {
                 .build();
     }
 
-    // @GET
-    // @Path("generaFoto/{documento}")
-    // @Produces("application/jpeg")
-    // public Response getFile(@PathParam("documento") String documento) {
-    //File file = new File("C:\\DesignerRHN12\\Basico12\\fotos_empleados\\"+documento+".jpg");
-    //  String rutaFoto=getPathFoto();
-    //  File file = new File(rutaFoto+documento+".jpg");
-    //    return Response.ok(file/*, /*MediaType.APPLICATION_OCTET_STREAM*/)
-    //            .header("Content-Disposition", "attachment; filename=\""+file.getName()+"\"")
-    //            .build();            
-    //}
     @GET
     @Path("generaFoto/{documento}")
     @Consumes("application/jpeg")
     public Response recibeImagen(@PathParam("file") File file, @QueryParam("nit") String nitEmpresa, @QueryParam("cadena") String cadena) {
         System.out.println("recibeImagen() path: generaFoto");
-        //file = new File("C:\\DesignerRHN12\\Basico12\\fotos_empleados\\"+file+".jpg");
         String rutaFoto = getPathFoto(nitEmpresa, cadena);
         file = new File(rutaFoto + file + ".jpg");
         return Response.ok(file/*, /*MediaType.APPLICATION_OCTET_STREAM*/)
@@ -466,16 +422,12 @@ public class ReportesFacadeREST {
         parametros.put("secuenciaempleado", secEmpl);
 
         long tiempo = System.currentTimeMillis();
-        //String nombreReporte = reporte+"_"+id+"_"+tiempo+".pdf";
         String nombreReporte = reporte + "_" + secEmpl + "_" + tiempo + ".pdf";
-//        System.out.println("nombreReporte:" + nombreReporte);
 
         String rutaGenerado = iniciarReporte.ejecutarReporte(reporte, getPathReportes(nitEmpresa, cadena), getPathArchivosPlanos(nitEmpresa, cadena), nombreReporte, "PDF", parametros, getEntityManager(cadena));
         File file = new File(rutaGenerado);
-//        System.out.println("Ruta generado: "+rutaGenerado);
 
         try {
-            // String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
 
             System.out.println("nombreReporte recibido: " + reporte);
@@ -490,9 +442,7 @@ public class ReportesFacadeREST {
 
         } catch (Exception e) {
             System.out.println("Error: " + this.getClass().getName() + ":" + e.getMessage());
-        } finally {
-            //this.getEntityManager().close();
-        }
+        } 
         return Response.status(Response.Status.NOT_FOUND).build();
     }
 

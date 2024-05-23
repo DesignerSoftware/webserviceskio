@@ -2,7 +2,6 @@ package co.com.designer.persistencia.implementacion;
 
 import co.com.designer.persistencia.interfaz.IPersistenciaCadenasKioskosApp;
 import co.com.designer.persistencia.interfaz.IPersistenciaConexiones;
-import co.com.designer.persistencia.interfaz.IPersistenciaEmpresas;
 import co.com.designer.persistencia.interfaz.IPersistenciaKioPersonalizaciones;
 import co.com.designer.persistencia.interfaz.IPersistenciaPerfiles;
 import java.util.List;
@@ -16,13 +15,11 @@ public class PersistenciaKioPersonalizaciones implements IPersistenciaKioPersona
     private IPersistenciaPerfiles rolesBD;
     private IPersistenciaConexiones persistenciaConexiones;
     private IPersistenciaCadenasKioskosApp cadenasKio;
-    //private IPersistenciaEmpresas persistenciaEmpresas;
 
     public PersistenciaKioPersonalizaciones() {
         this.rolesBD = new PersistenciaPerfiles();
         this.persistenciaConexiones = new PersistenciaConexiones();
         this.cadenasKio = new PersistenciaCadenasKioskosApp();
-//        this.persistenciaEmpresas = new PersistenciaEmpresas();
     }
     
     @Override
@@ -30,7 +27,6 @@ public class PersistenciaKioPersonalizaciones implements IPersistenciaKioPersona
         try {
             String esquema = this.cadenasKio.getEsquema(nit, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
-//            BigDecimal secEmpresa = this.persistenciaEmpresas.getSecuenciaPorNitEmpresa(nit, cadena);
             String sqlQuery = "SELECT KP.EMAILCONTACTO "
                     + "FROM KIOPERSONALIZACIONES KP, EMPRESAS EM "
                     + "WHERE KP.TIPOCONTACTO = 'COMITE_CONVIVENCIA' "
@@ -41,8 +37,7 @@ public class PersistenciaKioPersonalizaciones implements IPersistenciaKioPersona
             List correosComiteConvivencia =  query.getResultList();
             return correosComiteConvivencia;
         } catch (Exception e) {
-            System.out.println("getCorreosComiteConvivencia: Error: en algo de la base de datos. " + e.getMessage());
-//            e.printStackTrace();
+            System.out.println("getCorreosComiteConvivencia: Error: en algo de la base de datos. " + e.toString());
             throw e;
         } 
     }

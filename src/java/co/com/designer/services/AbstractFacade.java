@@ -8,6 +8,7 @@ import java.util.List;
 /**
  *
  * @author Thalia Manrique
+ * @param <T>
  */
 public abstract class AbstractFacade<T> {
 
@@ -19,9 +20,6 @@ public abstract class AbstractFacade<T> {
         this.entityClass = entityClass;
         this.rolesBD = new PersistenciaPerfiles();
     }
-
-    //protected abstract EntityManager getEntityManager();
-    //protected abstract void setearPerfil();
 
     public void create(T entity) {
         this.rolesBD.setearPerfil();

@@ -16,13 +16,11 @@ public class PersistenciaConfiCorreoKiosko implements IPersistenciaConfiCorreoKi
     private IPersistenciaPerfiles rolesBD;
     private IPersistenciaConexiones persistenciaConexiones;
     private IPersistenciaCadenasKioskosApp cadenasKio;
-//    private IPersistenciaEmpresas persisEmpresas;
 
     public PersistenciaConfiCorreoKiosko() {
         this.rolesBD = new PersistenciaPerfiles();
         this.persistenciaConexiones = new PersistenciaConexiones();
         this.cadenasKio = new PersistenciaCadenasKioskosApp();
-//        this.persisEmpresas = new PersistenciaEmpresas();
     }
 
     @Override
@@ -31,7 +29,6 @@ public class PersistenciaConfiCorreoKiosko implements IPersistenciaConfiCorreoKi
         try {
             String esquema = this.cadenasKio.getEsquema(nit, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
-//            BigDecimal secEmpresa = this.persisEmpresas.getSecuenciaPorNitEmpresa(nit, cadena);
             String sql = "SELECT SECUENCIA, EMPRESA, SERVIDORSMTP, PUERTO, STARTTLS, AUTENTICADO, REMITENTE, CLAVE, USARSSL "
                     + "FROM CONFICORREOKIOSKO CCK "
                     + "WHERE EMPRESA=(SELECT SECUENCIA "
@@ -43,7 +40,6 @@ public class PersistenciaConfiCorreoKiosko implements IPersistenciaConfiCorreoKi
             return res;
         } catch (Exception e) {
             System.out.println("obtenerServidorCorreo: Error: en algo de la base de datos. " + e.getMessage());
-//            e.printStackTrace();
             throw e;
         }
     }

@@ -58,8 +58,7 @@ public class PersistenciaSolucionesNodos implements IPersistenciaSolucionesNodos
             List provisiones = query.getResultList();
             return provisiones;
         } catch (Exception e) {
-            System.out.println("getDatosEmpleadoXNit: Error: en algo de la base de datos. " + e.getMessage());
-            e.printStackTrace();
+            System.out.println("getDatosEmpleadoXNit: Error: en algo de la base de datos. " + e.toString());
             throw e;
         }
     }
@@ -69,9 +68,7 @@ public class PersistenciaSolucionesNodos implements IPersistenciaSolucionesNodos
         System.out.println("Parametros getFechaUltimoPago(): seudonimo: " + seudonimo + ", nit: " + nitEmpresa + ", cadena: " + cadena + ", esquema: " + esquema);
         BigDecimal res = null;
         try {
-            //String esquema = getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
-//            String secEmpleado = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena, esquema);
             String secEmpleado = this.persisConKiosko.getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
             String consulta = "SELECT GREATEST("
                     + "CORTESPROCESOS_PKG.CAPTURARCORTEPROCESO(?, 1), "

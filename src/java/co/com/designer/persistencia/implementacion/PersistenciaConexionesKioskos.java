@@ -40,16 +40,14 @@ public class PersistenciaConexionesKioskos implements IPersistenciaConexionesKio
             query.setParameter(1, usuario);
             query.setParameter(2, pass);
             res = (BigDecimal) query.getSingleResult();
-//            System.out.println("tipo res: "+res.getClass().getName());
-//            System.out.println("res: "+res);
         } catch (Exception ex) {
             System.out.println("ex: " + ex);
             res = BigDecimal.ZERO;
         }
-//        return String.valueOf(res);
         return res;
     }
 
+    @Override
     public int updateFechasConexionesKioskos(String usuario, String nitEmpresa, String fechadesde,
             String fechahasta, boolean enviocorreo, String dirigidoa, String cadena) {
         int conteo = 0;
@@ -57,7 +55,8 @@ public class PersistenciaConexionesKioskos implements IPersistenciaConexionesKio
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "UPDATE CONEXIONESKIOSKOS "
-                    + " SET FECHADESDE=TO_DATE(?, 'yyyy-mm-dd'), FECHAHASTA=TO_DATE(?, 'yyyy-mm-dd'), ENVIOCORREO=?, DIRIGIDOA=? "
+                    + " SET FECHADESDE=TO_DATE(?, 'yyyy-mm-dd'), FECHAHASTA=TO_DATE(?, 'yyyy-mm-dd')"
+                    + " , ENVIOCORREO=?, DIRIGIDOA=? "
                     + " WHERE SEUDONIMO=? "
                     + " AND NITEMPRESA=?";
             String envioc = (enviocorreo == true ? "S" : "N");
@@ -160,10 +159,7 @@ public class PersistenciaConexionesKioskos implements IPersistenciaConexionesKio
             Integer instancia = retorno.intValueExact();
             System.out.println("PersistenciaConexionesKioskos" + ".validarSeudonimoCorreo(): " + "retorno: " + retorno);
             System.out.println("PersistenciaConexionesKioskos" + ".validarSeudonimoCorreo(): " + "instancia: " + instancia);
-            /*if (instancia > 0) {
-                resultado = true;
-            }
-             */
+            
             resultado = instancia > 0;
         } catch (Exception e) {
             System.out.println("PersistenciaConexionesKioskos" + ".validarSeudonimoCorreo(): " + "Error: " + e.getMessage());
@@ -220,7 +216,6 @@ public class PersistenciaConexionesKioskos implements IPersistenciaConexionesKio
         return documento;
     }
 
-    // 13/10/2021
     /**
      * metodo para validar si el correo es diferente al seudonumo
      *
@@ -253,8 +248,6 @@ public class PersistenciaConexionesKioskos implements IPersistenciaConexionesKio
             query.setParameter(2, documento);
             query.setParameter(3, nitEmpresa);
             query.executeUpdate();
-            //resultado = query.getSingleResult().toString();
-            //System.out.println("Resultado " + resultado);
         } catch (Exception e) {
             System.out.println("Error : " + ConexionesKioskos.class.getName() + ".validarUsuarioRegistrado " + e.getMessage());
         }
