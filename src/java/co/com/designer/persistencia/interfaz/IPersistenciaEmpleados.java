@@ -13,4 +13,5 @@ public interface IPersistenciaEmpleados {
     public List getDatosEmpleadoNit(String empleado, String nit, String cadena);
     public String getSecEmplPorCodigo(String codigo, String nitEmpresa, String cadena);
     public String getSecEmplPorDocumentoYEmpresa(String documento, String nitEmpresa, String cadena);
+    public String consultarSecuenciaEmpleadoJefe(String secEmpleado, String nitEmpresa, String cadena);
 }

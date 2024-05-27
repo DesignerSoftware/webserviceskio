@@ -7,5 +7,6 @@ import co.com.designer.kiosko.entidades.ConfiCorreoKiosko;
  * @author Edwin Hastamorir
  */
 public interface IPersistenciaConfiCorreoKiosko {
-    public ConfiCorreoKiosko obtenerServidorCorreo(String nit, String cadena);
+    public ConfiCorreoKiosko obtenerConfiguracionCorreoNativo(String nit, String cadena);
+    public ConfiCorreoKiosko obtenerConfiguracionCorreo(String nit, String cadena);
 }

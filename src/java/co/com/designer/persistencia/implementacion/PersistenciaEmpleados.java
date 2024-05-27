@@ -17,14 +17,14 @@ import javax.persistence.Query;
  */
 public class PersistenciaEmpleados implements IPersistenciaEmpleados {
 
-    private IPersistenciaConexiones persistenciaConexiones;
-    private IPersistenciaConexionesKioskos persistenciaConexionesKio;
+    private IPersistenciaConexiones persisConexiones;
+    private IPersistenciaConexionesKioskos persisConexionesKio;
     private IPersistenciaPerfiles rolesBD;
     private IPersistenciaCadenasKioskosApp cadenasKio;
 
     public PersistenciaEmpleados() {
-        this.persistenciaConexiones = new PersistenciaConexiones();
-        this.persistenciaConexionesKio = new PersistenciaConexionesKioskos();
+        this.persisConexiones = new PersistenciaConexiones();
+        this.persisConexionesKio = new PersistenciaConexionesKioskos();
         this.rolesBD = new PersistenciaPerfiles();
         this.cadenasKio = new PersistenciaCadenasKioskosApp();
     }
@@ -43,7 +43,7 @@ public class PersistenciaEmpleados implements IPersistenciaEmpleados {
             }
             sqlQuery2 += ") ";
             System.out.println("Query2: " + sqlQuery2);
-            Query query2 = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery2);
+            Query query2 = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery2);
             query2.setParameter(1, usuario);
             if (validarCodigoUsuario(usuario)) {
                 query2.setParameter(2, usuario);
@@ -74,7 +74,7 @@ public class PersistenciaEmpleados implements IPersistenciaEmpleados {
     public List getDatosEmpleadoNit(String empleado, String nit, String cadena) {
 
         try {
-            BigDecimal documento = this.persistenciaConexionesKio.getDocumentoPorSeudonimo(empleado, nit, cadena);
+            BigDecimal documento = this.persisConexionesKio.getDocumentoPorSeudonimo(empleado, nit, cadena);
             String esquema = this.cadenasKio.getEsquema(nit, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "select \n"
@@ -97,7 +97,6 @@ public class PersistenciaEmpleados implements IPersistenciaEmpleados {
                     + "em.nit nitEmpresa, \n"
                     + "em.nombre nombreEmpresa, \n"
                     + "empleadocurrent_pkg.descripciontipocontrato(e.secuencia, sysdate) contrato, \n"
-                    + "--trim(to_char(empleadocurrent_pkg.ValorBasicoCorte(e.secuencia, sysdate),'$999G999G999G999G999G999')) salario, \n"
                     + "trim(to_char(empleadocurrent_pkg.ValorBasicoCorte(e.secuencia, \n"
                     + "  nvl(GREATEST( \n"
                     + "      cortesprocesos_pkg.CapturarAnteriorCorte(e.secuencia,1,sysdate), \n"
@@ -124,7 +123,7 @@ public class PersistenciaEmpleados implements IPersistenciaEmpleados {
                     + "and ck.empleado=e.secuencia \n"
                     + "and p.numerodocumento= ? \n"
                     + "and em.nit=? ";
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, documento);
             query.setParameter(2, nit);
             List datosEmpleado = query.getResultList();
@@ -151,7 +150,7 @@ public class PersistenciaEmpleados implements IPersistenciaEmpleados {
                     + "WHERE E.CODIGOEMPLEADO=? "
                     + "AND EMPLEADOCURRENT_PKG.TIPOTRABAJADORCORTE(E.SECUENCIA, SYSDATE) in ('ACTIVO', 'PENSIONADO') ";
             System.out.println("Query: " + sqlQuery);
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, codigo);
             secuencia = query.getSingleResult().toString();
         } catch (Exception e) {
@@ -178,12 +177,48 @@ public class PersistenciaEmpleados implements IPersistenciaEmpleados {
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, documento);
             query.setParameter(2, nitEmpresa);
             secuencia = query.getSingleResult().toString();
         } catch (Exception e) {
             System.out.println("PersistenciaEmpleados" + ".getSecEmplPorDocumentoYEmpresa: " + "Error: " + e.toString());
+        }
+        return secuencia;
+    }
+
+    @Override
+    public String consultarSecuenciaEmpleadoJefe(String secEmpleado, String nitEmpresa, String cadena) {
+        System.out.println("PersistenciaEmpleados" + ".consultarSecuenciaEmpleadoJefe(): " + "Parametros: "
+                + "documento: " + secEmpleado
+                + " , nitEmpresa: " + nitEmpresa
+                + " , cadena: " + cadena);
+        String secuencia = null;
+        String sqlQuery = "select empj.secuencia \n"
+                + "from empleados empl, empresas em, vigenciascargos vc, estructuras es, organigramas o"
+                + ", empleados empj, personas pj \n"
+                + "where em.secuencia = empl.empresa \n"
+                + "and vc.empleado = empl.secuencia \n"
+                + "and es.secuencia = vc.estructura\n"
+                + "and o.secuencia = es.organigrama \n"
+                + "and em.secuencia = o.empresa \n"
+                + "and vc.empleadojefe = empj.secuencia \n"
+                + "and pj.secuencia = empj.persona \n"
+                + "and empl.secuencia = ? \n"
+                + "and em.nit = ? \n"
+                + "and vc.fechavigencia = (select max(vci.fechavigencia) \n"
+                + "                        from vigenciascargos vci \n"
+                + "                        where vci.empleado = vc.empleado \n"
+                + "                       and vci.fechavigencia <= sysdate)";
+        try {
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, secEmpleado);
+            query.setParameter(2, nitEmpresa);
+            secuencia = query.getSingleResult().toString();
+        } catch (Exception e) {
+            System.out.println("PersistenciaEmpleados" + ".consultarSecuenciaEmpleadoJefe: " + "Error: " + e.toString());
         }
         return secuencia;
     }

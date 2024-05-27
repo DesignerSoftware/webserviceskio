@@ -11,4 +11,5 @@ public interface IPersistenciaManejoFechas {
     
     public Date getDate(String fechaStr, String cadena) throws PersistenceException, NullPointerException, Exception;
     public String nombreDia(int dia);
+    public String getFechaSugerida(String fechaInicio, String dias, String nitEmpresa, String cadena);
 }

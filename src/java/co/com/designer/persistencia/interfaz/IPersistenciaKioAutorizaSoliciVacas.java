@@ -16,4 +16,5 @@ public interface IPersistenciaKioAutorizaSoliciVacas {
      * @throws Exception 
      */
     public String consultarSecuenciaPorAutorizadorVaca(String secEmpleado, String nitEmpresa, String cadena, String esquema) throws Exception;
+    public String consultarSecuenciaPorAutorizador(String secEmpleado, String nitEmpresa, String cadena, String esquemaP, int kioModulo) throws Exception;
 }

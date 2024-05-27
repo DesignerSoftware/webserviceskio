@@ -76,4 +76,22 @@ public class PersistenciaManejoFechas implements IPersistenciaManejoFechas{
         }
         return retorno;
     }
+    
+    @Override
+    public String getFechaSugerida(String fechaInicio, String dias, String nitEmpresa, String cadena) {
+        String resultado = null;
+        String consulta = "SELECT TO_CHAR(TO_DATE(?, 'DD/MM/YYYY') + ?,'DD/MM/YYYY') "
+                + "FROM DUAL";
+        try {
+//            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+//            this.rolesBD.setearPerfil(esquema, cadena);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(consulta);
+            query.setParameter(1, fechaInicio);
+            query.setParameter(2, dias);
+            resultado = query.getSingleResult().toString();
+        } catch (Exception e) {
+            System.out.println("PersistenciaKioSoliciAusentismos" + ".getFechaSugerida(): " + "Error-1: " + e.toString());
+        }
+        return resultado;
+    }
 }

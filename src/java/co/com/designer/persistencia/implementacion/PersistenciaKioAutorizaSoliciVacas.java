@@ -24,7 +24,7 @@ public class PersistenciaKioAutorizaSoliciVacas implements IPersistenciaKioAutor
 
     
     @Override
-    public String consultarSecuenciaPorAutorizadorVaca(String secEmpleado, String nitEmpresa, String cadena, String esquema) throws Exception {
+    public String consultarSecuenciaPorAutorizadorVaca(String secEmpleado, String nitEmpresa, String cadena, String esquemaP) throws Exception {
         String secAutorizador = null;
         String sqlQuery = "select per.secuencia "
                 + "from empleados empl, kioautorizadores ka, kioautorizasolicivacas kasv, personas per, KioModulos m "
@@ -35,9 +35,35 @@ public class PersistenciaKioAutorizaSoliciVacas implements IPersistenciaKioAutor
                 + "and m.codigo = 1 "
                 + "and empl.secuencia = ? ";
         try {
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
             Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpleado);
+            secAutorizador = query.getSingleResult().toString();
+            System.out.println("secAutorizador: " + secAutorizador);
+        } catch (Exception e) {
+            System.out.println("PersistenciaKioAutorizaSoliciVacas" + ".consultarSecuenciaPorAutorizadorVaca: " + "Error: " + e.getMessage());
+        }
+        return secAutorizador;
+    }
+    
+    @Override
+    public String consultarSecuenciaPorAutorizador(String secEmpleado, String nitEmpresa, String cadena, String esquemaP, int kioModulo) throws Exception {
+        String secAutorizador = null;
+        String sqlQuery = "select per.secuencia "
+                + "from empleados empl, kioautorizadores ka, kioautorizasolicivacas kasv, personas per, KioModulos m "
+                + "where empl.secuencia = kasv.empleado "
+                + "and kasv.kioautorizador = ka.secuencia "
+                + "and per.secuencia = ka.persona "
+                + "and m.secuencia = ka.kiomodulo "
+                + "and m.codigo = ? "
+                + "and empl.secuencia = ? ";
+        try {
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            query.setParameter(1, kioModulo);
+            query.setParameter(2, secEmpleado);
             secAutorizador = query.getSingleResult().toString();
             System.out.println("secAutorizador: " + secAutorizador);
         } catch (Exception e) {

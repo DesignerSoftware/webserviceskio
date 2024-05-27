@@ -10,7 +10,6 @@ import java.util.Properties;
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.activation.FileDataSource;
-//import javax.ejb.EJB;
 import javax.mail.BodyPart;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -32,16 +31,12 @@ import java.util.List;
 
 /**
  *
- * @author thali
+ * @author Thalia Manrique
  */
 public class EnvioCorreo {
 
     private String urlKio = "https://www.nomina.com.co/images/images/kiosko/";
-
-//    @EJB
     private IPersistenciaPerfiles rolesBD;
-
-//    @EJB
     private IPersistenciaCadenasKioskosApp cadenasKio;
     private IPersistenciaConexiones persistenciaConexiones;
     private IPersistenciaConfiCorreoKiosko persisConfiCorreoKiosko;
@@ -84,17 +79,11 @@ public class EnvioCorreo {
             String nombreReporte, String asunto, String mensaje, String rutaImagenes, String grupo, String urlKiosco) {
 
         Properties propiedad = new Properties();
-//        propiedad.setProperty("mail.transport.protocol", autenticado.equals("S") ? "smtps" : "smtp"); 
         propiedad.setProperty("mail.smtp.host", servidorsmtp);
         propiedad.setProperty("mail.smtp.port", puerto);
         propiedad.setProperty("mail.smtp.auth", autenticado.equals("S") ? "true" : "false");
-//        propiedad.setProperty("mail.smtp.auth.login.disable", "true");
-        //propiedad.setProperty("mail.smtp.ssl.enable", "true"); //para SSL
-        //propiedad.setProperty("mail.smtp.ssl.protocols", "TLSv1.2"); // para SSL
-        //the default authorization order is "LOGIN PLAIN DIGEST-MD5 NTLM". 'LOGIN' must be disabled since Email Delivery authorizes as 'PLAIN'
         propiedad.setProperty("mail.smtp.starttls.enable", "true"); //TLSv1.2 is required
         propiedad.setProperty("mail.smtp.starttls.required", "true");  //Oracle Cloud Infrastructure required
-        //propiedad.setProperty("mail.smtp.ssl.trust", servidorsmtp); // para SSL
         propiedad.setProperty("mail.smtp.user", remitente);
         this.imprimirPropiedades(propiedad);
 
@@ -122,9 +111,7 @@ public class EnvioCorreo {
                     + "              <a style='color: white !important;' href=" + urlKiosco + " target=\"_blank\"\n"
                     + "                 data-saferedirecturl=" + urlKiosco + ">\n"
                     + "                <img width=\"80px\" height=\"80px\" style=\"display:block;margin:auto auto 0px auto\"\n"
-                    //+ "                     src=\"https://www.designer.com.co:8178/wsreporte/webresources/conexioneskioskos/obtenerFoto/kioscologopro.png\">\n"
                     + "                     src=\"" + urlKio + "kioscologopro.png\">\n"
-                    //+ "                     src=\"https://designer.ci2.co:8181/wsreporte/webresources/conexioneskioskos/obtenerLogo/LogoCI2Grande.png?nit=830056149&cadena=DEFAULT1\">\n"
                     + "              </a>\n"
                     + "            </div>\n"
                     + "          </td>\n"
@@ -220,8 +207,6 @@ public class EnvioCorreo {
             multipart.addBodyPart(messageBodyPart);
             // second part (the image)
             messageBodyPart = new MimeBodyPart();
-            //DataSource fds = new FileDataSource("C:\\DesignerRHN12\\Basico12\\fotos_empleados\\headerlogocorreokiosko.png");
-            //String rutaImagenes = "C:\\DesignerRHN10\\Basico10\\fotos_empleados\\";
             DataSource fds = new FileDataSource(rutaImagenes + "imagencorreoreporte.jpg");
             messageBodyPart.setDataHandler(new DataHandler(fds));
             messageBodyPart.setHeader("Content-ID", "<image>");
@@ -272,11 +257,8 @@ public class EnvioCorreo {
         boolean envioCorreo = false;
         Properties props = new Properties();
         props.put("mail.smtp.host", servidorsmtp);
-        //props.put("mail.smtp.socketFactory.port", puerto);
-        //props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
         props.put("mail.smtp.auth", autenticado.equals("S") ? "true" : "false");
         props.put("mail.smtp.starttls.enable", starttls.equals("S") ? "true" : "false");
-//        props.put("mail.smtp.ssl.trust", servidorsmtp);
         props.put("mail.smtp.port", puerto);
         final String user;
         final String password = "***********";
@@ -313,8 +295,6 @@ public class EnvioCorreo {
             multipart.addBodyPart(messageBodyPart);
             // second part (the image)
             messageBodyPart = new MimeBodyPart();
-            //DataSource fds = new FileDataSource("C:\\DesignerRHN12\\Basico12\\fotos_empleados\\headerlogocorreokiosko.png");
-            //String rutaImagenes = getPathFoto(nitEmpresa, cadena);
             DataSource fds = new FileDataSource(rutaImagenes + "headerlogocorreokiosko.png");
             messageBodyPart.setDataHandler(new DataHandler(fds));
             messageBodyPart.setHeader("Content-ID", "<image>");
@@ -374,14 +354,10 @@ public class EnvioCorreo {
         Properties props = new Properties();
         props.setProperty("mail.transport.protocol", autenticado.equals("S") ? "smtps" : "smtp");
         props.put("mail.smtp.host", servidorsmtp);
-        //props.put("mail.smtp.socketFactory.port", puerto);
-        //props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
         props.put("mail.smtp.auth", autenticado.equals("S") ? "true" : "false");
         props.put("mail.smtp.starttls.enable", starttls.equals("S") ? "true" : "false");
         props.put("mail.smtp.ssl.trust", servidorsmtp);
         props.put("mail.smtp.port", puerto);
-//        final String user;
-//        final String password = "***********";
         Session session = Session.getInstance(props,
                 new javax.mail.Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
@@ -401,12 +377,9 @@ public class EnvioCorreo {
             String urlValidacion = "";
             if (urlKiosco.endsWith("/")) {
                 urlValidacion = urlKiosco + "#/validacionCuenta/" + jwt;
-                //System.out.println("urlValidacion_1 ");
             } else {
                 urlValidacion = urlKiosco + "/#/validacionCuenta/" + jwt;
-                //System.out.println("urlValidacion_2 ");
             }
-            //System.out.println("urlValidacion: "+urlValidacion);
             String htmlText
                     = "<center>"
                     + "<img src=\'cid:image\'>"
@@ -458,12 +431,8 @@ public class EnvioCorreo {
         Properties props = new Properties();
         props.put("mail.smtp.host", servidorsmtp);
         props.setProperty("mail.transport.protocol", autenticado.equals("S") ? "smtps" : "smtp");
-        //props.put("mail.smtp.socketFactory.port", puerto);
-        //props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-        // props.put("mail.smtp.auth", autenticado == "S" ? "true" : "false");
         props.put("mail.smtp.auth", autenticado.equals("S") ? "true" : "false");
         props.put("mail.smtp.starttls.enable", starttls.equals("S") ? "true" : "false");
-        //props.put("mail.smtp.ssl.trust", servidorsmtp);
         props.put("mail.smtp.port", puerto);
         Session session = Session.getInstance(props,
                 new javax.mail.Authenticator() {
@@ -520,9 +489,6 @@ public class EnvioCorreo {
                     + "            <h4 style=\"text-align:center; margin-top:10px;\">\n"
                     + "Este correo se ha enviado automáticamente desde Kiosco Nómina Designer.\n"
                     + "            </h4>\n"
-                    /*+ "            <h4 style=\"color:#ffffff; text-align:center; margin-top: 10px;\">\n"
-                    + "Revisa los archivos adjuntos.\n"
-                    + "            </h4><br>\n"*/
                     + "            <div style=\"width:100%; text-align:center;\">\n"
                     + "              <a style=\"text-decoration:none; border-radius:5px; padding:11px 23px; margin-bottom:4%; color:white; background-color:#3498db;\"\n"
                     + "                 href=" + urlKiosco + " target=\"_blank\"\n"
@@ -595,7 +561,6 @@ public class EnvioCorreo {
             multipart.addBodyPart(messageBodyPart);
             // second part (the image)
             messageBodyPart = new MimeBodyPart();
-            //DataSource fds = new FileDataSource("C:\\DesignerRHN12\\Basico12\\fotos_empleados\\headerlogocorreokiosko.png");
             String rutaImagenes = getPathFoto(nit, cadena);
             DataSource fds = new FileDataSource(rutaImagenes + "headerlogocorreokiosko.png");
             messageBodyPart.setDataHandler(new DataHandler(fds));
@@ -636,12 +601,8 @@ public class EnvioCorreo {
         Properties props = new Properties();
         props.put("mail.smtp.host", servidorsmtp);
         props.setProperty("mail.transport.protocol", autenticado.equals("S") ? "smtps" : "smtp");
-        //props.put("mail.smtp.socketFactory.port", puerto);
-        //props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-        // props.put("mail.smtp.auth", autenticado == "S" ? "true" : "false");
         props.put("mail.smtp.auth", autenticado.equals("S") ? "true" : "false");
         props.put("mail.smtp.starttls.enable", starttls.equals("S") ? "true" : "false");
-//        props.put("mail.smtp.ssl.trust", servidorsmtp);
         props.put("mail.smtp.port", puerto);
         Session session = Session.getInstance(props,
                 new javax.mail.Authenticator() {
@@ -681,8 +642,6 @@ public class EnvioCorreo {
                     + "                  data-saferedirecturl=" + urlKiosco + ">\n"
                     + "                <img width=\"80px\" height=\"80px\" style=\"display:block;margin:auto auto 0px auto\"\n"
                     + "                      src=\"" + urlKio + "kioscologopro.png\">\n"
-                    //+ "                      alt=\""+urlKio+"conexioneskioskos/obtenerFoto/kioscologopro.png\">\n"
-                    //+ "                      src=\"https://designer.ci2.co:8181/wsreporte/webresources/conexioneskioskos/obtenerLogo/LogoCI2Grande.png?nit=830056149&cadena=DEFAULT1\">\n"
                     + "              </a>\n"
                     + "            </div>\n"
                     + "          </td>\n"
@@ -700,9 +659,6 @@ public class EnvioCorreo {
                     + "              <h4 style=\"text-align:center; margin-top:10px;\">\n"
                     + "Este correo se ha enviado automáticamente desde Kiosco Nómina Designer.\n"
                     + "              </h4>\n"
-                    /*+ "              <h4 style=\"color:#ffffff; text-align:center; margin-top:10px;\"> "
-                    + "Revisa los archivos adjuntos.\n"
-                    + "              </h4><br>\n"*/
                     + "              <div style=\"width:100%; text-align:center;\">\n"
                     + "                <a style=\"text-decoration:none; border-radius:5px; padding:11px 23px; margin-bottom:4%; color:white; background-color:#3498db;\"\n"
                     + "                    href=" + urlKiosco + " target=\"_blank\"\n"
@@ -774,17 +730,7 @@ public class EnvioCorreo {
                     + "    </table>\n"
                     + "   </div>"
                     + "</div>";
-            /*+ " <br>"
-                    + "  <p style=\"color: #55a532;\" >Imprimir en caso de ser estrictamente necesario, el medio ambiente se lo agradecerá. Ayudemos a evitar el calentamiento global.</p>\n" 
-                    + " <br>"
-                    + "   <p> Confidencialidad: CI2 S.A  es una empresa consiente de la importancia de la información en cuanto a su "
-                    + "disponibilidad, Integridad y confidencialidad, por ello busca su protección a través de sus directrices de gestión "
-                    + "de seguridad de la información. Los datos contenidos en  este correo electrónico de CI2 S.A  y en todos sus archivos "
-                    + "anexos, es confidencial y/o privilegiada y sólo puede ser utilizada por la(s) persona(s) a la(s) cual(es) está dirigida. "
-                    + "Si usted no es el destinatario autorizado, cualquier modificación, retención, difusión, distribución o copia total o "
-                    + "parcial de este mensaje y/o de la información contenida en el mismo y/o en sus archivos anexos está prohibida y son "
-                    + "sancionadas por la ley. Si por error recibe este mensaje, le ofrecemos disculpas, sírvase borrarlo de inmediato, "
-                    + "notificarle de su error a la persona que lo envió y abstenerse de divulgar su contenido y anexos. </p>"*/
+
             messageBodyPart.setContent(htmlText, "text/html");
             // add it
             multipart.addBodyPart(messageBodyPart);
@@ -829,7 +775,9 @@ public class EnvioCorreo {
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT " + valor + " FROM CONFICORREOKIOSKO WHERE EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?)";
+            String sqlQuery = "SELECT " + valor
+                    + " FROM CONFICORREOKIOSKO "
+                    + "WHERE EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?)";
             System.out.println("Query: " + sqlQuery);
             Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
@@ -847,7 +795,10 @@ public class EnvioCorreo {
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT SERVIDORSMTP FROM CONFICORREOKIOSKO WHERE EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?)";
+            String sqlQuery = "SELECT servidorSMTP "
+                    + "FROM ConfiCorreoKiosko cck, Empresas em "
+                    + "WHERE cck.empresa=em.secuencia "
+                    + "em.nit = ? ";
             System.out.println("Query: " + sqlQuery);
             Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
@@ -865,9 +816,11 @@ public class EnvioCorreo {
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT EMAILCONTACTO FROM KIOPERSONALIZACIONES WHERE "
-                    + "EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?) "
-                    + "AND TIPOCONTACTO='NOMINA' "
+            String sqlQuery = "SELECT emailContacto "
+                    + "FROM KioPersonalizaciones kp, Empresas em WHERE "
+                    + "kp.empresa=em.secuencia "
+                    + "em.nit= ? ) "
+                    + "kp.tipoContacto='NOMINA' "
                     + "AND ROWNUM<=1 ";
             System.out.println("Query: " + sqlQuery);
             Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
@@ -880,7 +833,20 @@ public class EnvioCorreo {
         return emailSoporte;
     }
 
-    /*Correo novedad de corrección de información que se envia a RRHH o Auditoria Módulo Vacaciones(No se incluye botón de Ir a Kiosco) */
+    /**
+     * Correo novedad de corrección de información que se envia a RRHH o
+     * Auditoria Módulo Vacaciones(No se incluye botón de Ir a Kiosco)
+     *
+     * @param asunto
+     * @param saludo
+     * @param mensaje
+     * @param nit
+     * @param urlKiosco
+     * @param cadena
+     * @param correoDestinatarioMain
+     * @param correoCC
+     * @return
+     */
     public boolean enviarCorreoInformativo(
             String asunto, String saludo, String mensaje, String nit, String urlKiosco, String cadena, String correoDestinatarioMain, String correoCC) {
         System.out.println("enviarCorreoInformativo()");
@@ -890,15 +856,11 @@ public class EnvioCorreo {
         String starttls = getConfigCorreo(nit, "STARTTLS", cadena);
         String remitente = getConfigCorreo(nit, "REMITENTE", cadena);
         String clave = getConfigCorreo(nit, "CLAVE", cadena);
-        //String destinatario = getCorreoSoporteKiosco(nit, cadena);
         System.out.println("Datos enviarCorreoInformativo: " + servidorsmtp + ", puerto: " + puerto + ", autenticado: " + autenticado + ", starttls: " + starttls + ", remitente: " + remitente + ", clave: " + clave);
         boolean envioCorreo = false;
         Properties props = new Properties();
         props.put("mail.smtp.host", servidorsmtp);
         props.setProperty("mail.transport.protocol", autenticado.equals("S") ? "smtps" : "smtp");
-        //props.put("mail.smtp.socketFactory.port", puerto);
-        //props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-        // props.put("mail.smtp.auth", autenticado == "S" ? "true" : "false");
         props.put("mail.smtp.auth", autenticado.equals("S") ? "true" : "false");
         props.put("mail.smtp.starttls.enable", starttls.equals("S") ? "true" : "false");
         props.put("mail.smtp.ssl.trust", servidorsmtp);
@@ -913,13 +875,9 @@ public class EnvioCorreo {
         try {
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(remitente));
-            //message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(destinatario));
             message.addRecipients(Message.RecipientType.TO,
                     InternetAddress.parse(correoDestinatarioMain));
-            /*message.addRecipients(Message.RecipientType.TO, InternetAddress.parse(correoDestinatarioMain));
-            message.addRecipients(Message.RecipientType.TO, InternetAddress.parse("mateoc@nomina.com.co"));
-            message.addRecipients(Message.RecipientType.TO, InternetAddress.parse("mateocoronadocardona@gmail.com"));*/
-            // if (correoUsuario != null) {
+
             if (correoCC != null) {
                 message.addRecipients(Message.RecipientType.CC, InternetAddress.parse(correoCC));
             }
@@ -952,7 +910,6 @@ public class EnvioCorreo {
                     + "\n"
                     + "                                <img width=\"80px\" height=\"80px\"  style=\"display:block;margin:auto auto 0px auto;\"\n"
                     + "                                    src=\"" + urlKio + "kioscologopro.png\">\n"
-                    //+ "                                    src=\"https://designer.ci2.co:8181/wsreporte/webresources/conexioneskioskos/obtenerLogo/LogoCI2Grande.png?nit=830056149&cadena=DEFAULT1\">\n"
                     + "                            </a>\n"
                     + "                        </div>\n"
                     + "                    </td>\n"
@@ -961,18 +918,14 @@ public class EnvioCorreo {
                     + "                <tr style=\"padding-bottom:2%\">\n"
                     + "                    <td>\n"
                     + "                        <div style=\"margin:2% 4% 4% auto;text-align:justify;font-family:sans-serif\">\n"
-                    //+ "                            <h2 style=\"color:#ffffff !important; margin:0 0 5px;text-align:center\">" + saludo + "</h2>\n"
                     + "                            <h2 style=\"margin:0 0 5px;text-align:center\">" + saludo + "</h2>\n"
                     + "                            <br><br>\n"
-                    //+ "                            <h4 style=\"margin:2px;text-align:center\">\n" + mensaje
                     + "                            <h4 style=\"margin:2px;text-align:center\">\n" + mensaje + "</h4>\n"
                     + "                                <br><br> "
                     + "                            <h4 style=\"text-align:center;margin-top:10px\">\n"
                     + "                                Este correo se ha enviado automáticamente desde Kiosco Nómina Designer.</h4>\n"
                     + "                            <h4>\n"
                     + "                            </h4>\n"
-                    /*  + "                            <h4 style=\"color:#ffffff;text-align:center;margin-top:10px\"> Revisa los archivos\n"
-                    + "                                adjuntos.<br></h4>\n"*/
                     + "                            <div style=\"width:100%;text-align:center\">\n"
                     + "                                <br>                                                                \n"
                     + "                                <br>                                                                \n"
@@ -1023,17 +976,7 @@ public class EnvioCorreo {
                     + "            </tbody>\n"
                     + "        </table>\n"
                     + "    </div>"
-                    + " </div>" /*+ " <br>"
-                    + "  <p style=\"color: #55a532;\" >Imprimir en caso de ser estrictamente necesario, el medio ambiente se lo agradecerá. Ayudemos a evitar el calentamiento global.</p>\n" 
-                    + " <br>"
-                    + "   <p> Confidencialidad: CI2 S.A  es una empresa consiente de la importancia de la información en cuanto a su "
-                    + "disponibilidad, Integridad y confidencialidad, por ello busca su protección a través de sus directrices de gestión "
-                    + "de seguridad de la información. Los datos contenidos en  este correo electrónico de CI2 S.A  y en todos sus archivos "
-                    + "anexos, es confidencial y/o privilegiada y sólo puede ser utilizada por la(s) persona(s) a la(s) cual(es) está dirigida. "
-                    + "Si usted no es el destinatario autorizado, cualquier modificación, retención, difusión, distribución o copia total o "
-                    + "parcial de este mensaje y/o de la información contenida en el mismo y/o en sus archivos anexos está prohibida y son "
-                    + "sancionadas por la ley. Si por error recibe este mensaje, le ofrecemos disculpas, sírvase borrarlo de inmediato, "
-                    + "notificarle de su error a la persona que lo envió y abstenerse de divulgar su contenido y anexos. </p>"*/;
+                    + " </div>";
             messageBodyPart.setContent(htmlText, "text/html");
             // add it
             multipart.addBodyPart(messageBodyPart);
@@ -1086,15 +1029,11 @@ public class EnvioCorreo {
         String starttls = getConfigCorreo(nit, "STARTTLS", cadena);
         String remitente = getConfigCorreo(nit, "REMITENTE", cadena);
         String clave = getConfigCorreo(nit, "CLAVE", cadena);
-        //String destinatario = getCorreoSoporteKiosco(nit, cadena);
         System.out.println("Datos enviarCorreoComunicado: " + servidorsmtp + ", puerto: " + puerto + ", autenticado: " + autenticado + ", starttls: " + starttls + ", remitente: " + remitente + ", clave: " + clave);
         boolean envioCorreo = false;
         Properties props = new Properties();
         props.put("mail.smtp.host", servidorsmtp);
         props.setProperty("mail.transport.protocol", autenticado.equals("S") ? "smtps" : "smtp");
-        //props.put("mail.smtp.socketFactory.port", puerto);
-        //props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-        // props.put("mail.smtp.auth", autenticado == "S" ? "true" : "false");
         props.put("mail.smtp.auth", autenticado.equals("S") ? "true" : "false");
         props.put("mail.smtp.starttls.enable", starttls.equals("S") ? "true" : "false");
         props.put("mail.smtp.ssl.trust", servidorsmtp);
@@ -1112,9 +1051,6 @@ public class EnvioCorreo {
             //message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(destinatario));
             message.addRecipients(Message.RecipientType.TO,
                     InternetAddress.parse(correoDestinatarioMain));
-            /*message.addRecipients(Message.RecipientType.TO, InternetAddress.parse(correoDestinatarioMain));
-            message.addRecipients(Message.RecipientType.TO, InternetAddress.parse("mateoc@nomina.com.co"));
-            message.addRecipients(Message.RecipientType.TO, InternetAddress.parse("mateocoronadocardona@gmail.com"));*/
             // if (correoUsuario != null) {
             message.setSubject(asunto);
             // This mail has 2 part, the BODY and the embedded image
@@ -1172,17 +1108,7 @@ public class EnvioCorreo {
                     + "         </div>\n"
                     + "    </div>"
                     + "  </div>"
-                    + "</div>" /*+ " <br>"
-                    + "  <p style=\"color: #55a532;\" >Imprimir en caso de ser estrictamente necesario, el medio ambiente se lo agradecerá. Ayudemos a evitar el calentamiento global.</p>\n" 
-                    + " <br>"
-                    + "   <p> Confidencialidad: CI2 S.A  es una empresa consiente de la importancia de la información en cuanto a su "
-                    + "disponibilidad, Integridad y confidencialidad, por ello busca su protección a través de sus directrices de gestión "
-                    + "de seguridad de la información. Los datos contenidos en  este correo electrónico de CI2 S.A  y en todos sus archivos "
-                    + "anexos, es confidencial y/o privilegiada y sólo puede ser utilizada por la(s) persona(s) a la(s) cual(es) está dirigida. "
-                    + "Si usted no es el destinatario autorizado, cualquier modificación, retención, difusión, distribución o copia total o "
-                    + "parcial de este mensaje y/o de la información contenida en el mismo y/o en sus archivos anexos está prohibida y son "
-                    + "sancionadas por la ley. Si por error recibe este mensaje, le ofrecemos disculpas, sírvase borrarlo de inmediato, "
-                    + "notificarle de su error a la persona que lo envió y abstenerse de divulgar su contenido y anexos. </p>"*/;
+                    + "</div>";
             messageBodyPart.setContent(htmlText, "text/html; charset=utf-8");
             // add it
             multipart.addBodyPart(messageBodyPart);
@@ -1235,7 +1161,7 @@ public class EnvioCorreo {
     public boolean enviarCorreo(String nit, String cadena, String asunto, String mensaje, List destinatarios, String rutaImagenes) throws Exception {
         this.persisConfiCorreoKiosko = new PersistenciaConfiCorreoKiosko();
         try {
-            ConfiCorreoKiosko cck = this.persisConfiCorreoKiosko.obtenerServidorCorreo(nit, cadena);
+            ConfiCorreoKiosko cck = this.persisConfiCorreoKiosko.obtenerConfiguracionCorreoNativo(nit, cadena);
 
             Properties props = new Properties();
             props.put("mail.smtp.host", cck.getServidorSMTP());
@@ -1268,9 +1194,9 @@ public class EnvioCorreo {
                 Iterator it = destinatarios.iterator();
                 while (it.hasNext()) {
                     String destinatario = (String) it.next();
-                    System.out.println("destinatario: "+destinatario);
+                    System.out.println("destinatario: " + destinatario);
                     message.addRecipients(Message.RecipientType.TO,
-                            InternetAddress.parse( destinatario ));
+                            InternetAddress.parse(destinatario));
                 }
                 message.setSubject(asunto);
                 // This mail has 2 part, the BODY and the embedded image
