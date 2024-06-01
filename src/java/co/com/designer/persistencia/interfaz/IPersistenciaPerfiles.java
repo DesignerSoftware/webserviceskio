@@ -8,7 +8,7 @@ import javax.ejb.Local;
  */
 @Local
 public interface IPersistenciaPerfiles {
-    public void setearPerfil();
-    public void setearPerfil(String cadena);
+//    public void setearPerfil();
+//    public void setearPerfil(String cadena);
     public void setearPerfil(String esquema, String cadenaPersistencia);
 }

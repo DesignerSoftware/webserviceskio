@@ -65,9 +65,9 @@ public class PersistenciaKioAutorizaSoliciVacas implements IPersistenciaKioAutor
             query.setParameter(1, kioModulo);
             query.setParameter(2, secEmpleado);
             secAutorizador = query.getSingleResult().toString();
-            System.out.println("secAutorizador: " + secAutorizador);
+            System.out.println("PersistenciaKioAutorizaSoliciVacas" + ".consultarSecuenciaPorAutorizador: " + "secAutorizador: " + secAutorizador);
         } catch (Exception e) {
-            System.out.println("PersistenciaKioAutorizaSoliciVacas" + ".consultarSecuenciaPorAutorizadorVaca: " + "Error: " + e.getMessage());
+            System.out.println("PersistenciaKioAutorizaSoliciVacas" + ".consultarSecuenciaPorAutorizador: " + "Error: " + e.toString());
         }
         return secAutorizador;
     }

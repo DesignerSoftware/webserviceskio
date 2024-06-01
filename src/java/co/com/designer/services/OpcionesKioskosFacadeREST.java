@@ -27,7 +27,7 @@ import org.json.JSONArray;
 
 @Stateless
 @Path("opcioneskioskosapp")
-public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp> {
+public class OpcionesKioskosFacadeREST { //extends AbstractFacade<OpcionesKioskosApp> {
 
     private IPersistenciaConexiones persisConexiones;
     private IPersistenciaPerfiles persisPerfiles;
@@ -35,7 +35,7 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
     private IPersistenciaCadenasKioskosApp persisCadenasKio;
 
     public OpcionesKioskosFacadeREST() {
-        super(OpcionesKioskosApp.class);
+//        super(OpcionesKioskosApp.class);
         persisConexiones = new PersistenciaConexiones();
         persisPerfiles = new PersistenciaPerfiles();
         persisOpcionesKio = new PersistenciaOpcionesKioskosAPP();
@@ -69,7 +69,9 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
     @GET
     @Path("/opcionesMenu")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public List opcionesKiosko(@QueryParam("seudonimo") String seudonimo, @QueryParam("nitempresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
+    public List opcionesKiosko(@QueryParam("seudonimo") String seudonimo
+            , @QueryParam("nitempresa") String nitEmpresa
+            , @QueryParam("cadena") String cadena) {
         String esquema = this.persisCadenasKio.getEsquema(nitEmpresa, cadena);
         this.persisPerfiles.setearPerfil(esquema, cadena);
         String sqlQuery = "SELECT ok "
@@ -210,6 +212,7 @@ public class OpcionesKioskosFacadeREST extends AbstractFacade<OpcionesKioskosApp
                 codigos[1] = "01391";
                 codigos[2] = "0146";
                 codigos[3] = "0147";
+                
             } else {
                 String[] tmp = new String[codigos.length + 4];
                 for (int j = 0; j < codigos.length; j++) {

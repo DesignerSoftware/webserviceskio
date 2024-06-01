@@ -62,7 +62,7 @@ import passwordGenerator.GeneradorClave;
  */
 @Stateless
 @Path("conexioneskioskos")
-public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKioskos> {
+public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKioskos> {
 
     private IPersistenciaPerfiles rolesBD;
     private IPersistenciaConexiones persistenciaConexiones;
@@ -75,7 +75,7 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
     private IPersistenciaEmpresas persisEmpresas;
 
     public ConexionesKioskosFacadeREST() {
-        super(ConexionesKioskos.class);
+//        super(ConexionesKioskos.class);
         this.rolesBD = new PersistenciaPerfiles();
         this.cadenasKio = new PersistenciaCadenasKioskosApp();
         this.persistenciaConexiones = new PersistenciaConexiones();
@@ -87,53 +87,60 @@ public class ConexionesKioskosFacadeREST extends AbstractFacade<ConexionesKiosko
         this.persisEmpresas = new PersistenciaEmpresas();
     }
 
-    @POST
+    /*@POST
     @Override
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public void create(ConexionesKioskos entity) {
         super.create(entity);
-    }
+    }*/
 
-    @PUT
+    /*@PUT
     @Path("{id}")
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public void edit(@PathParam("id") BigDecimal id, ConexionesKioskos entity) {
         super.edit(entity);
     }
+    */
 
-    @DELETE
+    /*@DELETE
     @Path("{id}")
     public void remove(@PathParam("id") BigDecimal id) {
         super.remove(super.find(id));
     }
+    */
 
-    @GET
+    /*@GET
     @Path("{id}")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public ConexionesKioskos find(@PathParam("id") BigDecimal id) {
         return super.find(id);
     }
+    */
 
+    /*
     @GET
     @Override
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public List<ConexionesKioskos> findAll() {
         return super.findAll();
     }
+    */
 
-    @GET
+    /*@GET
     @Path("{from}/{to}")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public List<ConexionesKioskos> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
         return super.findRange(new int[]{from, to});
     }
+    */
 
-    @GET
+    /*@GET
     @Path("count")
     @Produces(MediaType.TEXT_PLAIN)
     public String countREST() {
         return String.valueOf(super.count());
     }
+    */
 
     @GET
     @Path("{usuario}/{pass}@{bd}")

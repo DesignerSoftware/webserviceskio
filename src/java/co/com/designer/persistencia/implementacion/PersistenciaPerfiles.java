@@ -16,17 +16,17 @@ public class PersistenciaPerfiles implements IPersistenciaPerfiles {
         this.persistenciaConexiones = new PersistenciaConexiones();
     }
 
-    @Override
+    /*@Override
     public void setearPerfil() {
         System.out.println("PersistenciaPerfiles" + ".setearPerfil()-1: " );
         
         this.setearPerfil("", "");
-    }
+    }*/
 
-    @Override
+    /*@Override
     public void setearPerfil(String cadena) {
         this.setearPerfil("", cadena);
-    }
+    }*/
 
     @Override
     public void setearPerfil(String esquema, String cadena) {

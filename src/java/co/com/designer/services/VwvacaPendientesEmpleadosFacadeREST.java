@@ -56,7 +56,7 @@ import org.json.JSONObject;
  */
 @Stateless
 @Path("vacacionesPendientes")
-public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPendientesEmpleados> {
+public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVacaPendientesEmpleados> {
 
     private IPersistenciaPerfiles rolesBD;
     private IPersistenciaConexiones persisConexiones;
@@ -71,7 +71,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
     private IPersistenciaSolucionesNodos persisSolNodos;
 
     public VwvacaPendientesEmpleadosFacadeREST() {
-        super(VwVacaPendientesEmpleados.class);
+//        super(VwVacaPendientesEmpleados.class);
         this.rolesBD = new PersistenciaPerfiles();
         this.persisConexiones = new PersistenciaConexiones();
         this.persisAutorizaSoli = new PersistenciaKioAutorizaSoliciVacas();
@@ -84,6 +84,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
         this.persisSolNodos = new PersistenciaSolucionesNodos();
     }
 
+    /*
     @GET
     //@Path("/")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
@@ -91,6 +92,7 @@ public class VwvacaPendientesEmpleadosFacadeREST extends AbstractFacade<VwVacaPe
         this.rolesBD.setearPerfil();
         return super.findAll();
     }
+    */
 
     /**
      * @desc Devuelve las solicitudes por empleado, dependiendo el estado que se

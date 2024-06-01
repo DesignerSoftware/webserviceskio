@@ -69,11 +69,12 @@ public class PersistenciaPersonas implements IPersistenciaPersonas {
     }
 
     @Override
-    public String getApellidoNombreXSecPer(String secPersona, String nitEmpresa, String cadena, String esquema) {
+    public String getApellidoNombreXSecPer(String secPersona, String nitEmpresa, String cadena, String esquemaP) {
         System.out.println("PersistenciaPersonas" + ".getApellidoNombreXSecPer(): " + "Parametros: secPersona: " + secPersona + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
         String nombre = null;
         String sqlQuery;
         try {
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
             sqlQuery = "SELECT PRIMERAPELLIDO||' '||SEGUNDOAPELLIDO||' '||NOMBRE nombreCompleto "
                     + "FROM PERSONAS "
@@ -145,12 +146,12 @@ public class PersistenciaPersonas implements IPersistenciaPersonas {
                 + ", empresa: " + nitEmpresa
                 + ", cadena: " + cadena);
         String correo = null;
-        String sqlQuery = "SELECT P.EMAIL "
+        String sqlQuery = "SELECT p.email "
                 + "FROM Personas p, Empleados empl " + ", Empresas em "
                 + "WHERE p.secuencia = empl.persona "
                 + "AND em.secuencia = empl.empresa "
                 + "AND empl.secuencia = ? "
-                + "AND ck.nitempresa = ? ";
+                + "AND em.nit = ? ";
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);

@@ -1,5 +1,6 @@
 package co.com.designer.persistencia.interfaz;
 
+import co.com.designer.kiosko.entidades.IntervinientesSolAusent;
 import java.util.List;
 
 /**
@@ -13,13 +14,21 @@ public interface IPersistenciaKioSoliciAusentismos {
     public List getSolicitudesSinProcesarPorJefe(String nitEmpresa, String cadena, String estado, String secuenciaJefe);
 
     public List getSolicitudesPorJefe(String nitEmpresa, String cadena, String secuenciaJefe);
+    
+    public List getSolicitudesPorAutorizador(String nitEmpresa, String cadena, String secuenciaAutorizador);
+    
+    public List getSolicitudesSinProcesarPorAutorizador(String nitEmpresa, String cadena, String estado, String secAutorizador);
 
     public String getEmplXsecKioEstadoSolici(String kioEstadoSolici, String nitEmpresa, String cadena);
+    
+    public IntervinientesSolAusent getIntervinientesPorEstadoSolici(String kioEstadoSolici, String nitEmpresa, String cadena );
 
-    public String getSecuenciaSolicitudAusentismo(String secEmpleado, String fechaGeneracion,
-            String secEmplJefe, String nitEmpresa, String cadena, String esquemaP);
+    public String getSecuenciaSolicitudAusentismo(String secEmpleado, String fechaGeneracion
+            , String secEmplJefe , String secAutorizador 
+            , String nitEmpresa, String cadena, String esquemaP);
 
-    public int creaSolicitudAusentismo(String seudonimo, String secEmplJefe, String nitEmpresa, String nombreAnexo, String fechaGeneracion, String fechainicial, String fechaFin, String dias, String observacion, String secCausaAusent, String cadena, String esquemaP);
+    //public int creaSolicitudAusentismo(String seudonimo, String secEmplJefe, String nitEmpresa, String nombreAnexo, String fechaGeneracion, String fechainicial, String fechaFin, String dias, String observacion, String secCausaAusent, String cadena, String esquemaP);
+    public int creaSolicitudAusentismo(String seudonimo, String secEmplJefe, String secAutorizador, String nitEmpresa, String nombreAnexo, String fechaGeneracion, String fechainicial, String fechaFin, String dias, String observacion, String secCausaAusent, String cadena, String esquemaP);
 
     public int creaEstadoSolicitudAusent(String seudonimo, String nitEmpresa, String kioSoliciAusentismo,
             String fechaProcesa, String estado, String motivo, String cadena, String esquemaP);

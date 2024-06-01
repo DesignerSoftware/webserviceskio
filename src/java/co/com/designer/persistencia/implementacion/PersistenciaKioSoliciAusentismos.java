@@ -1,5 +1,6 @@
 package co.com.designer.persistencia.implementacion;
 
+import co.com.designer.kiosko.entidades.IntervinientesSolAusent;
 import co.com.designer.persistencia.interfaz.IPersistenciaCadenasKioskosApp;
 import co.com.designer.persistencia.interfaz.IPersistenciaConexiones;
 import co.com.designer.persistencia.interfaz.IPersistenciaConexionesKioskos;
@@ -87,59 +88,56 @@ public class PersistenciaKioSoliciAusentismos implements IPersistenciaKioSoliciA
     public List getSolicitudesSinProcesarPorJefe(String nitEmpresa, String cadena, String estado, String secuenciaJefe) {
         List resultado = null;
         String consulta = "SELECT \n"
-                + "t1.codigoempleado documento, \n"
-                + "REPLACE(TRIM(P.PRIMERAPELLIDO||' '||P.SEGUNDOAPELLIDO||' '||P.NOMBRE), '  ', ' ') NOMBRE,\n"
-                + "KES.SECUENCIA, \n"
-                + "TO_CHAR(KES.FECHAPROCESAMIENTO, 'DD/MM/YYYY') SOLICITUD, \n"
-                + "TO_CHAR(KSA.FECHAINICIO,'DD/MM/YYYY' ) INICIALAUSENT,\n"
-                + "TO_CHAR(KES.FECHAPROCESAMIENTO, 'DD/MM/YYYY') FECHAULTMODIF,\n"
-                + "KES.ESTADO, \n"
-                + "KES.MOTIVOPROCESA, \n"
-                + "KES.SOAUSENTISMO, \n"
-                + "TO_CHAR(KSA.FECHAFIN,'DD/MM/YYYY') FECHAREGRESO,\n"
-                + "(SELECT DESCRIPCION FROM CAUSASAUSENTISMOS CA WHERE KSA.CAUSAREPORTADA = CA.SECUENCIA) CAUSA,\n"
-                + "KSA.DIAS,\n"
-                + "(SELECT DESCRIPCION FROM TIPOSAUSENTISMOS TI WHERE KNSA.TIPOAUSENTISMO = TI.SECUENCIA) TIPO,\n"
-                + "(SELECT DESCRIPCION FROM CLASESAUSENTISMOS CA WHERE KNSA.CLASEAUSENTISMO = CA.SECUENCIA) CLASE,\n"
-                + "DECODE(KNSA.KIONOVEDADPRORROGA, null, 'NO', 'SI'),\n"
-                + "DC.CODIGO,\n"
-                + "DC.DESCRIPCION,\n"
-                + "(SELECT PER.PRIMERAPELLIDO||' '||PER.SEGUNDOAPELLIDO||' '||PER.NOMBRE FROM PERSONAS PER, EMPLEADOS EMPL\n"
-                + "WHERE EMPL.PERSONA=PER.SECUENCIA\n"
-                + "AND EMPL.SECUENCIA=JEFE.SECUENCIA) EMPLEADOJEFE,        \n"
-                + "KSA.OBSERVACION OBSERCAVION,\n"
-                + "KNSA.FECHAFINPAGO FECHAPAGO,\n"
-                + "KES.secuencia secuencia, \n"
-                + "KSA.NOMBREANEXO ANEXO,"
-                + "P.NUMERODOCUMENTO NUMDOCUMENTO \n"
-                + "FROM \n"
-                + "KIOESTADOSSOLICIAUSENT KES, \n"
-                + "KIOSOLICIAUSENTISMOS KSA, \n"
-                + "EMPLEADOS t1, \n"
-                + "PERSONAS P, \n"
-                + "KIONOVEDADESSOLICIAUSENT KNSA, \n"
-                + "EMPLEADOS JEFE, \n"
-                + "DIAGNOSTICOSCATEGORIAS DC \n"
-                + ", EMPRESAS EM \n"
+                + "empl.codigoempleado documento, \n"
+                + "REPLACE(TRIM(p.primerapellido)||' '||TRIM(p.segundoapellido)||' '||TRIM(p.nombre), '  ', ' ') nombre, \n"
+                + "kes.secuencia, \n"
+                + "TO_CHAR(kes.fechaprocesamiento, 'DD/MM/YYYY') solicitud, \n"
+                + "TO_CHAR(ksa.fechainicio,'DD/MM/YYYY' ) inicialausent, \n"
+                + "TO_CHAR(kes.fechaprocesamiento, 'DD/MM/YYYY') fechaultmodif, \n"
+                + "kes.estado, \n"
+                + "kes.motivoprocesa, \n"
+                + "kes.soausentismo, \n"
+                + "TO_CHAR(ksa.fechafin,'DD/MM/YYYY') fecharegreso, \n"
+                + "(SELECT descripcion FROM CausasAusentismos ca WHERE ksa.causareportada = ca.secuencia) causa, \n"
+                + "ksa.dias,\n"
+                + "(SELECT descripcion FROM TiposAusentismos ti WHERE knsa.tipoausentismo = ti.secuencia) tipo, \n"
+                + "(SELECT descripcion FROM ClasesAusentismos ca WHERE knsa.claseausentismo = ca.secuencia) clase, \n"
+                + "DECODE(knsa.kionovedadprorroga, NULL, 'no', 'si'), \n"
+                + "(SELECT dc.codigo FROM DiagnosticosCategorias dc WHER dc.secuencia = knsa.diagnosticocategoria) codigo, \n"
+                + "(SELECT dc.descripcion FROM DiagnosticosCategorias dc WHER dc.secuencia = knsa.diagnosticocategoria) descripcion, \n"
+                + "(select per.primerapellido||' '||per.segundoapellido||' '||per.nombre \n"
+                + " FROM personas per, empleados empli \n"
+                + " WHERE empli.persona=per.secuencia \n"
+                + " AND empli.secuencia=jefe.secuencia) empleadojefe, \n"
+                + "ksa.observacion obsercavion, \n"
+                + "knsa.fechafinpago fechapago, \n"
+                + "kes.secuencia secuencia, \n"
+                + "ksa.nombreanexo anexo, \n"
+                + "p.numerodocumento numdocumento \n"
+                + "FROM KioSoliciAusentismos ksa \n"
+                + ", Empleados empl \n"
+                + ", Personas p \n"
+                + ", Empresas em \n"
+                + ", KioEstadosSoliciAusent kes \n"
+                + ", KioNovedadesSoliciAusent knsa \n"
+                + ", Empleados jefe \n"
                 + "WHERE \n"
-                + "((((\n"
-                + "(t1.EMPRESA = EM.SECUENCIA) AND EM.NIT = ? AND (KES.ESTADO = ?)) AND (KSA.EMPLEADOJEFE = ?))) \n"
-                + "AND ((KSA.SECUENCIA = KES.KIOSOLICIAUSENTISMO) AND (t1.SECUENCIA = KSA.EMPLEADO))) \n"
-                + "AND T1.PERSONA=P.SECUENCIA\n"
-                + "AND KSA.SECUENCIA=KNSA.KIOSOLICIAUSENTISMO\n"
-                + "AND KNSA.FECHAINICIALAUSENTISMO = (select MIN(ei.FECHAINICIALAUSENTISMO) \n"
-                + "   from KIONOVEDADESSOLICIAUSENT ei, KIOSOLICIAUSENTISMOS ksi \n"
-                + "    where ei.KIOSOLICIAUSENTISMO = ksi.secuencia \n"
-                + "    and ksi.secuencia=KSA.secuencia)\n"
-                + "and KES.FECHAPROCESAMIENTO = (select max(ei.FECHAPROCESAMIENTO) \n"
-                + "from KIOESTADOSSOLICIAUSENT ei, KIOSOLICIAUSENTISMOS ksi \n"
-                + "where ei.KIOSOLICIAUSENTISMO = ksi.secuencia \n"
-                + "and ksi.secuencia=KSA.secuencia)\n"
-                + "AND (KES.FECHAPROCESAMIENTO = (SELECT MAX(t3.FECHAPROCESAMIENTO) FROM KIOSOLICIAUSENTISMOS t4, KIOESTADOSSOLICIAUSENT t3 \n"
-                + "WHERE ((t4.SECUENCIA = KSA.SECUENCIA) AND (t4.SECUENCIA = t3.KIOSOLICIAUSENTISMO))))\n"
-                + "AND KSA.EMPLEADOJEFE=JEFE.SECUENCIA  \n"
-                + "AND DC.SECUENCIA(+) = KNSA.DIAGNOSTICOCATEGORIA\n"
-                + "ORDER BY KES.FECHAPROCESAMIENTO DESC";
+                + "empl.secuencia = ksa.empleado \n"
+                + "AND empl.persona = p.secuencia \n"
+                + "AND empl.empresa = em.secuencia \n"
+                + "AND ksa.secuencia = kes.kiosoliciausentismo  \n"
+                + "AND ksa.secuencia=knsa.kiosoliciausentismo \n"
+                + "AND ksa.empleadojefe=jefe.secuencia \n"
+                + "AND knsa.fechainicialausentismo = (SELECT MIN(ei.fechainicialausentismo) \n"
+                + "  FROM kionovedadessoliciausent ei \n"
+                + "  WHERE ei.kiosoliciausentismo = ksa.secuencia) \n"
+                + "AND kes.fechaprocesamiento = (SELECT MAX(ei.fechaprocesamiento) \n"
+                + "  FROM kioestadossoliciausent ei \n"
+                + "  WHERE ei.kiosoliciausentismo = ksa.secuencia) \n"
+                + "AND em.nit = ? \n"
+                + "AND kes.estado = ? \n"
+                + "AND ksa.empleadojefe = ? \n"
+                + "ORDER BY kes.fechaprocesamiento DESC";
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
@@ -156,52 +154,136 @@ public class PersistenciaKioSoliciAusentismos implements IPersistenciaKioSoliciA
     }
 
     @Override
-    public List getSolicitudesPorJefe(String nitEmpresa, String cadena, String secuenciaJefe) {
+    public List getSolicitudesSinProcesarPorAutorizador(String nitEmpresa, String cadena, String estado, String secAutorizador) {
+        System.out.println("PersistenciaKioSoliciAusentismos" + ".getSolicitudesSinProcesarPorAutorizador(): " + "Parametros: "
+                + "nitEmpresa: " + nitEmpresa
+                + " cadena: " + cadena
+                + " estado: " + estado
+                + " secAutorizador: " + secAutorizador
+        );
         List resultado = null;
         String consulta = "SELECT \n"
-                + "t1.CODIGOEMPLEADO, "
-                + "P.PRIMERAPELLIDO||' '||P.SEGUNDOAPELLIDO||' '||P.NOMBRE NOMBRECOMPLETO, "
-                + "to_char(t2.FECHAGENERACION, 'DD/MM/YYYY HH:mm:ss') SOLICITUD, "
-                + "to_char(T0.FECHAPROCESAMIENTO, 'DD/MM/YYYY HH:mm:ss') FECHAPROCESAMIENTO, "
-                + "t0.SECUENCIA, NVL(t0.MOTIVOPROCESA, 'N/A'), "
-                + "to_char(T2.FECHAINICIO, 'DD/MM/YYYY') FECHAINICIOAUSENTISMO, "
-                + "to_char(T2.FECHAFIN, 'DD/MM/YYYY') FECHAFINAUSENTISMO, "
-                + "t2.dias, "
-                + "(select "
-                + "pei.primerapellido||' '||pei.segundoapellido||' '||pei.nombre "
-                + "from personas pei, empleados ei "
-                + "where pei.secuencia=ei.persona and t2.EMPLEADOJEFE=ei.secuencia) empleadojefe, "
-                + "t0.ESTADO ESTADO,"
-                + "(SELECT DESCRIPCION FROM CAUSASAUSENTISMOS WHERE SECUENCIA=T2.CAUSAREPORTADA) CAUSA,"
-                + "(SELECT T.DESCRIPCION FROM CAUSASAUSENTISMOS C, TIPOSAUSENTISMOS T, CLASESAUSENTISMOS CL "
-                + "WHERE C.SECUENCIA=T2.CAUSAREPORTADA AND CL.TIPO=T.SECUENCIA AND C.CLASE=CL.SECUENCIA) TIPO,"
-                + "(SELECT CL.DESCRIPCION FROM CAUSASAUSENTISMOS C, TIPOSAUSENTISMOS T, CLASESAUSENTISMOS CL "
-                + "WHERE C.SECUENCIA=T2.CAUSAREPORTADA AND CL.TIPO=T.SECUENCIA AND C.CLASE=CL.SECUENCIA) CLASE,"
-                + "(SELECT CODIGO FROM DIAGNOSTICOSCATEGORIAS WHERE KN.DIAGNOSTICOCATEGORIA=SECUENCIA) CODDIAGNOSTICO, \n"
-                + "(SELECT DESCRIPCION FROM DIAGNOSTICOSCATEGORIAS WHERE KN.DIAGNOSTICOCATEGORIA=SECUENCIA) NOMDIAGNOSTICO,"
-                + "T2.OBSERVACION, "
-                + "T2.NOMBREANEXO ANEXO, "
-                + "(SELECT DECODE(KIONOVEDADPRORROGA, NULL, 'NO', 'SI') FROM KIONOVEDADESSOLICIAUSENT "
-                + "WHERE KIOSOLICIAUSENTISMO=T2.SECUENCIA "
-                + "AND T2.FECHAINICIO=FECHAINICIALAUSENTISMO) PRORROGA "
-                + "FROM KIOESTADOSSOLICIAUSENT t0, KIOSOLICIAUSENTISMOS t2, EMPLEADOS t1, PERSONAS P, "
-                + "kionovedadessoliciausent kn "
-                + "WHERE (((( "
-                + "(t1.EMPRESA = (select secuencia from empresas where nit=?)) \n"
-                + "AND (t0.ESTADO IN ('AUTORIZADO', 'RECHAZADO','LIQUIDADO')))   "
-                + "AND (t2.EMPLEADOJEFE =?) "
-                + ")  "
-                + "AND (t0.FECHAPROCESAMIENTO = (SELECT MAX(t3.FECHAPROCESAMIENTO) FROM KIOSOLICIAUSENTISMOS t4, KIOESTADOSSOLICIAUSENT t3 \n"
-                + "WHERE ((t4.SECUENCIA = t2.SECUENCIA) AND (t4.SECUENCIA = t3.KIOSOLICIAUSENTISMO))))) "
-                + "AND ((t2.SECUENCIA = t0.KIOSOLICIAUSENTISMO) AND (t1.SECUENCIA = t2.EMPLEADO)) "
-                + "AND t1.PERSONA=P.SECUENCIA "
-                + "and t2.secuencia = kn.kiosoliciausentismo "
-                + ") "
-                + "AND KN.FECHAINICIALAUSENTISMO = (select MIN(ei.FECHAINICIALAUSENTISMO) "
-                + "    from KIONOVEDADESSOLICIAUSENT ei, KIOSOLICIAUSENTISMOS ksi "
-                + "    where ei.KIOSOLICIAUSENTISMO = ksi.secuencia "
-                + "    and ksi.secuencia=t2.secuencia) "
-                + "ORDER BY t0.FECHAPROCESAMIENTO DESC";
+                + "empl.codigoempleado documento, \n"
+                + "REPLACE(TRIM(p.primerapellido||' '||p.segundoapellido||' '||p.nombre), '  ', ' ') nombre, \n"
+                + "kes.secuencia, \n"
+                + "TO_CHAR(ksa.fechageneracion, 'DD/MM/YYYY') solicitud, \n"
+                + "TO_CHAR(knsa.fechainicialausentismo,'DD/MM/YYYY' ) inicialausent, \n"
+                + "TO_CHAR(kes.fechaprocesamiento, 'DD/MM/YYYY') fechaultmodif, \n"
+                + "kes.estado, \n"
+                + "kes.motivoprocesa, \n"
+                + "kes.soausentismo, \n"
+                + "TO_CHAR(ksa.fechafin,'DD/MM/YYYY') fechaRegreso, \n"
+                + "(SELECT descripcion FROM CausasAusentismos ca WHERE ksa.causareportada = ca.secuencia) causa, \n"
+                + "ksa.dias, \n"
+                + "(SELECT descripcion FROM TiposAusentismos ti WHERE knsa.tipoausentismo = ti.secuencia) tipo, \n"
+                + "(SELECT descripcion FROM ClasesAusentismos ca WHERE knsa.claseausentismo = ca.secuencia) clase, \n"
+                + "DECODE(knsa.kionovedadprorroga, null, 'NO', 'SI'), \n"
+                + "(SELECT dc.codigo FROM DiagnosticosCategorias dc where dc.secuencia = knsa.diagnosticocategoria) codigo, \n"
+                + "(SELECT dc.descripcion FROM DiagnosticosCategorias dc where dc.secuencia = knsa.diagnosticocategoria) descripcion, \n"
+                + "(auto.primerapellido||' '||auto.segundoapellido||' '||auto.nombre) EMPLEADOJEFE, \n"
+                + "ksa.observacion obsercavion, \n"
+                + "knsa.fechafinpago fechapago, \n"
+                + "kes.secuencia secuencia, \n"
+                + "ksa.nombreanexo anexo, \n"
+                + "p.numerodocumento numdocumento \n"
+                + "FROM \n"
+                + "KioSoliciAusentismos ksa \n"
+                + ", Empleados empl \n"
+                + ", Personas p \n"
+                + ", KioNovedadesSoliciausent knsa \n"
+                + ", KioEstadosSoliciausent kes \n"
+                + ", Empresas em \n"
+                + ", Personas auto \n"
+                + "WHERE \n"
+                + "ksa.empleado = empl.secuencia \n"
+                + "AND knsa.kiosoliciausentismo = ksa.secuencia \n"
+                + "AND kes.kiosoliciausentismo = ksa.secuencia \n"
+                + "AND empl.persona = p.secuencia \n"
+                + "AND empl.empresa = em.secuencia \n"
+                + "AND ksa.autorizador = auto.secuencia \n"
+                + "AND kes.fechaprocesamiento = (select max(ei.fechaprocesamiento) \n"
+                + "  FROM kioestadossoliciausent ei \n"
+                + "  WHERE ei.kiosoliciausentismo = ksa.secuencia) \n"
+                + "AND knsa.fechainicialausentismo = (select MIN(ei.fechainicialausentismo) \n"
+                + "  FROM KioNovedadesSoliciAusent ei \n"
+                + "  WHERE ei.kiosoliciausentismo = ksa.secuencia) \n"
+                + "AND em.nit = ? \n"
+                + "AND kes.estado = ? \n"
+                + "AND auto.secuencia = ? \n"
+                + "ORDER BY kes.fechaprocesamiento DESC";
+        System.out.println("PersistenciaKioSoliciAusentismos" + ".getSolicitudesSinProcesarPorAutorizador(): ");
+        try {
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(consulta);
+            query.setParameter(1, nitEmpresa);
+            query.setParameter(2, estado);
+            query.setParameter(3, secAutorizador);
+            resultado = query.getResultList();
+            return resultado;
+        } catch (Exception e) {
+            System.out.println("PersistenciaKioSoliciAusentismos" + ".getSolicitudesSinProcesarPorAutorizador(): " + "Error-1: " + e.toString());
+            return null;
+        }
+    }
+
+    @Override
+    public List getSolicitudesPorJefe(String nitEmpresa, String cadena, String secuenciaJefe) {
+        List resultado = null;
+        String consulta = "SELECT empl.codigoempleado, \n"
+                + "p.primerapellido||' '||p.segundoapellido||' '||p.nombre nombrecompleto, \n"
+                + "TO_CHAR(ksa.fechageneracion, 'DD/MM/YYYY HH:MM:SS') solicitud, \n"
+                + "TO_CHAR(kes.fechaprocesamiento, 'DD/MM/YYYY HH:MM:SS') fechaprocesamiento, \n"
+                + "kes.secuencia, \n"
+                + "NVL(kes.motivoprocesa, 'N/A'), \n"
+                + "TO_CHAR(ksa.fechainicio, 'DD/MM/YYYY') fechainicioausentismo, \n"
+                + "TO_CHAR(ksa.fechafin, 'DD/MM/YYYY') fechafinausentismo, \n"
+                + "ksa.dias, \n"
+                + "(SELECT pei.primerapellido||' '||pei.segundoapellido||' '||pei.nombre \n"
+                + "  FROM Personas pei, Empleados ei \n"
+                + "  WHERE pei.secuencia=ei.persona \n"
+                + "  AND ksa.empleadojefe=ei.secuencia) empleadojefe, \n"
+                + "kes.estado estado, \n"
+                + "(SELECT ca.descripcion FROM CausasAusentismos ca WHERE secuencia=ksa.causareportada) causa, \n"
+                + "(SELECT t.descripcion \n"
+                + "  FROM CausasAusentismos c, TiposAusentismos t, ClasesAusentismos cl \n"
+                + "  WHERE c.secuencia=ksa.causareportada \n"
+                + "  AND cl.tipo=t.secuencia \n"
+                + "  AND c.clase=cl.secuencia) tipo,\n"
+                + "(SELECT cl.descripcion \n"
+                + "  FROM CausasAusentismos c, TiposAusentismos t, ClasesAusentismos cl \n"
+                + "  WHERE c.secuencia=ksa.causareportada \n"
+                + "  AND cl.tipo=t.secuencia AND c.clase=cl.secuencia) clase, \n"
+                + "(SELECT dc.codigo FROM DiagnosticosCategorias dc where kn.diagnosticocategoria=dc.secuencia) coddiagnostico, \n"
+                + "(SELECT dc.descripcion FROM DiagnosticosCategorias dc where kn.diagnosticocategoria=dc.secuencia) nomdiagnostico, \n"
+                + "ksa.observacion, \n"
+                + "ksa.nombreanexo anexo, \n"
+                + "(SELECT DECODE(kni.kionovedadprorroga, NULL, 'NO', 'SI') \n"
+                + "  FROM KioNovedadesSoliciausent kni \n"
+                + "  WHERE kni.kiosoliciausentismo=ksa.secuencia \n"
+                + "  AND ksa.fechainicio=kni.fechainicialausentismo) prorroga \n"
+                + "FROM KioSoliciAusentismos ksa \n"
+                + ", KioEstadosSoliciausent kes \n"
+                + ", Empleados empl \n"
+                + ", Empresas em \n"
+                + ", Personas p \n"
+                + ", KioNovedadesSoliciausent kn \n"
+                + "WHERE \n"
+                + "empl.empresa = em.secuencia \n"
+                + "AND ksa.empleado = empl.secuencia \n"
+                + "AND empl.persona=p.secuencia \n"
+                + "AND kes.kiosoliciausentismo = ksa.secuencia \n"
+                + "AND kn.kiosoliciausentismo = ksa.secuencia \n"
+                + "AND kes.fechaprocesamiento = (SELECT MAX(kesi.fechaprocesamiento) \n"
+                + "  FROM KioEstadosSoliciAusent kesi \n"
+                + "  WHERE kesi.kioSoliciAusentismo = ksa.secuencia) \n"
+                + "AND kn.fechainicialausentismo = (SELECT MIN(ei.fechainicialausentismo) \n"
+                + "    FROM kionovedadessoliciausent ei \n"
+                + "    WHERE ei.kiosoliciausentismo = ksa.secuencia) \n"
+                + "AND kes.estado IN ('AUTORIZADO', 'RECHAZADO','LIQUIDADO') \n"
+                + "AND em.nit= ? \n"
+                + "AND ksa.empleadojefe = ? \n"
+                + "ORDER BY kes.fechaprocesamiento DESC";
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
@@ -212,6 +294,80 @@ public class PersistenciaKioSoliciAusentismos implements IPersistenciaKioSoliciA
             return resultado;
         } catch (Exception e) {
             System.out.println("PersistenciaKioSoliciAusentismos" + ".getSolicitudesPorJefe(): " + "Error-1: " + e.toString());
+            return null;
+        }
+    }
+
+    @Override
+    public List getSolicitudesPorAutorizador(String nitEmpresa, String cadena, String secuenciaAutorizador) {
+        List resultado = null;
+        String consulta = "SELECT empl.codigoempleado, \n"
+                + "p.primerapellido||' '||p.segundoapellido||' '||p.nombre nombrecompleto, \n"
+                + "TO_CHAR(ksa.fechageneracion, 'DD/MM/YYYY HH:MM:SS') solicitud, \n"
+                + "TO_CHAR(kes.fechaprocesamiento, 'DD/MM/YYYY HH:MM:SS') fechaprocesamiento, \n"
+                + "kes.secuencia secEstadoSolici, \n"
+                + "NVL(kes.motivoprocesa, 'N/A') motivoprocesa, \n"
+                + "TO_CHAR(ksa.fechainicio, 'DD/MM/YYYY') fechainicioausentismo, \n"
+                + "TO_CHAR(ksa.fechafin, 'DD/MM/YYYY') fechafinausentismo, \n"
+                + "ksa.dias, \n"
+                + "(SELECT pei.primerapellido||' '||pei.segundoapellido||' '||pei.nombre \n"
+                + "  FROM Personas pei, Empleados ei \n"
+                + "  WHERE pei.secuencia=ei.persona \n"
+                + "  AND ksa.empleadojefe=ei.secuencia) empleadojefe, \n"
+                + "kes.estado estado, \n"
+                + "(SELECT ca.descripcion FROM CausasAusentismos ca WHERE secuencia=ksa.causareportada) causa, \n"
+                + "(SELECT t.descripcion \n"
+                + "  FROM CausasAusentismos c, TiposAusentismos t, ClasesAusentismos cl \n"
+                + "  WHERE c.secuencia=ksa.causareportada \n"
+                + "  AND cl.tipo=t.secuencia \n"
+                + "  AND c.clase=cl.secuencia) tipo, \n"
+                + "(SELECT cl.descripcion \n"
+                + "  FROM CausasAusentismos c, TiposAusentismos t, ClasesAusentismos cl \n"
+                + "  WHERE c.secuencia=ksa.causareportada \n"
+                + "  AND cl.tipo=t.secuencia AND c.clase=cl.secuencia) clase, \n"
+                + "(SELECT dc.codigo FROM DiagnosticosCategorias dc where kn.diagnosticocategoria=dc.secuencia) coddiagnostico, \n"
+                + "(SELECT dc.descripcion FROM DiagnosticosCategorias dc where kn.diagnosticocategoria=dc.secuencia) nomdiagnostico, \n"
+                + "ksa.observacion, \n"
+                + "ksa.nombreanexo anexo, \n"
+                + "(SELECT DECODE(kni.kionovedadprorroga, NULL, 'NO', 'SI') \n"
+                + "  FROM KioNovedadesSoliciausent kni \n"
+                + "  WHERE kni.kiosoliciausentismo=ksa.secuencia \n"
+                + "  AND ksa.fechainicio=kni.fechainicialausentismo) prorroga \n"
+                + ", (SELECT pei.primerapellido||' '||pei.segundoapellido||' '||pei.nombre \n"
+                + "  FROM Personas pei \n"
+                + "  WHERE ksa.autorizador=pei.secuencia) autorizador \n"
+                + "FROM KioSoliciAusentismos ksa \n"
+                + ", KioEstadosSoliciausent kes \n"
+                + ", Empleados empl \n"
+                + ", Empresas em \n"
+                + ", Personas p \n"
+                + ", KioNovedadesSoliciausent kn \n"
+                + "WHERE \n"
+                + "empl.empresa = em.secuencia \n"
+                + "AND ksa.empleado = empl.secuencia \n"
+                + "AND empl.persona=p.secuencia \n"
+                + "AND kes.kiosoliciausentismo = ksa.secuencia \n"
+                + "AND kn.kiosoliciausentismo = ksa.secuencia \n"
+                + "AND kes.fechaprocesamiento = (SELECT MAX(kesi.fechaprocesamiento) \n"
+                + "  FROM KioEstadosSoliciAusent kesi \n"
+                + "  WHERE kesi.kioSoliciAusentismo = ksa.secuencia) \n"
+                + "AND kn.fechainicialausentismo = (SELECT MIN(ei.fechainicialausentismo) \n"
+                + "    FROM kionovedadessoliciausent ei \n"
+                + "    WHERE ei.kiosoliciausentismo = ksa.secuencia) \n"
+                + "AND kes.estado IN ('AUTORIZADO', 'RECHAZADO','LIQUIDADO') \n"
+                + "AND em.nit= ? \n"
+                + "AND ksa.autorizador = ? \n"
+                + "ORDER BY kes.fechaprocesamiento DESC";
+        try {
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(consulta);
+            query.setParameter(1, nitEmpresa);
+            query.setParameter(2, secuenciaAutorizador);
+            resultado = query.getResultList();
+            return resultado;
+        } catch (Exception e) {
+            System.out.println("PersistenciaKioSoliciAusentismos" + ".getSolicitudesPorAutorizador(): " + "Error-1: " + e.toString());
             return null;
         }
     }
@@ -240,14 +396,46 @@ public class PersistenciaKioSoliciAusentismos implements IPersistenciaKioSoliciA
     }
 
     @Override
+    public IntervinientesSolAusent getIntervinientesPorEstadoSolici(String kioEstadoSolici, String nitEmpresa, String cadena) {
+        System.out.println("PersistenciaKioSoliciAusentismos" + ".getIntervinientesPorEstadoSolici-2(): " + "Parametros: "
+                + "kioEstadoSolici: " + kioEstadoSolici
+                + " nitEmpresa: " + nitEmpresa
+                + " cadena: " + cadena
+        );
+        IntervinientesSolAusent resultado = null;
+        String consulta = "SELECT kes.secuencia secEstadoSol \n"
+                + ", ksa.empleado \n"
+                + ", ksa.empleadoJefe \n"
+                + ", ksa.autorizador \n"
+                + "FROM KioEstadosSoliciAusent kes \n"
+                + ", KioSoliciAusentismos ksa \n"
+                + "WHERE kes.kioSoliciAusentismo = ksa.secuencia \n"
+                + "AND kes.secuencia = ? ";
+        try {
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(consulta, IntervinientesSolAusent.class);
+            query.setParameter(1, kioEstadoSolici);
+            resultado = (IntervinientesSolAusent) query.getSingleResult();
+            System.out.println("PersistenciaKioSoliciAusentismos" + ".getIntervinientesPorEstadoSolici-2(): " + "resultado: " + resultado.toString());
+            return resultado;
+        } catch (Exception e) {
+            System.out.println("PersistenciaKioSoliciAusentismos" + ".getIntervinientesPorEstadoSolici-2(): " + "Error-1: " + e.toString());
+            return null;
+        }
+    }
+
+    @Override
     public String getSecuenciaSolicitudAusentismo(String secEmpleado, String fechaGeneracion,
-            String secEmplJefe, String nitEmpresa, String cadena, String esquemaP) {
+            String secEmplJefe, String secAutorizador,
+            String nitEmpresa, String cadena, String esquemaP) {
         String resultado = null;
         String consulta = "SELECT secuencia "
                 + "FROM KioSoliciAusentismos "
                 + "WHERE empleado=? "
                 + "AND fechaGeneracion = TO_DATE(?, 'ddmmyyyy HH24miss') "
-                + "AND empleadoJefe = ? "
+                + "AND (empleadoJefe = ? "
+                + " OR autorizador = ? )"
                 + "AND activa = 'S' ";
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
@@ -256,6 +444,7 @@ public class PersistenciaKioSoliciAusentismos implements IPersistenciaKioSoliciA
             query.setParameter(1, secEmpleado);
             query.setParameter(2, fechaGeneracion);
             query.setParameter(3, secEmplJefe);
+            query.setParameter(4, secAutorizador);
             resultado = query.getSingleResult().toString();
         } catch (Exception e) {
             System.out.println("PersistenciaKioSoliciAusentismos" + ".getSecuenciaSolicitudAusentismo(): " + "Error: " + e.toString());
@@ -264,13 +453,30 @@ public class PersistenciaKioSoliciAusentismos implements IPersistenciaKioSoliciA
     }
 
     @Override
-    public int creaSolicitudAusentismo(String seudonimo, String secEmplJefe, String nitEmpresa, String nombreAnexo, String fechaGeneracion, String fechainicial, String fechaFin, String dias, String observacion, String secCausaAusent, String cadena, String esquemaP) {
+    public int creaSolicitudAusentismo(String seudonimo, String secEmplJefe, String secAutorizador, String nitEmpresa,
+            String nombreAnexo, String fechaGeneracion, String fechainicial, String fechaFin, String dias, String observacion,
+            String secCausaAusent, String cadena, String esquemaP) {
+        System.out.println("PersistenciaKioSoliciAusentismos" + ".creaSolicitudAusentismo(): " + "Parametros: "
+                + "seudonimo: " + seudonimo
+                + " secEmplJefe: " + secEmplJefe
+                + " secAutorizador: " + secAutorizador
+                + " nitEmpresa: " + nitEmpresa
+                + " nombreAnexo: " + nombreAnexo
+                + " fechaGeneracion: " + fechaGeneracion
+                + " fechainicial: " + fechainicial
+                + " fechaFin: " + fechaFin
+                + " dias: " + dias
+                + " observacion: " + observacion
+                + " secCausaAusent: " + secCausaAusent
+                + " cadena: " + cadena
+                + " esquemaP: " + esquemaP
+        );
         int resultado = -1;
         String consulta = "INSERT INTO KioSoliciAusentismos "
-                + "(empleado, usuario, empleadoJefe, activa, fechaGeneracion, nombreAnexo,"
+                + "(empleado, usuario, empleadoJefe, autorizador, activa, fechaGeneracion, nombreAnexo,"
                 + "fechaInicio, fechaFin, dias, observacion, causaReportada) "
                 + "VALUES "
-                + "(?,  USER, ?, 'S', TO_DATE(?, 'ddmmyyyy HH24miss'), ?,"
+                + "(?,  USER, ?, ?, 'S', TO_DATE(?, 'ddmmyyyy HH24miss'), ?,"
                 + "TO_DATE(?, 'DD/MM/YYYY'), TO_DATE(?, 'DD/MM/YYYY'), ?, ?, ?)";
         this.persisConKiosko = new PersistenciaConexionesKioskos();
         try {
@@ -280,13 +486,14 @@ public class PersistenciaKioSoliciAusentismos implements IPersistenciaKioSoliciA
             Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(consulta);
             query.setParameter(1, secEmpleado);
             query.setParameter(2, secEmplJefe);
-            query.setParameter(3, fechaGeneracion);
-            query.setParameter(4, nombreAnexo);
-            query.setParameter(5, fechainicial);
-            query.setParameter(6, fechaFin);
-            query.setParameter(7, dias);
-            query.setParameter(8, observacion);
-            query.setParameter(9, secCausaAusent);
+            query.setParameter(3, secAutorizador);
+            query.setParameter(4, fechaGeneracion);
+            query.setParameter(5, nombreAnexo);
+            query.setParameter(6, fechainicial);
+            query.setParameter(7, fechaFin);
+            query.setParameter(8, dias);
+            query.setParameter(9, observacion);
+            query.setParameter(10, secCausaAusent);
             resultado = query.executeUpdate();
         } catch (Exception e) {
             System.out.println("PersistenciaKioSoliciAusentismos" + ".creaSolicitudAusentismo(): " + "Error: " + e.toString());
@@ -501,7 +708,7 @@ public class PersistenciaKioSoliciAusentismos implements IPersistenciaKioSoliciA
     public String getSecuenciaJefeEstadoSolici(String secKioEstadoSoliciAus, String nitEmpresa, String cadena) {
         String resultado = null;
         String consulta = "SELECT ksa.empleadoJefe \n"
-                + "FROM KioEstados kes, KioSoliciAusentismos ksa \n"
+                + "FROM KioEstadosSoliciAusent kes, KioSoliciAusentismos ksa \n"
                 + "WHERE kes.kioSoliciAusentismo=ksa.secuencia \n"
                 + "AND kes.secuencia = ? ";
         try {

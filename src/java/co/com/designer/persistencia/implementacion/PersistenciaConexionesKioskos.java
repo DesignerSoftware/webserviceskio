@@ -30,7 +30,7 @@ public class PersistenciaConexionesKioskos implements IPersistenciaConexionesKio
     public BigDecimal validaUsuario(String usuario, String pass, String bd) {
         BigDecimal res = null;
         try {
-            this.rolesBD.setearPerfil();
+            this.rolesBD.setearPerfil("", bd);
             String sqlQuery = "select count(*) "
                     + "from conexioneskioskos ck, personas per "
                     + "where per.secuencia = ck.persona "
@@ -104,8 +104,8 @@ public class PersistenciaConexionesKioskos implements IPersistenciaConexionesKio
     @Override
     public String getSecuenciaEmplPorSeudonimo(String seudonimo, String nitEmpresa, String cadena) {
         System.out.println("PersistenciaConexionesKioskos.getSecuenciaEmplPorSeudonimo(): Parametros: "
-                +"seudonimo: " + seudonimo 
-                + " , nitEmpresa: " + nitEmpresa 
+                + "seudonimo: " + seudonimo
+                + " , nitEmpresa: " + nitEmpresa
                 + " , cadena: " + cadena);
         String secuencia = null;
         try {
@@ -116,15 +116,15 @@ public class PersistenciaConexionesKioskos implements IPersistenciaConexionesKio
                     + "WHERE CK.EMPLEADO=E.SECUENCIA "
                     + "AND CK.SEUDONIMO= ? "
                     + "AND CK.NITEMPRESA= ? ";
-            System.out.println("Query: " + sqlQuery);
+            System.out.println("PersistenciaConexionesKioskos.getSecuenciaEmplPorSeudonimo(): sqlQuery: " + sqlQuery);
             Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
 
             query.setParameter(1, seudonimo);
             query.setParameter(2, nitEmpresa);
             secuencia = query.getSingleResult().toString();
-            System.out.println("secuencia: " + secuencia);
+            System.out.println("PersistenciaConexionesKioskos.getSecuenciaEmplPorSeudonimo(): secuencia: " + secuencia);
         } catch (Exception e) {
-            System.out.println("Error: " + this.getClass().getName() + ".getSecuenciaEmplPorSeudonimo: " + e.getMessage());
+            System.out.println("PersistenciaConexionesKioskos.getSecuenciaEmplPorSeudonimo(): Error: " + e.toString());
         }
         return secuencia;
     }
@@ -159,7 +159,7 @@ public class PersistenciaConexionesKioskos implements IPersistenciaConexionesKio
             Integer instancia = retorno.intValueExact();
             System.out.println("PersistenciaConexionesKioskos" + ".validarSeudonimoCorreo(): " + "retorno: " + retorno);
             System.out.println("PersistenciaConexionesKioskos" + ".validarSeudonimoCorreo(): " + "instancia: " + instancia);
-            
+
             resultado = instancia > 0;
         } catch (Exception e) {
             System.out.println("PersistenciaConexionesKioskos" + ".validarSeudonimoCorreo(): " + "Error: " + e.getMessage());
@@ -169,9 +169,9 @@ public class PersistenciaConexionesKioskos implements IPersistenciaConexionesKio
 
     @Override
     public BigDecimal getDocumentoPorSeudonimo(String seudonimo, String nitEmpresa, String cadena) {
-        System.out.println("PersistenciaConexionesKioskos"+".getDocumentoPorSeudonimo(): "+"Parametros: "
-                +"seudonimo: " + seudonimo 
-                + " nitEmpresa: " + nitEmpresa 
+        System.out.println("PersistenciaConexionesKioskos" + ".getDocumentoPorSeudonimo(): " + "Parametros: "
+                + "seudonimo: " + seudonimo
+                + " nitEmpresa: " + nitEmpresa
                 + " cadena: " + cadena);
         BigDecimal documento = null;
         try {
