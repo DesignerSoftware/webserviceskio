@@ -615,7 +615,6 @@ public class RhFacadeREST {
         } catch (IOException ioe) {
             ioe.printStackTrace();
             System.out.println("Error: " + ioe.getMessage());
-        } finally {
         }
         return Response.ok("Fichero subido a " + uploadFilePath).build();
     }

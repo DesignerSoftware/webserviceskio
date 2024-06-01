@@ -62,7 +62,7 @@ public class EmpleadosFacadeREST {
         persisEmpleados = new PersistenciaEmpleados();
         persisSolNod = new PersistenciaSolucionesNodos();
     }
-        
+
     protected EntityManager getEntityManager() {
         String unidadPersistencia = "wsreportePU";
         EntityManager em = Persistence.createEntityManagerFactory(unidadPersistencia).createEntityManager();
@@ -105,7 +105,9 @@ public class EmpleadosFacadeREST {
     @GET
     @Path("/datosEmpleadoNit/{empleado}/{nit}")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public Response getDatosEmpleadoNit(@PathParam("empleado") String empleado, @PathParam("nit") String nitEmpresa, @QueryParam("cadena") String cadena) {
+    public Response getDatosEmpleadoNit(@PathParam("empleado") String empleado, 
+            @PathParam("nit") String nitEmpresa, 
+            @QueryParam("cadena") String cadena) {
         System.out.println("parametros getDatosEmpleadosNit():  empleado: " + empleado + " nit: " + nitEmpresa + " cadena " + cadena);
         List s = null;
         try {
@@ -122,7 +124,9 @@ public class EmpleadosFacadeREST {
     @Path("/datosFamiliaEmpleado/{empleado}/{nit}")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response getDatosFamiliaEmpleado(@PathParam("empleado") String empleado, @PathParam("nit") String nitEmpresa, @QueryParam("cadena") String cadena) {
-        System.out.println("parametros getDatosFamiliaEmpleado(): empleado: " + empleado + " nit: " + nitEmpresa + " cadena: " + cadena);
+        System.out.println("EmpleadosFacadeREST" + ".getDatosFamiliaEmpleado(): " + "Parametros: "
+                + "empleado: " + empleado + " nit: " + nitEmpresa + " cadena: " + cadena
+        );
         List s = null;
         try {
             String secEmpl = getSecuenciaEmplPorSeudonimo(empleado, nitEmpresa, cadena);
@@ -134,32 +138,42 @@ public class EmpleadosFacadeREST {
                     + "ltel.tipotelefono||' - '|| \n"
                     + "--to_char(ltel.fechavigencia,'DD/MM/YYYY')||' '|| \n"
                     + "ltel.numerotelefono) telefono \n"
-                    + "from empleados e, empresas em, personas p, familiares f, tiposfamiliares t, personas fam , \n"
+                    //                    + "from empleados e, empresas em, personas p, familiares f, tiposfamiliares t, personas fam , \n"
+                    + "from ConexionesKioskos ck, empresas em, personas p, familiares f, tiposfamiliares t, personas fam , \n"
                     + "(select tel.secuencia, tel.persona, tel.fechavigencia, tel.numerotelefono, ttel.nombre tipotelefono \n"
-                    + "from telefonos tel, tipostelefonos ttel \n"
+                    + "from telefonos tel, tipostelefonos ttel, ConexionesKioskos cki \n"
                     + "where ttel.secuencia = tel.tipotelefono \n"
+                    + "AND cki.persona = tel.persona "
+                    + "and cki.seudonimo = ? "
+                    + "and cki.nitEmpresa = ? "
                     + "and tel.fechavigencia = (select max(teli.fechavigencia) \n"
                     + "    from telefonos teli \n"
                     + "    where teli.persona = tel.persona \n"
                     + "    and teli.tipotelefono = tel.tipotelefono) ) ltel \n"
                     + "where \n"
-                    + "p.secuencia = e.persona \n"
+                    //                    + "p.secuencia = e.persona \n"
+                    + "p.secuencia = ck.persona \n"
                     + "and e.empresa = em.secuencia \n"
                     + "and f.persona = p.secuencia \n"
                     + "and f.personafamiliar=fam.secuencia \n"
                     + "and t.secuencia = f.tipofamiliar \n"
                     + "and fam.secuencia = ltel.persona(+) \n"
-                    + "and e.secuencia = ? "
+                    //                    + "and e.secuencia = ? "
+                    + "and ck.seudonimo = ? "
+                    + "and cki.nitEmpresa = ? "
                     + "order by fam.nombre, fam.primerapellido, fam.segundoapellido, ltel.tipotelefono";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, secEmpl);
+            query.setParameter(1, empleado);
+            query.setParameter(2, nitEmpresa);
+            query.setParameter(3, empleado);
+            query.setParameter(4, nitEmpresa);
 
             s = query.getResultList();
             s.forEach(System.out::println);
             return Response.status(Response.Status.OK).entity(s).build();
         } catch (Exception ex) {
-            System.out.println("Error " + this.getClass().getName() + ".getDatosFamiliaEmpleado: " + ex);
-            return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
+            System.out.println(this.getClass().getName() + ".getDatosFamiliaEmpleado(): " + "Error " + ex);
+            return Response.status(Response.Status.NOT_FOUND).entity("Error " + ex).build();
         }
     }
 
@@ -167,7 +181,9 @@ public class EmpleadosFacadeREST {
     @Path("/telefonosEmpleadoNit")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response getTelefonosEmpleado(@QueryParam("usuario") String seudonimo, @QueryParam("nit") String nitEmpresa, @QueryParam("cadena") String cadena) {
-        System.out.println("parametros getTelefonosEmpleado(): empleado: " + seudonimo + " nit: " + nitEmpresa + " cadena " + cadena);
+        System.out.println("EmpleadoFacadeREST" + ".getTelefonosEmpleado(): " + "Parametros: "
+                + "empleado: " + seudonimo + " nit: " + nitEmpresa + " cadena " + cadena
+        );
         List s = null;
         try {
             String documento = getDocumentoPorSeudonimo(seudonimo, nitEmpresa, cadena);
@@ -176,14 +192,19 @@ public class EmpleadosFacadeREST {
             String sqlQuery = "select "
                     + "t.numerotelefono numeroTelefono,  "
                     + "tt.nombre tipoTelefono "
-                    + "from empleados e, conexioneskioskos ck, empresas em, personas p, telefonos t, tipostelefonos tt "
-                    + "where ck.empleado=e.secuencia "
-                    + "and e.persona=p.secuencia "
-                    + "and e.empresa=em.secuencia   "
+                    //                    + "from empleados e, conexioneskioskos ck, empresas em, personas p, telefonos t, tipostelefonos tt "
+                    + "from conexioneskioskos ck, empresas em, personas p, telefonos t, tipostelefonos tt "
+                    //                    + "where ck.empleado=e.secuencia "
+                    + "where ck.persona=p.secuencia "
+                    //                    + "and e.persona=p.secuencia "
+                    //                    + "and e.empresa=em.secuencia   "
+                    + "and ck.nitEmpresa=em.nit "
                     + "and e.persona = t.persona(+) "
                     + "and t.fechavigencia = (select max(ti.fechavigencia) "
-                    + "                        from telefonos ti where ti.persona = t.persona and ti.fechavigencia <= sysdate "
-                    + ") "
+                    + "  from telefonos ti "
+                    + "  where ti.persona = t.persona "
+                    + "  and ti.fechavigencia <= sysdate) "
+                    //                    + ") "
                     + "and t.tipotelefono = tt.secuencia(+) "
                     + "and p.numerodocumento= ? "
                     + "and em.nit= ? ";
@@ -203,14 +224,18 @@ public class EmpleadosFacadeREST {
     /**
      * Devuelve Lista de experiencias laborales
      *
-     * @param secuenciaEmpleado, nitEmpresa, cadena
+     * @param empleado
+     * @param nitEmpresa
+     * @param cadena
      * @return Lista de experiencias laborales
      */
     @GET
     @Path("/datosExperienciaLab")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response getDatosExperienciaLab(@QueryParam("empleado") String empleado, @QueryParam("nit") String nitEmpresa, @QueryParam("cadena") String cadena) {
-        System.out.println("parametros getDatosExperienciaLab(): empleado: " + empleado + " nit: " + nitEmpresa + " cadena: " + cadena);
+        System.out.println("EmpleadosFacadeREST" + ".getDatosExperienciaLab(): " + "Parametros: "
+                + "empleado: " + empleado + " nit: " + nitEmpresa + " cadena: " + cadena
+        );
         List exLab = null;
         try {
             String secEmpl = getDocumentoPorSeudonimo(empleado, nitEmpresa, cadena);
@@ -228,17 +253,20 @@ public class EmpleadosFacadeREST {
                     + "mo.nombre motivo, \n"
                     + "sec.descripcion sectorec \n"
                     + "from hvexperienciaslaborales ex, hvhojasdevida hv, personas p, motivosretiros mo, \n"
-                    + "sectoreseconomicos sec, empleados e \n"
+                    //                    + "sectoreseconomicos sec, empleados e \n"
+                    + "sectoreseconomicos sec, ConexionesKioskos ck \n"
                     + "where ex.hojadevida = hv.secuencia \n"
-                    + "and e.persona = p.secuencia \n"
+                    //                    + "and e.persona = p.secuencia \n"
                     + "and hv.persona = p.secuencia \n"
+                    + "and ck.persona = p.secuencia \n"
                     + "and ex.motivoretiro = mo.secuencia(+) \n"
                     + "and ex.sectoreconomico = sec.secuencia(+) \n"
                     + "and p.numerodocumento = ? \n"
+                    + "and ck.nitEmpresa = ? \n"
                     + "order by ex.fechahasta";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpl);
-
+            query.setParameter(2, nitEmpresa);
             exLab = query.getResultList();
             exLab.forEach(System.out::println);
             return Response.status(Response.Status.OK).entity(exLab).build();
@@ -267,7 +295,7 @@ public class EmpleadosFacadeREST {
             }
             documento = query.getSingleResult().toString();
         } catch (Exception e) {
-            System.out.println("Error: " + ConexionesKioskosFacadeREST.class.getName() + " getDocumentoCorreoODocumento: " + e.getMessage());
+            System.out.println(ConexionesKioskosFacadeREST.class.getName() + " getDocumentoCorreoODocumento: " + "Error: " + e.getMessage());
             try {
                 String sqlQuery2 = "SELECT P.NUMERODOCUMENTO DOCUMENTO "
                         + "FROM PERSONAS P, EMPLEADOS E "
@@ -817,9 +845,11 @@ public class EmpleadosFacadeREST {
         try {
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
-            sqlQuery = "SELECT P.EMAIL FROM PERSONAS P, conexioneskioskos ck "
-                    + "WHERE p.secuencia=ck.persona and "
-                    + " ck.seudonimo= ? and ck.nitempresa= ? ";
+            sqlQuery = "SELECT P.EMAIL "
+                    + "FROM PERSONAS P, conexioneskioskos ck "
+                    + "WHERE p.secuencia=ck.persona "
+                    + "AND ck.seudonimo= ? "
+                    + "and ck.nitempresa= ? ";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, seudonimo);
             query.setParameter(2, nitEmpresa);
@@ -849,25 +879,32 @@ public class EmpleadosFacadeREST {
             String sqlQuery = "select "
                     + "te.nombre, p.descripcion, i.descripcion institucion, to_char(vf.fechavigencia, 'dd/mm/yyyy') fechaVigencia, "
                     + "to_char(vf.fechavencimiento, 'dd/mm/yyyy') fechaVencimiento, ad.descripcion adiest, vf.NUMEROTARJETA, vf.OBSERVACION, "
-                    + "to_char(FECHAEXPEDICIONTARJETA, 'dd/mm/yyyy') fechaExpedicionTarjeta, to_char(FECHAVENCIMIENTOTARJETA, 'dd/mm/yyyy') fechaVencimientoTarjeta "
+                    + "to_char(FECHAEXPEDICIONTARJETA, 'dd/mm/yyyy') fechaExpedicionTarjeta"
+                    + ", to_char(FECHAVENCIMIENTOTARJETA, 'dd/mm/yyyy') fechaVencimientoTarjeta "
                     + "from "
-                    + "empleados e, personas per, vigenciasformales vf, tiposeducaciones te, profesiones p, instituciones i, adiestramientosf ad "
+                    //                    + "empleados e, personas per, vigenciasformales vf, tiposeducaciones te, profesiones p, instituciones i, adiestramientosf ad "
+                    + "personas per, vigenciasformales vf, tiposeducaciones te, profesiones p, instituciones i, adiestramientosf ad "
+                    + ", ConexionesKioskos ck "
                     + "where "
                     + "vf.persona=per.secuencia "
-                    + "and e.persona=per.secuencia "
+                    //                    + "and e.persona=per.secuencia "
+                    + "AND ck.persona = per.secuencia "
                     + "and vf.tipoeducacion=te.secuencia "
                     + "and vf.profesion = p.secuencia "
                     + "and vf.institucion = i.secuencia(+) "
                     + "and ad.secuencia(+)=vf.adiestramientof "
-                    + "and e.secuencia=? "
+                    //                    + "and e.secuencia=? "
+                    + "AND ck.seudonimo = ? "
+                    + "AND ck.nitEmpresa = ? "
                     + "order by vf.fechavigencia DESC ";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, secEmpl);
+            query.setParameter(1, seudonimo);
+            query.setParameter(2, nitEmpresa);
             s = query.getResultList();
             s.forEach(System.out::println);
             return Response.status(Response.Status.OK).entity(s).build();
         } catch (Exception ex) {
-            System.out.println("Error " + this.getClass().getName() + "getEducacionesFormales(): " + ex);
+            System.out.println(this.getClass().getName() + ".getEducacionesFormales(): " + "Error-1: " + ex);
             try {
                 String sqlQuery = "select "
                         + "te.nombre, p.descripcion, i.descripcion institucion, to_char(vf.fechavigencia, 'dd/mm/yyyy') fechaVigencia, "
@@ -885,6 +922,7 @@ public class EmpleadosFacadeREST {
                         + "and e.secuencia=? "
                         + "order by vf.fechavigencia desc";
             } catch (Exception e) {
+                System.out.println(this.getClass().getName() + ".getEducacionesFormales(): " + "Error-2: " + e);
             }
             return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
         }
@@ -901,26 +939,32 @@ public class EmpleadosFacadeREST {
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
             String sqlQuery = "select "
-                    + "c.nombre CURSO, vf.titulo, i.descripcion institucion, to_char(vf.fechavigencia, 'dd/mm/yyyy') fechavigencia, to_char(vf.fechavencimiento, 'dd/mm/yyyy') fechaVencimiento, "
-                    + "ad.DESCCRIPCION "
-                    + "adiest, vf.OBSERVACION \n"
+                    + "c.nombre CURSO, vf.titulo, i.descripcion institucion, to_char(vf.fechavigencia, 'dd/mm/yyyy') fechavigencia"
+                    + ", to_char(vf.fechavencimiento, 'dd/mm/yyyy') fechaVencimiento, "
+                    + "ad.DESCCRIPCION adiest"
+                    + ", vf.OBSERVACION \n"
                     + "from "
-                    + "empleados e, personas per, vigenciasnoformales vf, cursos c, instituciones i, adiestramientosnf ad "
+                    //                    + "empleados e, personas per, vigenciasnoformales vf, cursos c, instituciones i, adiestramientosnf ad "
+                    + "ConexionesKioskos ck, personas per, vigenciasnoformales vf, cursos c, instituciones i, adiestramientosnf ad "
                     + "where "
                     + "vf.persona=per.secuencia "
-                    + "and e.persona=per.secuencia "
+                    //                    + "and e.persona=per.secuencia "
+                    + "and ck.persona=per.secuencia "
                     + "and vf.curso = c.secuencia "
                     + "and vf.institucion = i.secuencia(+) "
                     + "and ad.secuencia(+)=vf.adiestramientonf "
-                    + "and e.secuencia= ? "
+                    //                    + "and e.secuencia= ? "
+                    + "and ck.seudonimo= ? "
+                    + "and ck.nitEmpresa= ? "
                     + "order by vf.fechavigencia desc";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, secEmpl);
+            query.setParameter(1, seudonimo);
+            query.setParameter(2, nitEmpresa);
             s = query.getResultList();
             s.forEach(System.out::println);
             return Response.status(Response.Status.OK).entity(s).build();
         } catch (Exception ex) {
-            System.out.println("Error " + this.getClass().getName() + "getEducacionesNoFormales(): " + ex);
+            System.out.println(this.getClass().getName() + "getEducacionesNoFormales(): " + "Error " + ex);
             return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
         }
     }
@@ -928,7 +972,10 @@ public class EmpleadosFacadeREST {
     @GET
     @Path("/getNotificaciones")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public Response getNotificaciones(@QueryParam("usuario") String seudonimo, @QueryParam("tipoNotificacion") String tipoNotificacion, @QueryParam("empresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
+    public Response getNotificaciones(@QueryParam("usuario") String seudonimo,
+            @QueryParam("tipoNotificacion") String tipoNotificacion,
+            @QueryParam("empresa") String nitEmpresa,
+            @QueryParam("cadena") String cadena) {
         List s = null;
         String secEmpl = null;
         try {
@@ -950,7 +997,8 @@ public class EmpleadosFacadeREST {
                         + "EMPLEADOS JEFE, \n"
                         + "VwVacaPendientesEmpleados V \n"
                         + "WHERE \n"
-                        + "KES.ESTADO = 'ENVIADO' AND KS.EMPLEADOJEFE =? \n"
+                        + "KES.ESTADO = 'ENVIADO' "
+                        + "AND KS.EMPLEADOJEFE =? \n"
                         + "AND KES.SECUENCIA = (SELECT MAX(t3.SECUENCIA) FROM KIOSOLICIVACAS t4, KIOESTADOSSOLICI t3 \n"
                         + "WHERE t4.SECUENCIA = KS.SECUENCIA AND t4.SECUENCIA = t3.KIOSOLICIVACA \n"
                         + "AND KS.SECUENCIA = KES.KIOSOLICIVACA) \n"
@@ -1391,7 +1439,7 @@ public class EmpleadosFacadeREST {
     @Path("/ultimospagos")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response getUltimosPagos(@QueryParam("nit") String nitEmpresa, @QueryParam("cadena") String cadena,
-             @QueryParam("seudonimo") String seudonimo) {
+            @QueryParam("seudonimo") String seudonimo) {
         System.out.println("parametros getUltimosPagos():" + " nit: " + nitEmpresa + " cadena: " + cadena
                 + " seudonimo: " + seudonimo);
         List exLab = null;
@@ -1452,7 +1500,7 @@ public class EmpleadosFacadeREST {
     @Path("/provisiones")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response getProvisiones(@QueryParam("nit") String nitEmpresa, @QueryParam("cadena") String cadena,
-             @QueryParam("seudonimo") String seudonimo) {
+            @QueryParam("seudonimo") String seudonimo) {
         System.out.println("parametros getProvisiones():" + " nit: " + nitEmpresa + " cadena: " + cadena
                 + " seudonimo: " + seudonimo);
         List exLab = null;
