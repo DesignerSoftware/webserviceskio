@@ -86,6 +86,12 @@ public class PersistenciaKioSoliciAusentismos implements IPersistenciaKioSoliciA
 
     @Override
     public List getSolicitudesSinProcesarPorJefe(String nitEmpresa, String cadena, String estado, String secuenciaJefe) {
+        System.out.println("PersistenciaKioSoliciAusentismos" + ".getSolicitudesSinProcesarPorJefe(): " + "Parametros: "
+                + "nitEmpresa: " + nitEmpresa
+                + " cadena: " + cadena
+                + " estado: " + estado
+                + " secuenciaJefe: " + secuenciaJefe
+        );
         List resultado = null;
         String consulta = "SELECT \n"
                 + "empl.codigoempleado documento, \n"
@@ -103,8 +109,8 @@ public class PersistenciaKioSoliciAusentismos implements IPersistenciaKioSoliciA
                 + "(SELECT descripcion FROM TiposAusentismos ti WHERE knsa.tipoausentismo = ti.secuencia) tipo, \n"
                 + "(SELECT descripcion FROM ClasesAusentismos ca WHERE knsa.claseausentismo = ca.secuencia) clase, \n"
                 + "DECODE(knsa.kionovedadprorroga, NULL, 'no', 'si'), \n"
-                + "(SELECT dc.codigo FROM DiagnosticosCategorias dc WHER dc.secuencia = knsa.diagnosticocategoria) codigo, \n"
-                + "(SELECT dc.descripcion FROM DiagnosticosCategorias dc WHER dc.secuencia = knsa.diagnosticocategoria) descripcion, \n"
+                + "(SELECT dc.codigo FROM DiagnosticosCategorias dc WHERE dc.secuencia = knsa.diagnosticocategoria) codigo, \n"
+                + "(SELECT dc.descripcion FROM DiagnosticosCategorias dc WHERE dc.secuencia = knsa.diagnosticocategoria) descripcion, \n"
                 + "(select per.primerapellido||' '||per.segundoapellido||' '||per.nombre \n"
                 + " FROM personas per, empleados empli \n"
                 + " WHERE empli.persona=per.secuencia \n"
@@ -149,6 +155,7 @@ public class PersistenciaKioSoliciAusentismos implements IPersistenciaKioSoliciA
             return resultado;
         } catch (Exception e) {
             System.out.println("PersistenciaKioSoliciAusentismos" + ".getSolicitudesSinProcesarPorJefe(): " + "Error-1: " + e.toString());
+            e.printStackTrace();
             return null;
         }
     }
@@ -191,7 +198,7 @@ public class PersistenciaKioSoliciAusentismos implements IPersistenciaKioSoliciA
                 + ", Empleados empl \n"
                 + ", Personas p \n"
                 + ", KioNovedadesSoliciausent knsa \n"
-                + ", KioEstadosSoliciausent kes \n"
+                + ", KioEstadosSoliciAusent kes \n"
                 + ", Empresas em \n"
                 + ", Personas auto \n"
                 + "WHERE \n"
@@ -202,7 +209,7 @@ public class PersistenciaKioSoliciAusentismos implements IPersistenciaKioSoliciA
                 + "AND empl.empresa = em.secuencia \n"
                 + "AND ksa.autorizador = auto.secuencia \n"
                 + "AND kes.fechaprocesamiento = (select max(ei.fechaprocesamiento) \n"
-                + "  FROM kioestadossoliciausent ei \n"
+                + "  FROM KioEstadosSoliciAusent ei \n"
                 + "  WHERE ei.kiosoliciausentismo = ksa.secuencia) \n"
                 + "AND knsa.fechainicialausentismo = (select MIN(ei.fechainicialausentismo) \n"
                 + "  FROM KioNovedadesSoliciAusent ei \n"

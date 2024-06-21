@@ -54,7 +54,9 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
@@ -542,7 +544,7 @@ public class kioCausasAusentismosFacadeREST {
         this.persisKioSoliciAusent = new PersistenciaKioSoliciAusentismos();
         try {
             String secuenciaJefe = this.persisConKiosko.getSecuenciaEmplPorSeudonimo(jefe, nitEmpresa, cadena);
-            this.persisKioSoliciAusent.getSolicitudesSinProcesarPorJefe(nitEmpresa, cadena, estado, secuenciaJefe);
+            s = this.persisKioSoliciAusent.getSolicitudesSinProcesarPorJefe(nitEmpresa, cadena, estado, secuenciaJefe);
             System.out.println("kioCausasAusentismosFacadeREST" + ".getSoliciSinProcesarJefe(): " + "Lista de solicitudes sin procesar por jefe ");
 
             s.forEach(System.out::println);
@@ -646,13 +648,16 @@ public class kioCausasAusentismosFacadeREST {
         String nombreAutorizaSolici = "";
         String correoAutorizaSolici = null;
         String fecha = new SimpleDateFormat("dd/MM/yyyy").format(new Date());
+        Map<String, String> resu = new HashMap<>();
         try {
             IntervinientesSolAusent intervinientes = this.persisKioSoliciAusent.getIntervinientesPorEstadoSolici(secKioEstadoSolici, nitEmpresa, cadena);
 //            String secEmplEjecuta = this.persisConKiosko.getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
-            if (!intervinientes.getAutorizador().toPlainString().isEmpty()) {
+//            if (!intervinientes.getAutorizador().toPlainString().isEmpty()) {
+            if (intervinientes.getAutorizador() != null && !intervinientes.getAutorizador().toPlainString().isEmpty()) {
 //                secEmplEjecuta = intervinientes.getAutorizador().toPlainString();
                 secPerAutoriza = intervinientes.getAutorizador().toPlainString();
-            } else if (!intervinientes.getEmpleadoJefe().toPlainString().isEmpty()) {
+//            } else if (!intervinientes.getEmpleadoJefe().toPlainString().isEmpty()) {
+            } else if (intervinientes.getEmpleadoJefe() != null && !intervinientes.getEmpleadoJefe().toPlainString().isEmpty()) {
                 secEmplEjecuta = intervinientes.getEmpleadoJefe().toPlainString();
             } else {
 //                System.out.println("kioCausasAusentismosFacadeREST" + ".setNuevoEstadoSolici(): " + "Error: " + "Al consultar quien procesa la solicitud");
@@ -693,8 +698,11 @@ public class kioCausasAusentismosFacadeREST {
                 res = this.persisKioSoliciAusent.creaEstadoSolicitudAusent(nitEmpresa, cadena, fechaGeneracion, estado, secEmplEjecuta, secPerAutoriza, secKioEstadoSolici);
             }
         } catch (Exception ex) {
-            System.out.println("kioCausasAusentismosFacadeREST" + ".setNuevoEstadoSolici(): " + "Error-2: " + ex.toString());
-            return Response.status(Response.Status.NOT_FOUND).entity("Error-2" + ex.toString()).build();
+            System.out.println("kioCausasAusentismosFacadeREST" + ".setNuevoEstadoSolici(): " + "Error-3: " + ex.toString());
+            resu.put("solicitud", "error"); //Solicitud
+            resu.put("correo", "error"); //Correo
+            resu.put("excepcion", "Error-3: " + ex.toString()); //Excepcion
+            return Response.status(Response.Status.NOT_FOUND).entity(resu).build();
         }
         System.out.println("kioCausasAusentismosFacadeREST" + ".setNuevoEstadoSolici(): " + "solicitud " + estado + " con éxito.");
         try {
@@ -733,10 +741,9 @@ public class kioCausasAusentismosFacadeREST {
                 System.out.println("kioCausasAusentismosFacadeREST" + ".setNuevoEstadoSolici(): " + "fechaInicioAusent: " + fechaInicioAusent);
                 System.out.println("kioCausasAusentismosFacadeREST" + ".setNuevoEstadoSolici(): " + "urlKio: " + urlKio);
 
-                
                 ConfiCorreoKiosko cck = this.persisConfiCorreoKio.obtenerConfiguracionCorreoNativo(nitEmpresa, cadena);
                 String servidorsmtp = cck.getServidorSMTP();
-                
+
                 if (estado.equals("CANCELADO")) {
                     if (c.enviarCorreoVacaciones(
                             cck.getServidorSMTP(), cck.getPuerto(), cck.getAutenticado(), cck.getStartTLS(), cck.getRemitente(), cck.getClave(),
@@ -769,10 +776,27 @@ public class kioCausasAusentismosFacadeREST {
             } else {
                 System.out.println("kioCausasAusentismosFacadeREST" + ".setNuevoEstadoSolici(): " + "Error al procesar la solicitud.");
             }
-            return Response.status(Response.Status.OK).entity(res > 0).build();
+//            return Response.status(Response.Status.OK).entity(res > 0).build();
+            resu.put("solicitud", "procesada"); //Solicitud
+            resu.put("correo", "enviado"); //Correo
+            resu.put("excepcion", ""); //Excepcion
+            return Response.status(Response.Status.OK).entity(resu).build();
         } catch (Exception ex) {
-            System.out.println("kioCausasAusentismosFacadeREST" + ".setNuevoEstadoSolici(): " + "Error-3: " + ex.toString());
-            return Response.status(Response.Status.NOT_FOUND).entity("Error-3: " + ex.toString()).build();
+            System.out.println("kioCausasAusentismosFacadeREST" + ".setNuevoEstadoSolici(): " + "Error-4: " + ex.toString());
+
+            if (res > 0) {
+                resu.put("solicitud", "procesada"); //Solicitud
+                resu.put("correo", "error"); //Correo
+                resu.put("excepcion", "Error-4: " + ex.toString()); //Excepcion
+//                return Response.status(Response.Status.OK).entity(resu).build();
+                return Response.status(Response.Status.OK).entity(resu).build();
+            } else {
+                resu.put("solicitud", "error"); //Solicitud
+                resu.put("correo", "error"); //Correo
+                resu.put("excepcion", "Error-5: " + ex.toString()); //Excepcion
+//                return Response.status(Response.Status.NOT_FOUND).entity("Error-3: " + ex.toString()).build();
+                return Response.status(Response.Status.NOT_FOUND).entity(resu).build();
+            }
         }
     }
 
@@ -997,7 +1021,7 @@ public class kioCausasAusentismosFacadeREST {
                     .build();
         }
     }
-    
+
     @GET
     @Path("/solicitudesPorAutorizador")
     @Produces(MediaType.APPLICATION_JSON)

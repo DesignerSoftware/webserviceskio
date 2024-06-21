@@ -790,22 +790,25 @@ public class EnvioCorreo {
     }
 
     public String getConfigCorreoServidorSMTP(String nitEmpresa, String cadena) {
-        System.out.println("getConfigCorreoServidorSMTP()");
+        System.out.println("EnvioCorreo" + ".getConfigCorreoServidorSMTP(): " + "Parametros: "
+                + "nitEmpresa: " + nitEmpresa
+                + " cadena: " + cadena);
         String servidorsmtp = "smtp.designer.com.co";
+        String sqlQuery = "SELECT servidorSMTP "
+                + "FROM ConfiCorreoKiosko cck, Empresas em "
+                + "WHERE cck.empresa=em.secuencia "
+                + "and em.nit = ? ";
+        System.out.println("Query: " + sqlQuery);
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT servidorSMTP "
-                    + "FROM ConfiCorreoKiosko cck, Empresas em "
-                    + "WHERE cck.empresa=em.secuencia "
-                    + "em.nit = ? ";
-            System.out.println("Query: " + sqlQuery);
+
             Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
             servidorsmtp = query.getSingleResult().toString();
             System.out.println("Servidor smtp: " + servidorsmtp);
         } catch (Exception e) {
-            System.out.println("Error: getConfigCorreoServidorSMTP: " + e.getMessage());
+            System.out.println("Error-1: " + "EnvioCorreo" + ".getConfigCorreoServidorSMTP(): " + e.toString());
         }
         return servidorsmtp;
     }
@@ -817,10 +820,10 @@ public class EnvioCorreo {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT emailContacto "
-                    + "FROM KioPersonalizaciones kp, Empresas em WHERE "
-                    + "kp.empresa=em.secuencia "
-                    + "em.nit= ? ) "
-                    + "kp.tipoContacto='NOMINA' "
+                    + "FROM KioPersonalizaciones kp, Empresas em "
+                    + "WHERE kp.empresa=em.secuencia "
+                    + "and em.nit= ?  "
+                    + "and kp.tipoContacto='NOMINA' "
                     + "AND ROWNUM<=1 ";
             System.out.println("Query: " + sqlQuery);
             Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);

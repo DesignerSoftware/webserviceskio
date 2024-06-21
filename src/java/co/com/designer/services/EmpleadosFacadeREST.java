@@ -129,7 +129,7 @@ public class EmpleadosFacadeREST {
         );
         List s = null;
         try {
-            String secEmpl = getSecuenciaEmplPorSeudonimo(empleado, nitEmpresa, cadena);
+//            String secEmpl = getSecuenciaEmplPorSeudonimo(empleado, nitEmpresa, cadena);
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
             String sqlQuery = "select \n"
@@ -153,14 +153,14 @@ public class EmpleadosFacadeREST {
                     + "where \n"
                     //                    + "p.secuencia = e.persona \n"
                     + "p.secuencia = ck.persona \n"
-                    + "and e.empresa = em.secuencia \n"
+//                    + "and e.empresa = em.secuencia \n"
                     + "and f.persona = p.secuencia \n"
                     + "and f.personafamiliar=fam.secuencia \n"
                     + "and t.secuencia = f.tipofamiliar \n"
                     + "and fam.secuencia = ltel.persona(+) \n"
                     //                    + "and e.secuencia = ? "
                     + "and ck.seudonimo = ? "
-                    + "and cki.nitEmpresa = ? "
+                    + "and ck.nitEmpresa = ? "
                     + "order by fam.nombre, fam.primerapellido, fam.segundoapellido, ltel.tipotelefono";
             Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, empleado);
@@ -199,7 +199,8 @@ public class EmpleadosFacadeREST {
                     //                    + "and e.persona=p.secuencia "
                     //                    + "and e.empresa=em.secuencia   "
                     + "and ck.nitEmpresa=em.nit "
-                    + "and e.persona = t.persona(+) "
+//                    + "and e.persona = t.persona(+) "
+                    + "and t.persona = p.secuencia "
                     + "and t.fechavigencia = (select max(ti.fechavigencia) "
                     + "  from telefonos ti "
                     + "  where ti.persona = t.persona "

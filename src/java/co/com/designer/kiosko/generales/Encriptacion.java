@@ -23,36 +23,6 @@ public class Encriptacion {
     private static SecretKeySpec secretKey;
     private static byte[] key;
 
-    /*public static void main(String[] args) {
-        String text = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI3OTgwMzEwMyIsImlhdCI6MTYzMzQ2MjE5NywiZXhwIjoxNjM2MDU3Nzk3LCJpc3MiOiJodHRwczovL3d3dy5kZXNpZ25lci5jb20uY28iLCJlbXByZXNhIjoiODYwMDA1MTE0IiwiZG9jdW1lbnRvIjoiNzk4MDMxMDMiLCJjYWRlbmEiOiJERUZBVUxUMSIsImdydXBvIjoiR3J1cG9FbXByZXNhcmlhbDEifQ.69h0uCMGal5K5CoQNS9RVOIyLNH7WClmvyF6mPb5Y0Q";
-        String prueba1 = encrypt(text, "Manager01");
-        //String prueba2 = decrypt(prueba1, "Manager01");
-
-        //System.out.println("Cadena Original: " + text);
-        //System.out.println("Escriptado     : " + prueba1);
-        //System.out.println("Desencriptado  : " + prueba2);
-        try {
-            System.out.println("Cadena Original: " + text);
-            System.out.println("Escriptado     : " + prueba1);
-            String hex = convertStringToHex(prueba1);
-            System.out.println("convertStringToHex     : " + hex);
-            String str = convertHexToString(hex);
-            System.out.println("convertHexToString     : " + str);
-            String prueba2 = decrypt(str, "Manager01");
-            System.out.println("Desencriptado  : " + prueba2);
-            
-        } catch (Exception e) {
-        }
-
-        ///sdnaodisnasd
-
-        /*
-        ToGv7n61bHWgrlRgz5ZYXQ==
-        thalia
-        CD7ZtN83LgDq9f8Fpd9fhA==
-         */
-    //}
-
     private static String convertStringToHex(String str) {
         StringBuilder stringBuilder = new StringBuilder();
 

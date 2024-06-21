@@ -1641,23 +1641,23 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
     }
 
     public String getCorreoSoporteKiosco(String nitEmpresa, String cadena) {
-        System.out.println("getConfigCorreoServidorSMTP()");
+        System.out.println("VwvacaPendientesEmpleadosFacadeREST"+".getConfigCorreoServidorSMTP()");
         String emailSoporte = "";
-        try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            this.rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT EMAILCONTACTO "
+        String sqlQuery = "SELECT EMAILCONTACTO "
                     + "FROM KIOPERSONALIZACIONES "
                     + "WHERE TIPOCONTACTO = 'NOMINA' "
                     + "EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT= ? ) "
                     + "AND ROWNUM<=1";
-            System.out.println("Query: " + sqlQuery);
+        try {
+            String esquema = getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
+            System.out.println("VwvacaPendientesEmpleadosFacadeREST"+".getConfigCorreoServidorSMTP(): "+"Query: " + sqlQuery);
             Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
             emailSoporte = query.getSingleResult().toString();
-            System.out.println("Email soporte: " + emailSoporte);
+            System.out.println("VwvacaPendientesEmpleadosFacadeREST"+".getConfigCorreoServidorSMTP(): "+"emailSoporte: " + emailSoporte);
         } catch (Exception e) {
-            System.out.println("Error: getCorreoSoporteKiosco: " + e.getMessage());
+            System.out.println("VwvacaPendientesEmpleadosFacadeREST"+".getConfigCorreoServidorSMTP(): "+"Error-1: " + e.toString());
         }
         return emailSoporte;
     }
