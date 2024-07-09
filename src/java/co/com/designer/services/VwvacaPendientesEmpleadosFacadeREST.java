@@ -183,14 +183,14 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         try {
             this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "  SELECT \n"
-                    + "  t1.CODIGOEMPLEADO, P.PRIMERAPELLIDO||' '||P.SEGUNDOAPELLIDO||' '||P.NOMBRE NOMBRECOMPLETO,\n"
+                    + "  t1.CODIGOEMPLEADO, P.PRIMERAPELLIDO||' '||P.SEGUNDOAPELLIDO||' '||P.NOMBRE NOMBRECOMPLETO, \n"
                     + "  to_char(t2.FECHAGENERACION, 'DD/MM/YYYY HH:mm:ss') solicitud, \n"
-                    + "  to_char(kn.FECHAINICIALDISFRUTE, 'DD/MM/YYYY HH:mm:ss') FECHAINICIALDISFRUTE,\n"
-                    + "  to_char(T0.FECHAPROCESAMIENTO, 'DD/MM/YYYY HH:mm:ss') FECHAPROCESAMIENTO,\n"
+                    + "  to_char(kn.FECHAINICIALDISFRUTE, 'DD/MM/YYYY HH:mm:ss') FECHAINICIALDISFRUTE, \n"
+                    + "  to_char(T0.FECHAPROCESAMIENTO, 'DD/MM/YYYY HH:mm:ss') FECHAPROCESAMIENTO, \n"
                     + "  t0.SECUENCIA, NVL(t0.MOTIVOPROCESA, 'N/A'), \n"
-                    + "  to_char(kn.ADELANTAPAGOHASTA, 'DD/MM/YYYY HH:mm:ss') FECHAFINVACACIONES,\n"
-                    + "  to_char(kn.fechaSiguienteFinVaca, 'DD/MM/YYYY HH:mm:ss') fecharegresolaborar,\n"
-                    + "  kn.dias,\n"
+                    + "  to_char(kn.ADELANTAPAGOHASTA, 'DD/MM/YYYY HH:mm:ss') FECHAFINVACACIONES, \n"
+                    + "  to_char(kn.fechaSiguienteFinVaca, 'DD/MM/YYYY HH:mm:ss') fecharegresolaborar, \n"
+                    + "  kn.dias, \n"
                     + "  TO_CHAR(v.INICIALCAUSACION, 'DD/MM/YYYY')||' a '||TO_CHAR(v.FINALCAUSACION, 'DD/MM/YYYY') periodo,\n"
                     + "  (select pei.primerapellido||' '||pei.segundoapellido||' '||pei.nombre from personas pei, empleados ei\n"
                     + "  where pei.secuencia=ei.persona and t2.EMPLEADOJEFE=ei.secuencia) empleadojefe,\n"
@@ -1032,7 +1032,7 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
             String nombreAutorizaSolici = "";
             String correoAutorizaSolici = null;
             String fecha = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss").format(new Date());
-            if (motivo == null || motivo == "") {
+            if (motivo == null || motivo.isEmpty() ) {
                 motivo = " ";
             }
             try {

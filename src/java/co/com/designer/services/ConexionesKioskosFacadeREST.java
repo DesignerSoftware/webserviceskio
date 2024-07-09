@@ -52,6 +52,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
 import java.sql.Date;
+import java.util.Base64;
 import javax.json.JsonValue;
 import org.json.JSONException;
 import passwordGenerator.GeneradorClave;
@@ -311,7 +312,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
         System.out.println(res);
         boolean resultado = false;
         int conteo = 0;
-        BigDecimal retorno = null;
+//        BigDecimal retorno = null;
         JSONObject resp = new JSONObject();
         String mensaje = "";
         try {
@@ -323,7 +324,8 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
             query.setParameter(2, seudonimo);
             query.setParameter(3, nitEmpresa);
             conteo = query.executeUpdate();
-            resultado = conteo > 0 ? true : false;
+//            resultado = conteo > 0 ? true : false;
+            resultado = conteo > 0;
             if (conteo > 0) {
                 System.out.println("modificado");
             } else {
@@ -337,8 +339,10 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
         try {
             resp.put("modificado", resultado);
             resp.put("Mensaje", mensaje);
+        } catch (JSONException e) {
+            System.out.println("Error al crear JSON respuesta " + e.toString());
         } catch (Exception e) {
-            System.out.println("Error al crear JSON respuesta " + e.getMessage());
+            System.out.println("Error al crear JSON respuesta -2 " + e.toString());
         }
         System.out.println(resp);
 
@@ -366,7 +370,8 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
             Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, jwt);
             conteo = query.executeUpdate();
-            resultado = conteo > 0 ? true : false;
+//            resultado = conteo > 0 ? true : false;
+            resultado = conteo > 0;
             if (conteo > 0) {
                 System.out.println("modificado");
             } else {
@@ -380,8 +385,10 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
         try {
             resp.put("modificado", resultado);
             resp.put("Mensaje", mensaje);
-        } catch (Exception e) {
+        } catch (JSONException e) {
             System.out.println("Error al crear JSON respuesta " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("ConexionesKioskosFacadeREST." + "inactivaToken-2(): " + "Error al crear JSON respuesta " + e.toString());
         }
         System.out.println(resp);
 
@@ -401,36 +408,66 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
             @QueryParam("cadena") String cadena) {
         System.out.println("Parametros inactivaTokensTipo(): seudonimo: " + seudonimo + ", nit: " + nitEmpresa + ", tipo: " + tipo + ", cadena: " + cadena);
         boolean resultado = false;
-        int conteo = 0;
-        BigDecimal retorno = null;
+//        BigDecimal conteo = BigDecimal.ZERO;
+        int cambio = 0;
+//        BigDecimal retorno = null;
         JSONObject resp = new JSONObject();
         String mensaje = "";
+        /*String sqlQuery1 = "SELECT COUNT(*) "
+                + "FROM CONEXIONESTOKEN "
+                + "WHERE TIPO=? "
+                + "AND CONEXIONKIOSKO=(SELECT SECUENCIA "
+                + " FROM CONEXIONESKIOSKOS "
+                + " WHERE SEUDONIMO=? "
+                + " AND NITEMPRESA=? )"; */
+        String sqlQuery2 = "UPDATE CONEXIONESTOKEN "
+                + "SET ACTIVO='N' "
+                + "WHERE TIPO=? "
+                + "AND CONEXIONKIOSKO=(SELECT SECUENCIA "
+                + " FROM CONEXIONESKIOSKOS "
+                + " WHERE SEUDONIMO=? "
+                + " AND NITEMPRESA=? )";
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "UPDATE CONEXIONESTOKEN SET ACTIVO='N' WHERE TIPO=? "
-                    + "AND CONEXIONKIOSKO=(SELECT SECUENCIA FROM CONEXIONESKIOSKOS WHERE SEUDONIMO=? AND NITEMPRESA=?)";
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+//            String sqlQuery = "UPDATE CONEXIONESTOKEN SET ACTIVO='N' WHERE TIPO=? "
+//                    + "AND CONEXIONKIOSKO=(SELECT SECUENCIA FROM CONEXIONESKIOSKOS WHERE SEUDONIMO=? AND NITEMPRESA=?)";
+            /*Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery1);
             query.setParameter(1, tipo);
             query.setParameter(2, seudonimo);
             query.setParameter(3, nitEmpresa);
-            conteo = query.executeUpdate();
-            resultado = conteo > 0 ? true : false;
-            if (conteo > 0) {
+            conteo = (BigDecimal) query.getSingleResult();
+            if (!BigDecimal.ZERO.equals(conteo)) {*/
+            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery2);
+            query.setParameter(1, tipo);
+            query.setParameter(2, seudonimo);
+            query.setParameter(3, nitEmpresa);
+            cambio = query.executeUpdate();
+//                resultado = cambio > 0 ? true : false;
+            resultado = cambio > 0;
+            /*} else {
+                cambio = -1;
+                resultado = true;
+            }*/
+            if (cambio > 0) {
                 System.out.println("modificado");
+            } else if (cambio < 0) {
+                System.out.println("no hay registro: " + resultado);
             } else {
                 System.out.println("no modificado: " + resultado);
             }
         } catch (Exception e) {
-            System.out.println("Error ApiRest.inactivaTokensTipo(): " + e.getMessage());
-            mensaje = "Ha ocurrido un error " + e.getMessage();
+            mensaje = "Ha ocurrido un error " + e.toString();
+            System.out.println("ConexionesKioskosFacadeREST" + ".inactivaTokensTipo(): " + "Error-1: " + mensaje);
         }
 
         try {
             resp.put("modificado", resultado);
             resp.put("Mensaje", mensaje);
+        } catch (JSONException e) {
+            System.out.println("ConexionesKioskosFacadeREST" + ".inactivaTokensTipo(): " + "Error-2: " + "Error al crear JSON respuesta " + e.toString());
         } catch (Exception e) {
-            System.out.println("Error al crear JSON respuesta " + e.getMessage());
+            System.out.println("ConexionesKioskosFacadeREST" + ".inactivaTokensTipo(): " + "Error-3: " + e.toString());
         }
         System.out.println(resp);
 
@@ -1648,11 +1685,16 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
     @GET
     @Path("/restKiosco/jwtValidCuenta")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getJWTValidCuenta(@QueryParam("usuario") String usuario, @QueryParam("clave") String clave, @QueryParam("nit") String nit,
-            @QueryParam("urlKiosco") String urlKiosco, @QueryParam("cadena") String cadena, @QueryParam("grupo") String grupo) throws UnsupportedEncodingException {
-        System.out.println("Parametros getJWTValidCuenta(): usuario: " + usuario + ", clave: " + clave + ", nit: " + nit + ", cadena: " + cadena);
+    public Response getJWTValidCuenta(@QueryParam("usuario") String usuario, @QueryParam("clave") String claveCod,
+             @QueryParam("nit") String nit, @QueryParam("urlKiosco") String urlKiosco,
+             @QueryParam("cadena") String cadena, @QueryParam("grupo") String grupo)
+            throws UnsupportedEncodingException {
+        System.out.println("Parametros getJWTValidCuenta(): usuario: " + usuario + ", clave: " + claveCod + ", nit: " + nit + ", cadena: " + cadena);
         System.out.println("UrlKiosco recibido: " + urlKiosco);
         this.persisPersonas = new PersistenciaPersonas();
+//        byte[] decodedBytes = Base64.getDecoder().decode(clave) ;
+        String clave = new String(Base64.getDecoder().decode(claveCod));
+        System.out.println("Clave decodificada: " + clave);
         Boolean r = validarLogin(usuario, clave, nit, cadena);
         String passwordEncript = "Manager01";
         boolean creaRegistro = false;
@@ -1788,7 +1830,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
     @GET
     @Path("/obtenerFotoPerfil")
     @Produces({"image/png", "image/jpg", "image/gif"})
-    public Response obtenerFotoPerfil(@QueryParam("cadena") String cadena, 
+    public Response obtenerFotoPerfil(@QueryParam("cadena") String cadena,
             @QueryParam("usuario") String usuario, @QueryParam("nit") String nitEmpresa) {
         System.out.println("ConexionesKioskosFacadeREST" + ".obtenerFotoPerfil(): Parametros: "
                 + "cadena: " + cadena
@@ -1802,11 +1844,11 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
         String RUTAFOTO = this.persisGenKio.getPathFoto(nitEmpresa, cadena);
         String imagen = null;
         String sqlQuery = "SELECT CK.FOTOPERFIL "
-//                + "FROM CONEXIONESKIOSKOS CK, EMPLEADOS E "
+                //                + "FROM CONEXIONESKIOSKOS CK, EMPLEADOS E "
                 + "FROM CONEXIONESKIOSKOS CK "
-//                + "WHERE CK.EMPLEADO=E.SECUENCIA "
+                //                + "WHERE CK.EMPLEADO=E.SECUENCIA "
                 + "WHERE  "
-//                + "AND E.SECUENCIA = ? "
+                //                + "AND E.SECUENCIA = ? "
                 + "CK.SEUDONIMO = ? "
                 + "AND CK.NITEMPRESA = ? ";
         try {
@@ -1815,7 +1857,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
             if (secEmpl == null) {
                 secEmpl = this.perisEmpleados.getSecEmplPorCodigo(usuario, nitEmpresa, cadena);
             }
-            */
+             */
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
             Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
