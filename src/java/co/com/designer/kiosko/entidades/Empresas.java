@@ -6,6 +6,7 @@
 package co.com.designer.kiosko.entidades;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 //import java.math.BigDecimal;
 import java.math.BigInteger;
 import javax.persistence.*;
@@ -15,7 +16,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author UPC006
+ * @author Thalia Manrique
  */
 @Entity
 @Table(name = "EMPRESAS")
@@ -30,7 +31,7 @@ public class Empresas implements Serializable {
     @Basic(optional = false)
     @NotNull
     @Column(name = "SECUENCIA")
-    private BigInteger secuencia;
+    private BigDecimal secuencia;
     @Basic(optional = false)
     @NotNull
     @Column(name = "CODIGO")
@@ -60,22 +61,22 @@ public class Empresas implements Serializable {
     public Empresas() {
     }
 
-    public Empresas(BigInteger secuencia) {
+    public Empresas(BigDecimal secuencia) {
         this.secuencia = secuencia;
     }
 
-    public Empresas(BigInteger secuencia, short codigo, long nit, String nombre) {
+    public Empresas(BigDecimal secuencia, short codigo, long nit, String nombre) {
         this.secuencia = secuencia;
         this.codigo = codigo;
         this.nit = nit;
         this.nombre = nombre;
     }
 
-    public BigInteger getSecuencia() {
+    public BigDecimal getSecuencia() {
         return secuencia;
     }
 
-    public void setSecuencia(BigInteger secuencia) {
+    public void setSecuencia(BigDecimal secuencia) {
         this.secuencia = secuencia;
     }
 

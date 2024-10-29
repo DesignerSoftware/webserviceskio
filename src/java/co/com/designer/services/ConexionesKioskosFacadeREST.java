@@ -11,12 +11,14 @@ import co.com.designer.persistencia.implementacion.PersistenciaConexionesKioskos
 import co.com.designer.persistencia.implementacion.PersistenciaEmpleados;
 import co.com.designer.persistencia.implementacion.PersistenciaEmpresas;
 import co.com.designer.persistencia.implementacion.PersistenciaGeneralesKiosko;
+import co.com.designer.persistencia.implementacion.PersistenciaKioPersonalizaciones;
 import co.com.designer.persistencia.implementacion.PersistenciaPersonas;
 import co.com.designer.persistencia.interfaz.IPersistenciaConexiones;
 import co.com.designer.persistencia.interfaz.IPersistenciaConexionesKioskos;
 import co.com.designer.persistencia.interfaz.IPersistenciaEmpleados;
 import co.com.designer.persistencia.interfaz.IPersistenciaEmpresas;
 import co.com.designer.persistencia.interfaz.IPersistenciaGeneralesKiosko;
+import co.com.designer.persistencia.interfaz.IPersistenciaKioPersonalizaciones;
 import co.com.designer.persistencia.interfaz.IPersistenciaPersonas;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -54,6 +56,7 @@ import io.jsonwebtoken.SignatureException;
 import java.sql.Date;
 import java.util.Base64;
 import javax.json.JsonValue;
+//import javax.persistence.EntityManager;
 import org.json.JSONException;
 import passwordGenerator.GeneradorClave;
 
@@ -66,7 +69,7 @@ import passwordGenerator.GeneradorClave;
 public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKioskos> {
 
     private IPersistenciaPerfiles rolesBD;
-    private IPersistenciaConexiones persistenciaConexiones;
+    private IPersistenciaConexiones persisConexiones;
     private IPersistenciaCadenasKioskosApp cadenasKio;
     private IPersistenciaConexionesKioskos persisConKio;
     private IPersistenciaGeneralesKiosko persisGenKio;
@@ -74,12 +77,13 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
 //    private IPersistenciaEmpleados persisEmple;
     private IPersistenciaPersonas persisPersonas;
     private IPersistenciaEmpresas persisEmpresas;
+    private IPersistenciaKioPersonalizaciones persisPersonalizaciones;
 
     public ConexionesKioskosFacadeREST() {
 //        super(ConexionesKioskos.class);
         this.rolesBD = new PersistenciaPerfiles();
         this.cadenasKio = new PersistenciaCadenasKioskosApp();
-        this.persistenciaConexiones = new PersistenciaConexiones();
+        this.persisConexiones = new PersistenciaConexiones();
 //        this.persisGenKio = new PersistenciaGeneralesKiosko();
 //        this.perisEmpleados = new PersistenciaEmpleados();
 //        this.persisEmple = new PersistenciaEmpleados();
@@ -199,7 +203,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
                     + " FROM CONEXIONESKIOSKOS "
                     + " WHERE SEUDONIMO=? "
                     + " AND NITEMPRESA=?";
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, usuario);
             query.setParameter(2, nitEmpresa);
 
@@ -251,7 +255,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
                     + "AND em.nit = ? "
                     + "and empleadocurrent_pkg.tipotrabajadorcorte(e.secuencia, sysdate)='ACTIVO' "
                     + "AND ck.nitempresa = ? ";
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, documento);
             query.setParameter(2, nitEmpresa);
             query.setParameter(3, nitEmpresa);
@@ -267,7 +271,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
                         + "VALUES (lower(?), ?, "
                         + "(SELECT SECUENCIA FROM PERSONAS WHERE NUMERODOCUMENTO=?), "
                         + " GENERALES_PKG.ENCRYPT(?), ?, 'P', SYSDATE, TRUNC(SYSDATE, 'MM'), LAST_DAY(SYSDATE))";
-                Query queryInsert = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQueryInsert);
+                Query queryInsert = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQueryInsert);
                 queryInsert.setParameter(1, seudonimo);
                 queryInsert.setParameter(2, secEmpl);
                 queryInsert.setParameter(3, documento);
@@ -319,7 +323,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "UPDATE CONEXIONESKIOSKOS SET ACTIVO=? WHERE SEUDONIMO=? AND NITEMPRESA=?";
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, activo);
             query.setParameter(2, seudonimo);
             query.setParameter(3, nitEmpresa);
@@ -367,7 +371,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "UPDATE CONEXIONESTOKEN SET ACTIVO='N' WHERE TOKEN=?";
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, jwt);
             conteo = query.executeUpdate();
 //            resultado = conteo > 0 ? true : false;
@@ -438,7 +442,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
             query.setParameter(3, nitEmpresa);
             conteo = (BigDecimal) query.getSingleResult();
             if (!BigDecimal.ZERO.equals(conteo)) {*/
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery2);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery2);
             query.setParameter(1, tipo);
             query.setParameter(2, seudonimo);
             query.setParameter(3, nitEmpresa);
@@ -588,7 +592,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
             this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "UPDATE CONEXIONESKIOSKOS CK SET CK.FOTOPERFIL = '" + fileName + "' \n"
                     + "WHERE CK.EMPLEADO= ?  ";
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpl);
             conteo = query.executeUpdate();
             resultado = conteo > 0 ? true : false;
@@ -641,35 +645,30 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
     @Path("/datosContactoKiosco/{nit}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDatosContactoKiosco(@PathParam("nit") String nitEmpresa, @QueryParam("cadena") String cadena) {
-        BigDecimal res = null;
+//        BigDecimal res = null;
         List datos = null;
+        this.persisPersonalizaciones = new PersistenciaKioPersonalizaciones();
+        
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT K.NOMBRECONTACTO NOMBRE, K.EMAILCONTACTO EMAIL, TELEFONOCONTACTO TELEFONO "
-                    + "FROM KIOPERSONALIZACIONES K, EMPRESAS EM "
-                    + "WHERE K.EMPRESA=EM.SECUENCIA "
-                    + "AND K.TIPOCONTACTO = 'NOMINA' "
-                    + "AND EM.NIT= ? ";
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, nitEmpresa);
-            datos = query.getResultList();
-        } catch (Exception ex) {
-            System.out.println("Usando la consulta tradicional para los datos de contacto");
+            
             try {
-                String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
-                this.rolesBD.setearPerfil(esquema, cadena);
-                String sqlQuery = "SELECT K.NOMBRECONTACTO NOMBRE, K.EMAILCONTACTO EMAIL, TELEFONOCONTACTO TELEFONO "
-                        + "FROM KIOPERSONALIZACIONES K, EMPRESAS EM "
-                        + "WHERE K.EMPRESA=EM.SECUENCIA "
-                        + "AND EM.NIT= ? ";
-                Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
-                query.setParameter(1, nitEmpresa);
-                datos = query.getResultList();
-            } catch (Exception exi) {
-                System.out.println("ex: " + exi);
-                res = BigDecimal.ZERO;
+                datos = this.persisPersonalizaciones.getDatosContactoKioscoNomina(nitEmpresa, cadena, esquema);
+            } catch (Exception ex) {
+                System.out.println("ConexionesKioskosFacadeREST." + "getDatosContactoKiosco(): " + "Usando la consulta tradicional para los datos de contacto");
+                
+                try {
+                    datos = this.persisPersonalizaciones.getDatosContactoKiosco(nitEmpresa, cadena, esquema);
+                } catch (Exception exi) {
+                    System.out.println("Error-2: " + "ConexionesKioskosFacadeREST." + "getDatosContactoKiosco(): " + exi.toString());
+                    exi.printStackTrace();
+//                    res = BigDecimal.ZERO;
+                }
             }
+        } catch (Exception ex) {
+            System.out.println("Error-3: " + "ConexionesKioskosFacadeREST." + "getDatosContactoKiosco(): " + ex.toString());
+            ex.printStackTrace();
         }
         return Response.status(Response.Status.OK).entity(datos).build();
     }
@@ -825,7 +824,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
                 sqlQuery += " OR P.NUMERODOCUMENTO=?"; // si el valor es numerico validar por numero de documento
             }
             System.out.println("Query: " + sqlQuery);
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
 
             query.setParameter(1, usuario);
             if (this.perisEmpleados.validarCodigoUsuario(usuario)) {
@@ -856,7 +855,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
                     + " AND (EMPLEADOCURRENT_PKG.TipoTrabajadorCorte(e.secuencia, SYSDATE) IN ('ACTIVO','PENSIONADO')) ";
             System.out.println("validarUsuarioyEmpresa() Parametros[ documento: " + documento + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena + "]");
             System.out.println("Query: " + sqlQuery);
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, documento);
             query.setParameter(2, nitEmpresa);
 
@@ -874,7 +873,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
                         + " AND em.nit = ? ";
                 System.out.println("validarUsuarioyEmpresa() Autorizadores Parametros[ documento: " + documento + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena + "]");
                 System.out.println("Query: " + sqlQuery);
-                query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+                query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
                 query.setParameter(1, documento);
                 query.setParameter(2, nitEmpresa);
 
@@ -911,7 +910,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "UPDATE CONEXIONESKIOSKOS SET ACTIVO=? WHERE SEUDONIMO=? AND NITEMPRESA=?";
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, activo);
             query.setParameter(2, usuario);
             query.setParameter(3, nitEmpresa);
@@ -947,7 +946,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
                     + "AND per.numerodocumento = ? "
                     + "AND em.nit = ? ";
             System.out.println("Query: " + sqlQuery);
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, documento);
             query.setParameter(2, nitEmpresa);
             BigDecimal retorno = (BigDecimal) query.getSingleResult();
@@ -966,7 +965,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
                         + "  AND em.nit = ? ) "
                         + " AND ck.nitempresa = ? ";
                 System.out.println("Query_autorizadores: " + sqlQuery);
-                query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+                query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
                 query.setParameter(1, documento);
                 query.setParameter(2, nitEmpresa);
                 query.setParameter(3, nitEmpresa);
@@ -997,7 +996,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
             this.rolesBD.setearPerfil(esquema, cadena);
             System.out.println("Parametros: validarSeudonimoRegistrado(): [ seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
             System.out.println("Query: " + sqlQuery);
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, seudonimo);
             query.setParameter(2, nitEmpresa);
             BigDecimal retorno = (BigDecimal) query.getSingleResult();
@@ -1022,7 +1021,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
                     this.rolesBD.setearPerfil(esquema, cadena);
                     System.out.println("Parametros: validarSeudonimoRegistrado(): autorizadores: [ seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
                     System.out.println("Query_autroizadores: " + sqlQuery);
-                    query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+                    query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
                     query.setParameter(1, seudonimo);
                     query.setParameter(2, nitEmpresa);
                     query.setParameter(3, nitEmpresa);
@@ -1057,7 +1056,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
             this.rolesBD.setearPerfil(esquema, cadena);
             System.out.println("validarEstadoUsuarioSeudonimo() Parametros: [usuario: " + usuario + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena + "]");
             System.out.println("Query: " + sqlQuery);
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, usuario);
             query.setParameter(2, nitEmpresa);
             retorno = query.getSingleResult().toString();
@@ -1082,7 +1081,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
                 this.rolesBD.setearPerfil(esquema, cadena);
                 System.out.println("validarEstadoUsuarioSeudonimo() Parametros: [usuario: " + usuario + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena + "]");
                 System.out.println("Query_autorizadores: " + sqlQuery);
-                Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+                Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
                 query.setParameter(1, usuario);
                 query.setParameter(2, nitEmpresa);
                 query.setParameter(3, nitEmpresa);
@@ -1107,7 +1106,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
                     + "AND lower(ck.seudonimo) = ? "
                     + "AND ck.PWD = GENERALES_PKG.ENCRYPT(?) "
                     + "AND ck.nitempresa = ? ";
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, seudonimo);
             query.setParameter(2, clave);
             query.setParameter(3, nitEmpresa);
@@ -1120,8 +1119,6 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
         return resultado;
     }
 
-    // token de inicio de sesion
-    // como usar: http://localhost:8080/restKiosco-master/wsKiosco/restapi/restKiosco/jwt?usuario=8125176&clave=Prueba01*&nit=811025446 
     @POST
     @Path("/restKiosco/jwt")
     @Produces(MediaType.APPLICATION_JSON)
@@ -1177,7 +1174,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
                     + "and ck.pwd=generales_pkg.encrypt(?) "
                     + " and ck.nitempresa=?";
             System.out.println(sql);
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sql);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sql);
             query.setParameter(1, codEmple);
             query.setParameter(2, clave);
             query.setParameter(3, nitEmpresa);
@@ -1202,7 +1199,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
             String sql = "INSERT INTO CONEXIONESTOKEN (CONEXIONKIOSKO, TOKEN, FECHACREACION, FECHAEXPIRACION, TIPO) VALUES "
                     + "((SELECT SECUENCIA FROM CONEXIONESKIOSKOS WHERE SEUDONIMO =? AND NITEMPRESA=?),"
                     + " ?, ?, ?, ? )";
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sql);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sql);
             System.out.println("Query: " + sql);
             query.setParameter(1, usuario);
             query.setParameter(2, nitEmpresa);
@@ -1400,7 +1397,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "select count(*) as count from conexionestoken where token=? ";
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, token);
             BigDecimal retorno = (BigDecimal) query.getSingleResult();
             Integer instancia = retorno.intValueExact();
@@ -1428,7 +1425,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT ACTIVO FROM CONEXIONESTOKEN WHERE TOKEN = ?";
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, token);
             estado = query.getSingleResult().toString();
             System.out.println("Resultado getEstadoToken(): " + estado);
@@ -1564,17 +1561,21 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
         try {
             if (updateClave) {
                 System.out.println("Contraseña actualizada a: " + nuevaClave);
-                EnvioCorreo e = new EnvioCorreo();
-                envioCorreo = e.enviarNuevaClave(
-                        getConfigServidorSMTP(nitEmpresa, cadena),
-                        getConfigCorreo(nitEmpresa, "PUERTO", cadena),
-                        getConfigCorreo(nitEmpresa, "AUTENTICADO", cadena),
-                        getConfigCorreo(nitEmpresa, "STARTTLS", cadena),
-                        getConfigCorreo(nitEmpresa, "REMITENTE", cadena),
-                        getConfigCorreo(nitEmpresa, "CLAVE", cadena),
-                        correo,
-                        getNombrePersona(usuario, nitEmpresa, cadena),
-                        nuevaClave, "", this.persisGenKio.getPathFoto(nitEmpresa, cadena), nitEmpresa, cadena);
+//                EnvioCorreo e = new EnvioCorreo();
+//                envioCorreo = e.enviarNuevaClave(
+//                        getConfigServidorSMTP(nitEmpresa, cadena),
+//                        getConfigCorreo(nitEmpresa, "PUERTO", cadena),
+//                        getConfigCorreo(nitEmpresa, "AUTENTICADO", cadena),
+//                        getConfigCorreo(nitEmpresa, "STARTTLS", cadena),
+//                        getConfigCorreo(nitEmpresa, "REMITENTE", cadena),
+//                        getConfigCorreo(nitEmpresa, "CLAVE", cadena),
+//                        correo,
+//                        getNombrePersona(usuario, nitEmpresa, cadena),
+//                        nuevaClave, "", this.persisGenKio.getPathFoto(nitEmpresa, cadena), nitEmpresa, cadena);
+                GenerarCorreo e = new GenerarCorreo();
+                e.enviarNuevaClave(correo, getNombrePersona(usuario, nitEmpresa, cadena),
+                        nuevaClave, nitEmpresa, cadena, ""
+                );
             } else {
                 System.out.println("Error al actualizar la contraseña");
             }
@@ -1603,7 +1604,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "UPDATE CONEXIONESKIOSKOS SET PWD=GENERALES_PKG.ENCRYPT(?) where seudonimo=? and nitempresa=?";
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, clave);
             query.setParameter(2, seudonimo);
             query.setParameter(3, nitEmpresa);
@@ -1627,7 +1628,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
             sqlQuery = "SELECT InitCap(NVL(NOMBRE, 'Usuario')) NOMBRE FROM PERSONAS WHERE NUMERODOCUMENTO=?";
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, documento);
             nombre = query.getSingleResult().toString();
 
@@ -1686,8 +1687,8 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
     @Path("/restKiosco/jwtValidCuenta")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getJWTValidCuenta(@QueryParam("usuario") String usuario, @QueryParam("clave") String claveCod,
-             @QueryParam("nit") String nit, @QueryParam("urlKiosco") String urlKiosco,
-             @QueryParam("cadena") String cadena, @QueryParam("grupo") String grupo)
+            @QueryParam("nit") String nit, @QueryParam("urlKiosco") String urlKiosco,
+            @QueryParam("cadena") String cadena, @QueryParam("grupo") String grupo)
             throws UnsupportedEncodingException {
         System.out.println("Parametros getJWTValidCuenta(): usuario: " + usuario + ", clave: " + claveCod + ", nit: " + nit + ", cadena: " + cadena);
         System.out.println("UrlKiosco recibido: " + urlKiosco);
@@ -1718,16 +1719,22 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
         Encriptacion e = new Encriptacion();
         String jwt = e.encrypt(jwtCompleto, passwordEncript);
         System.out.println("Token encriptado: " + jwt);
-        EnvioCorreo p = new EnvioCorreo();
+//        EnvioCorreo p = new EnvioCorreo();
+        GenerarCorreo p = new GenerarCorreo();
         creaRegistro = registraToken(usuario, nit, jwt, "VALIDACUENTA", fechaCreacion, fechaExpiracion, cadena);
         if (creaRegistro) {
             System.out.println("Token VALIDACUENTA registrado");
+//            estadoEnvioCorreo = p.enviarEnlaceValidacionCuenta(
+//                    getConfigServidorSMTP(nit, cadena),
+//                    getConfigCorreo(nit, "PUERTO", cadena),
+//                    getConfigCorreo(nit, "AUTENTICADO", cadena),
+//                    getConfigCorreo(nit, "STARTTLS", cadena), getConfigCorreo(nit, "REMITENTE", cadena), getConfigCorreo(nit, "CLAVE", cadena),
+//                    this.persisPersonas.getCorreoConexioneskioskos(usuario, nit, cadena), getNombrePersona(usuario, nit, cadena), usuario, jwt, urlKiosco, nit, cadena);
             estadoEnvioCorreo = p.enviarEnlaceValidacionCuenta(
-                    getConfigServidorSMTP(nit, cadena),
-                    getConfigCorreo(nit, "PUERTO", cadena),
-                    getConfigCorreo(nit, "AUTENTICADO", cadena),
-                    getConfigCorreo(nit, "STARTTLS", cadena), getConfigCorreo(nit, "REMITENTE", cadena), getConfigCorreo(nit, "CLAVE", cadena),
-                    this.persisPersonas.getCorreoConexioneskioskos(usuario, nit, cadena), getNombrePersona(usuario, nit, cadena), usuario, jwt, urlKiosco, nit, cadena);
+                    this.persisPersonas.getCorreoConexioneskioskos(usuario, nit, cadena),
+                    getNombrePersona(usuario, nit, cadena),
+                    usuario, jwt, nit, cadena, urlKiosco
+            );
         }
         JsonObject json = Json.createObjectBuilder()
                 .add("JWT", jwt)
@@ -1769,6 +1776,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
         }
     }
 
+    /*
     public String getConfigCorreo(String nitEmpresa, String valor, String cadena) {
         System.out.println("getConfigCorreo()");
         String servidorsmtpConfig = "";
@@ -1786,8 +1794,9 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
             System.out.println("Error: " + this.getClass().getName() + ".getConfigCorreo" + e.getMessage());
         }
         return servidorsmtpConfig;
-    }
+    }*/
 
+ /*
     public String getConfigServidorSMTP(String nitEmpresa, String cadena) {
         System.out.println("getConfigCorreoServidorSMTP()");
         String servidorsmtp = "smtp.designer.com.co";
@@ -1804,8 +1813,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
             System.out.println("Error: " + this.getClass().getName() + ".getConfigCorreoServidorSMTP: " + e.getMessage());
         }
         return servidorsmtp;
-    }
-
+    }*/
     /**
      * metodo privado para dar formato al JSON de respuesta
      *
@@ -1860,7 +1868,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
              */
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
 //            query.setParameter(1, secEmpl);
             query.setParameter(1, usuario);
             query.setParameter(2, nitEmpresa);

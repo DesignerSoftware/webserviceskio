@@ -44,6 +44,7 @@ public class PersistenciaPerfiles implements IPersistenciaPerfiles {
             query.executeUpdate();
         } catch (Exception ex) {
             System.out.println("PersistenciaPerfiles" + ".setearPerfil(): " + "Error " + ex.toString());
+            throw ex;
         }
     }
 }

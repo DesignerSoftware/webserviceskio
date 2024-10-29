@@ -10,6 +10,8 @@ public interface IPersistenciaKioAusentismo_pkg {
 
     public String getMensajeValidacionAusent(String fechaInicio, String seudonimo,
             String nitEmpresa, String cadena, String esquemaP);
+    public String getMensajeValidacionAusent(String fechaInicio, String fechaFin, String seudonimo, String refSoliciAusent, 
+            String nitEmpresa, String cadena, String esquemaP);
 
     public String getFechaFinAusent(String fechaInicio, String dias, String seudonimo, String causa, String nitEmpresa, String cadena, String esquemaP);
     

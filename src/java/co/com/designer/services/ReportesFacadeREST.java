@@ -1,7 +1,17 @@
 package co.com.designer.services;
 
-import co.com.designer.kiosko.generales.EnvioCorreo;
+import co.com.designer.kiosko.entidades.ConfiCorreoKiosko;
+//import co.com.designer.kiosko.generales.EnvioCorreo;
+import co.com.designer.kiosko.generales.GenerarCorreo;
 import co.com.designer.kiosko.reportes.IniciarReporte;
+import co.com.designer.persistencia.implementacion.PersistenciaCadenasKioskosApp;
+import co.com.designer.persistencia.implementacion.PersistenciaConexiones;
+import co.com.designer.persistencia.implementacion.PersistenciaConfiCorreoKiosko;
+import co.com.designer.persistencia.implementacion.PersistenciaPerfiles;
+import co.com.designer.persistencia.interfaz.IPersistenciaCadenasKioskosApp;
+import co.com.designer.persistencia.interfaz.IPersistenciaConexiones;
+import co.com.designer.persistencia.interfaz.IPersistenciaConfiCorreoKiosko;
+import co.com.designer.persistencia.interfaz.IPersistenciaPerfiles;
 import java.io.File;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -13,8 +23,8 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.Persistence;
+//import javax.persistence.EntityManager;
+//import javax.persistence.Persistence;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import javax.ws.rs.Consumes;
@@ -37,19 +47,35 @@ public class ReportesFacadeREST {
 
     @EJB
     private IniciarReporte iniciarReporte;
+    private IPersistenciaConfiCorreoKiosko persisConfiCorreo;
+    private IPersistenciaConexiones persisConexiones;
+    private IPersistenciaCadenasKioskosApp cadenasKio;
+    private IPersistenciaPerfiles rolesBD;
 
+    public ReportesFacadeREST() {
+        this.persisConexiones = new PersistenciaConexiones();
+        this.cadenasKio = new PersistenciaCadenasKioskosApp();
+        this.rolesBD = new PersistenciaPerfiles();
+    }
+
+    
+    /*
     protected EntityManager getEntityManager() {
         String unidadPersistencia = "wsreportePU";
         EntityManager em = Persistence.createEntityManagerFactory(unidadPersistencia).createEntityManager();
         return em;
     }
+    */
 
+    /*
     protected EntityManager getEntityManager(String persistence) {
         String unidadPersistencia = persistence;
         EntityManager em = Persistence.createEntityManagerFactory(unidadPersistencia).createEntityManager();
         return em;
     }
-
+    */
+    
+    /*
     protected void setearPerfil() {
         try {
             String rol = "ROLKIOSKO";
@@ -60,7 +86,8 @@ public class ReportesFacadeREST {
             System.out.println("setearPerfil() Error: " + ex);
         }
     }
-
+     */
+    /*
     protected void setearPerfil(String esquema, String cadenaPersistencia) {
         try {
             String rol = "ROLKIOSKO";
@@ -69,12 +96,13 @@ public class ReportesFacadeREST {
             }
             System.out.println("setearPerfil(esquema, cadena)");
             String sqlQuery = "SET ROLE " + rol + " IDENTIFIED BY RLKSK ";
-            Query query = getEntityManager(cadenaPersistencia).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadenaPersistencia).createNativeQuery(sqlQuery);
             query.executeUpdate();
         } catch (Exception ex) {
             System.out.println("Error setearPerfil(cadenaPersistencia): " + ex);
         }
     }
+    */
 
     @GET
     @Path("generaReporte/{reporte}/{enviocorreo}/{correo}")
@@ -85,33 +113,45 @@ public class ReportesFacadeREST {
             @QueryParam("codigoReporte") String codigoReporte, @QueryParam("nit") String nitEmpresa,
             @QueryParam("cadena") String cadena, @QueryParam("usuario") String seudonimo, @QueryParam("grupo") String grupo, @QueryParam("urlKiosco") String urlKiosco) {
         System.out.println("generaReporte() codigo: " + codigoReporte + " nit: " + nitEmpresa);
-        String esquema = getEsquema(nitEmpresa, cadena);
-        setearPerfil(esquema, cadena);
+
+        String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+        this.rolesBD.setearPerfil(esquema, cadena);
         String urlKio = urlKiosco + "#/login/" + grupo;
+
         BigDecimal secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
+
         System.out.println("Parametros para generar reporte: [ reporte: " + reporte + ", secuenciaEmpleado: " + secEmpl + ", envioCorreo: " + envioCorreo + ", correo: " + correo
                 + ", descripcionReporte: " + descripcionReporte + ", codigo: " + codigoReporte + ", cadena: " + cadena + ", "
                 + "\n seudonimo: " + seudonimo + ", grupo: " + grupo + ", urlKiosco: " + urlKiosco + "]");
+
         Map parametros = new HashMap();
         parametros.put("secuenciaempleado", secEmpl);
         long tiempo = System.currentTimeMillis();
         String nombreReporte = reporte + "_" + secEmpl + "_" + tiempo + ".pdf";
         System.out.println("nombreReporte:" + nombreReporte);
-        String rutaGenerado = iniciarReporte.ejecutarReporte(reporte, getPathReportes(nitEmpresa, cadena), getPathArchivosPlanos(nitEmpresa, cadena), nombreReporte, "PDF", parametros, getEntityManager(cadena));
+
+        String rutaPathArchivosPlanos = getPathArchivosPlanos(nitEmpresa, cadena);
+        String rutaGenerado = iniciarReporte.ejecutarReporte(reporte, getPathReportes(nitEmpresa, cadena), 
+                rutaPathArchivosPlanos, nombreReporte, "PDF", parametros, this.persisConexiones.getEntityManager(cadena));
         File file = new File(rutaGenerado);
         System.out.println("Ruta generado: " + rutaGenerado);
-        String servidorSmtp = getConfigServidorSMTP(nitEmpresa, cadena);
-        String puerto = getConfigCorreo(nitEmpresa, "PUERTO", cadena);
-        String remitente = getConfigCorreo(nitEmpresa, "REMITENTE", cadena);
-        String clave = getConfigCorreo(nitEmpresa, "CLAVE", cadena);
-        String autenticado = getConfigCorreo(nitEmpresa, "AUTENTICADO", cadena);
-        EnvioCorreo c = new EnvioCorreo();
+
+        //String servidorSmtp = getConfigServidorSMTP(nitEmpresa, cadena);
+        //String puerto = getConfigCorreo(nitEmpresa, "PUERTO", cadena);
+        //String remitente = getConfigCorreo(nitEmpresa, "REMITENTE", cadena);
+        //String clave = getConfigCorreo(nitEmpresa, "CLAVE", cadena);
+        //String autenticado = getConfigCorreo(nitEmpresa, "AUTENTICADO", cadena);
+        persisConfiCorreo = new PersistenciaConfiCorreoKiosko();
+
+//        EnvioCorreo c = new EnvioCorreo();
+        GenerarCorreo c = new GenerarCorreo();
         try {
-            setearPerfil(esquema, cadena);
+            ConfiCorreoKiosko cck = persisConfiCorreo.obtenerConfiguracionCorreoNativo(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             // valida si el reporte tiene auditoria
             BigDecimal retorno = null;
             String query1 = "select count(*) from kioconfigmodulos where codigoopcion=? and nitempresa=?";
-            Query query = getEntityManager(cadena).createNativeQuery(query1);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(query1);
             query.setParameter(1, codigoReporte);
             query.setParameter(2, nitEmpresa);
             retorno = (BigDecimal) query.getSingleResult();
@@ -129,7 +169,7 @@ public class ReportesFacadeREST {
                         + "La persona que GENERÓ el reporte es: " + getNombrePersonaXSeudonimo(seudonimo, nitEmpresa, cadena);
                 String sqlQuery = "select email from kioconfigmodulos where codigoopcion=? and nitempresa=?";
                 System.out.println("Query2: " + sqlQuery);
-                Query query2 = getEntityManager(cadena).createNativeQuery(sqlQuery);
+                Query query2 = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
                 query2.setParameter(1, codigoReporte);
                 query2.setParameter(2, nitEmpresa);
                 List lista = query2.getResultList();
@@ -140,11 +180,21 @@ public class ReportesFacadeREST {
                     String correoenviar = it.next();
                     System.out.println("correo auditoria: " + correoenviar);
                     System.out.println("codigoopcion: " + codigoReporte);
-                    c.pruebaEnvio2(servidorSmtp, puerto,
-                            remitente, clave, autenticado, correoenviar,
-                            rutaGenerado, nombreReporte,
-                            "Auditoria: Reporte Kiosco - " + descripcionReporte,
-                            mensaje, getPathFoto(nitEmpresa, cadena), grupo, urlKio);
+                    //c.pruebaEnvio2(cck, correoenviar,
+                    //        rutaGenerado, nombreReporte,
+                    //        "Auditoria: Reporte Kiosco - " + descripcionReporte,
+                    //        mensaje, getPathFoto(nitEmpresa, cadena), grupo, urlKio);
+
+                    c.pruebaEnvio2(
+                            correoenviar,
+                             "Auditoria: Reporte Kiosco - " + descripcionReporte,
+                             mensaje,
+                             rutaPathArchivosPlanos,
+                             nombreReporte,
+                             nitEmpresa,
+                             cadena,
+                             urlKio
+                    );
                 }
 
             } else {
@@ -152,15 +202,28 @@ public class ReportesFacadeREST {
             }
 
             System.out.println("nombreReporte recibido: " + reporte + " codigo: " + codigoReporte);
-            
+
             if (envioCorreo == true) {
                 System.out.println("Se debe enviar correo al empleado: " + correo);
-                ConexionesKioskosFacadeREST ck = new ConexionesKioskosFacadeREST();
+//                ConexionesKioskosFacadeREST ck = new ConexionesKioskosFacadeREST();
                 // Enviar correo
 
-                c.pruebaEnvio2(servidorSmtp, puerto, remitente, clave, autenticado, correo,
-                        rutaGenerado, nombreReporte,
-                        "Reporte Kiosco - " + descripcionReporte, "", getPathFoto(nitEmpresa, cadena), grupo, urlKio);
+                //c.pruebaEnvio2(cck, correo,
+                //        rutaGenerado, nombreReporte,
+                //        "Reporte Kiosco - " + descripcionReporte, "", getPathFoto(nitEmpresa, cadena), grupo, urlKio);
+                String mensaje = "Nos permitimos informar que se generó el reporte " + descripcionReporte
+                        + " en el Módulo de Autogestión Kiosco. "
+                        ;
+                c.pruebaEnvio2(
+                        correo,
+                         "Reporte Kiosco - " + descripcionReporte,
+                         mensaje,
+                         rutaPathArchivosPlanos,
+                         nombreReporte,
+                         nitEmpresa,
+                         cadena,
+                         urlKio
+                );
             }
 
             ResponseBuilder response = Response.ok((Object) file);
@@ -173,7 +236,7 @@ public class ReportesFacadeREST {
 
         } catch (Exception e) {
             System.out.println("Error: " + this.getClass().getName() + ":" + e.getMessage());
-        } 
+        }
         return Response.status(Response.Status.NOT_FOUND).build();
     }
 
@@ -205,11 +268,11 @@ public class ReportesFacadeREST {
         System.out.println("getPathFoto()");
         String rutaFoto = "E:\\DesignerRHN10\\Basico10\\fotos_empleados\\";
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT PATHFOTO FROM GENERALESKIOSKO WHERE ROWNUM<=1";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             rutaFoto = query.getSingleResult().toString();
             System.out.println("rutaFotos: " + rutaFoto);
         } catch (Exception e) {
@@ -220,13 +283,14 @@ public class ReportesFacadeREST {
 
     public String getPathReportes(String nitEmpresa, String cadena) {
         System.out.println("getPathReportes()");
-        String rutaFoto = "E:\\DesignerRHN10\\Basico10\\Reportes\\kiosko\\";
+//        String rutaFoto = "E:\\DesignerRHN10\\Basico10\\Reportes\\kiosko\\";
+        String rutaFoto = "";
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT PATHREPORTES FROM GENERALESKIOSKO WHERE ROWNUM<=1";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             rutaFoto = query.getSingleResult().toString();
             System.out.println("rutaReportes: " + rutaFoto);
         } catch (Exception e) {
@@ -237,13 +301,14 @@ public class ReportesFacadeREST {
 
     public String getPathArchivosPlanos(String nitEmpresa, String cadena) {
         System.out.println("getPathArchivosPlanos()");
-        String rutaFoto = "E:\\DesignerRHN10\\Reportes\\ArchivosPlanosRHNDSLkio\\";
+//        String rutaFoto = "E:\\DesignerRHN10\\Reportes\\ArchivosPlanosRHNDSLkio\\";
+        String rutaFoto = "";
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT UBICAREPORTES FROM GENERALESKIOSKO WHERE ROWNUM<=1";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             rutaFoto = query.getSingleResult().toString();
             System.out.println("rutaUbicaReportes: " + rutaFoto);
         } catch (Exception e) {
@@ -252,9 +317,11 @@ public class ReportesFacadeREST {
         return rutaFoto;
     }
 
+    /*
     public String getConfigCorreo(String nitEmpresa, String valor, String cadena) {
         System.out.println("getConfigCorreo()");
-        String servidorsmtp = "smtp.designer.com.co";
+//        String servidorsmtp = "smtp.designer.com.co";
+        String servidorsmtp = "";
         try {
             String esquema = getEsquema(nitEmpresa, cadena);
             setearPerfil(esquema, cadena);
@@ -269,7 +336,9 @@ public class ReportesFacadeREST {
         }
         return servidorsmtp;
     }
+     */
 
+ /*
     public String getConfigServidorSMTP(String nitEmpresa, String cadena) {
         System.out.println("getConfigCorreoServidorSMTP()");
         String servidorsmtp = "smtp.designer.com.co";
@@ -287,13 +356,14 @@ public class ReportesFacadeREST {
         }
         return servidorsmtp;
     }
-
+     */
+    
     public String getNombrePersonaXSeudonimo(String usuario, String nitEmpresa, String cadena) {
         System.out.println("getNombrePersonaXSeudonimo()");
         String nombre = "";
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT P.PRIMERAPELLIDO||' '||P.SEGUNDOAPELLIDO||' '||P.NOMBRE NOMBRECOMPLETO "
                     + "FROM "
                     + "PERSONAS P, CONEXIONESKIOSKOS CK "
@@ -301,7 +371,7 @@ public class ReportesFacadeREST {
                     + "P.SECUENCIA=CK.PERSONA "
                     + "AND CK.SEUDONIMO=? AND CK.NITEMPRESA= ? ";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, usuario);
             query.setParameter(2, nitEmpresa);
             nombre = query.getSingleResult().toString();
@@ -316,11 +386,11 @@ public class ReportesFacadeREST {
         System.out.println("Parametros getSecuenciaEmplPorSeudonimo(): seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
         BigDecimal secuencia = null;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT E.SECUENCIA SECUENCIAEMPLEADO FROM EMPLEADOS E, CONEXIONESKIOSKOS CK WHERE CK.EMPLEADO=E.SECUENCIA AND CK.SEUDONIMO=? AND CK.NITEMPRESA=?";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
 
             query.setParameter(1, seudonimo);
             query.setParameter(2, nitEmpresa);
@@ -370,7 +440,7 @@ public class ReportesFacadeREST {
         Query query = null;
         Date fechaRegreso = null;
         try {
-            query = getEntityManager(cadena).createNativeQuery(consulta);
+            query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(consulta);
             query.setParameter(1, fechaStr);
             fechaRegreso = (Date) (query.getSingleResult());
             System.out.println("getDate(): " + fechaRegreso);
@@ -387,13 +457,14 @@ public class ReportesFacadeREST {
         }
     }
 
+    /*
     public String getEsquema(String nitEmpresa, String cadena) {
         System.out.println("Parametros getEsquema(): nitempresa: " + nitEmpresa + ", cadena: " + cadena);
         String esquema = null;
         String sqlQuery;
         try {
             sqlQuery = "SELECT ESQUEMA FROM CADENASKIOSKOSAPP WHERE NITEMPRESA=? AND CADENA=?";
-            Query query = getEntityManager("wscadenaskioskosPU").createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager("wscadenaskioskosPU").createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
             query.setParameter(2, cadena);
             esquema = query.getSingleResult().toString();
@@ -403,7 +474,8 @@ public class ReportesFacadeREST {
         }
         return esquema;
     }
-
+*/
+    
     @GET
     @Path("generaReporteProvisiones/{reporte}")
     @Produces("application/pdf")
@@ -412,8 +484,8 @@ public class ReportesFacadeREST {
             @QueryParam("cadena") String cadena, @QueryParam("usuario") String seudonimo) {
         System.out.println("generaReporte() " + " nit: " + nitEmpresa);
 
-        String esquema = getEsquema(nitEmpresa, cadena);
-        setearPerfil(esquema, cadena);
+        String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+        this.rolesBD.setearPerfil(esquema, cadena);
 
         BigDecimal secEmpl = getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
         System.out.println("Parametros para generar reporte: [ reporte: " + reporte + ", secuenciaEmpleado: " + secEmpl + ", cadena: " + cadena + ", "
@@ -424,11 +496,12 @@ public class ReportesFacadeREST {
         long tiempo = System.currentTimeMillis();
         String nombreReporte = reporte + "_" + secEmpl + "_" + tiempo + ".pdf";
 
-        String rutaGenerado = iniciarReporte.ejecutarReporte(reporte, getPathReportes(nitEmpresa, cadena), getPathArchivosPlanos(nitEmpresa, cadena), nombreReporte, "PDF", parametros, getEntityManager(cadena));
+        String rutaGenerado = iniciarReporte.ejecutarReporte(reporte, getPathReportes(nitEmpresa, cadena), 
+                getPathArchivosPlanos(nitEmpresa, cadena), nombreReporte, "PDF", parametros, this.persisConexiones.getEntityManager(cadena));
         File file = new File(rutaGenerado);
 
         try {
-            setearPerfil(esquema, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
 
             System.out.println("nombreReporte recibido: " + reporte);
 
@@ -442,7 +515,7 @@ public class ReportesFacadeREST {
 
         } catch (Exception e) {
             System.out.println("Error: " + this.getClass().getName() + ":" + e.getMessage());
-        } 
+        }
         return Response.status(Response.Status.NOT_FOUND).build();
     }
 

@@ -8,5 +8,5 @@ import co.com.designer.kiosko.entidades.ConfiCorreoKiosko;
  */
 public interface IPersistenciaConfiCorreoKiosko {
     public ConfiCorreoKiosko obtenerConfiguracionCorreoNativo(String nit, String cadena);
-    public ConfiCorreoKiosko obtenerConfiguracionCorreo(String nit, String cadena);
+//    public ConfiCorreoKiosko obtenerConfiguracionCorreo(String nit, String cadena);
 }

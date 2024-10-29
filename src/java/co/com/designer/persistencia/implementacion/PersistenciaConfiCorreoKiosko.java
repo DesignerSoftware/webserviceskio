@@ -25,7 +25,7 @@ public class PersistenciaConfiCorreoKiosko implements IPersistenciaConfiCorreoKi
 
     @Override
     public ConfiCorreoKiosko obtenerConfiguracionCorreoNativo(String nit, String cadena) {
-        
+
         try {
             String esquema = this.cadenasKio.getEsquema(nit, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
@@ -43,7 +43,8 @@ public class PersistenciaConfiCorreoKiosko implements IPersistenciaConfiCorreoKi
             throw e;
         }
     }
-    
+
+    /*
     @Override
     public ConfiCorreoKiosko obtenerConfiguracionCorreo(String nit, String cadena) {
         
@@ -55,7 +56,7 @@ public class PersistenciaConfiCorreoKiosko implements IPersistenciaConfiCorreoKi
                     + "WHERE cck.empresa = em.secuencia "
                     + "AND em.nit = :nit ";
             Query query = this.persistenciaConexiones.getEntityManager(cadena).createQuery(sql, ConfiCorreoKiosko.class);
-            query.setParameter(":nit", nit); 
+            query.setParameter(":nit", Long.valueOf(nit)); 
             ConfiCorreoKiosko res = (ConfiCorreoKiosko) query.getSingleResult();
             return res;
         } catch (Exception e) {
@@ -63,4 +64,5 @@ public class PersistenciaConfiCorreoKiosko implements IPersistenciaConfiCorreoKi
             throw e;
         }
     }
+     */
 }

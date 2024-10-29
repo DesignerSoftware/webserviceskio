@@ -6,6 +6,8 @@ import co.com.designer.persistencia.interfaz.IPersistenciaConexionesKioskos;
 import co.com.designer.persistencia.interfaz.IPersistenciaKioVacaciones_pkg;
 import co.com.designer.persistencia.interfaz.IPersistenciaPerfiles;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.List;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 
@@ -112,4 +114,51 @@ public class PersistenciaKioVacaciones_pkg implements IPersistenciaKioVacaciones
             throw new Exception(e.toString());
         }
     }
+    
+    @Override
+    public List getFechaRegreso(String fechainicio, int dias, String seudonimo, String nitEmpresa, String cadena, String esquema) {
+        System.out.println("Parametros getFechaRegreso(): seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", fechainicio: " + fechainicio + ", dias: " + dias + ", cadena: " + cadena);
+        String secEmpl = this.persisConKiosko.getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
+        List retorno = null;
+        String consulta = "SELECT \n"
+                + "TO_CHAR(KIOVACACIONES_PKG.CALCULARFECHAFINVACA( ?, TO_DATE(?, 'YYYY-MM-DD') , \n"
+                + "KIOVACACIONES_PKG.CALCULARFECHAREGRESO( ? , TO_DATE(?, 'YYYY-MM-DD') , ? ) , 'S' ), 'DD/MM/YYYY') FECHAFIN,\n"
+                + "TO_CHAR(KIOVACACIONES_PKG.CALCULARFECHAREGRESO( ? , TO_DATE(?, 'YYYY-MM-DD') , ? ), 'DD/MM/YYYY') FECHAREGRESO\n"
+                + "FROM DUAL ";
+        try {
+            this.rolesBD.setearPerfil(esquema, cadena);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(consulta);
+            query.setParameter(1, secEmpl);
+            query.setParameter(2, fechainicio);
+            query.setParameter(3, secEmpl);
+            query.setParameter(4, fechainicio);
+            query.setParameter(5, dias);
+            query.setParameter(6, secEmpl);
+            query.setParameter(7, fechainicio);
+            query.setParameter(8, dias);
+            retorno = query.getResultList();
+        } catch (Exception e) {
+            System.out.println("Error getFechaRegreso." + e);
+        }
+        return retorno;
+    }
+    
+    @Override
+    public Timestamp getFechaFinVaca(String fechainicio, String fechafin, int dias, String seudonimo, String nitEmpresa, String cadena, String esquema) {
+        String secEmpl = this.persisConKiosko.getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
+        Timestamp retorno = null;
+        String consulta = "SELECT KIOVACACIONES_PKG.CALCULARFECHAFINVACA( ?, TO_DATE(?, 'YYYY-MM-DD') , TO_DATE(?,'YYYY-MM-DD HH:MM:SS') , 'S' ) FROM DUAL";
+        try {
+            this.rolesBD.setearPerfil(esquema, cadena);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(consulta);
+            query.setParameter(1, secEmpl);
+            query.setParameter(2, fechainicio);
+            query.setParameter(3, fechafin);
+            retorno = (Timestamp) query.getSingleResult();
+        } catch (Exception e) {
+            System.out.println("Error getFechaFinVaca." + e);
+        }
+        return retorno;
+    }
+    
 }

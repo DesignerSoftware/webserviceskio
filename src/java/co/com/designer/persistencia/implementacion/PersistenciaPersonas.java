@@ -13,13 +13,13 @@ import javax.persistence.Query;
 public class PersistenciaPersonas implements IPersistenciaPersonas {
 
     private IPersistenciaPerfiles rolesBD;
-    private IPersistenciaConexiones persistenciaConexiones;
+    private IPersistenciaConexiones persisConexiones;
     private IPersistenciaCadenasKioskosApp cadenasKio;
 
     public PersistenciaPersonas() {
         this.rolesBD = new PersistenciaPerfiles();
         this.cadenasKio = new PersistenciaCadenasKioskosApp();
-        this.persistenciaConexiones = new PersistenciaConexiones();
+        this.persisConexiones = new PersistenciaConexiones();
     }
 
     @Override
@@ -39,7 +39,7 @@ public class PersistenciaPersonas implements IPersistenciaPersonas {
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, documento);
             query.setParameter(2, nitEmpresa);
             datos = query.getSingleResult().toString();
@@ -57,7 +57,7 @@ public class PersistenciaPersonas implements IPersistenciaPersonas {
             try {
                 String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
                 this.rolesBD.setearPerfil(esquema, cadena);
-                Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+                Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
                 query.setParameter(1, documento);
                 datos = query.getSingleResult().toString();
             } catch (Exception ex) {
@@ -79,7 +79,7 @@ public class PersistenciaPersonas implements IPersistenciaPersonas {
             sqlQuery = "SELECT PRIMERAPELLIDO||' '||SEGUNDOAPELLIDO||' '||NOMBRE nombreCompleto "
                     + "FROM PERSONAS "
                     + "WHERE SECUENCIA= ? ";
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secPersona);
             nombre = query.getSingleResult().toString();
             System.out.println("Nombre Autorizador vacaciones: " + nombre);
@@ -104,7 +104,7 @@ public class PersistenciaPersonas implements IPersistenciaPersonas {
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpl);
             nombre = (String) query.getSingleResult();
             System.out.println("PersistenciaPersonas" + ".getApellidoNombreXsecEmpl(): " + "nombre: " + nombre);
@@ -129,7 +129,7 @@ public class PersistenciaPersonas implements IPersistenciaPersonas {
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, seudonimo);
             query.setParameter(2, nitEmpresa);
             correo = query.getSingleResult().toString();
@@ -155,7 +155,7 @@ public class PersistenciaPersonas implements IPersistenciaPersonas {
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secEmpleado);
             query.setParameter(2, nitEmpresa);
             correo = query.getSingleResult().toString();
@@ -178,7 +178,7 @@ public class PersistenciaPersonas implements IPersistenciaPersonas {
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secPersona);
             correo = query.getSingleResult().toString();
         } catch (Exception e) {

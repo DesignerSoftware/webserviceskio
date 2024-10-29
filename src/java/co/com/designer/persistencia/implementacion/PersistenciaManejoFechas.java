@@ -1,7 +1,9 @@
 package co.com.designer.persistencia.implementacion;
 
+import co.com.designer.persistencia.interfaz.IPersistenciaCadenasKioskosApp;
 import co.com.designer.persistencia.interfaz.IPersistenciaConexiones;
 import co.com.designer.persistencia.interfaz.IPersistenciaManejoFechas;
+import co.com.designer.persistencia.interfaz.IPersistenciaPerfiles;
 import java.util.Date;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
@@ -13,6 +15,8 @@ import javax.persistence.Query;
 public class PersistenciaManejoFechas implements IPersistenciaManejoFechas{
 
     private IPersistenciaConexiones persisConexiones;
+    private IPersistenciaPerfiles rolesBD;
+    private IPersistenciaCadenasKioskosApp cadenasKio;
     
     public PersistenciaManejoFechas() {
         this.persisConexiones = new PersistenciaConexiones();
@@ -79,12 +83,20 @@ public class PersistenciaManejoFechas implements IPersistenciaManejoFechas{
     
     @Override
     public String getFechaSugerida(String fechaInicio, String dias, String nitEmpresa, String cadena) {
+        System.out.println("PersistenciaManejoFechas."+"getFechaSugerida(): "
+                + "fechaInicio: "+fechaInicio
+                + " dias: "+dias
+                + " nitEmpresa: "+nitEmpresa
+                + " cadena: "+ cadena
+        );
         String resultado = null;
         String consulta = "SELECT TO_CHAR(TO_DATE(?, 'DD/MM/YYYY') + ?,'DD/MM/YYYY') "
                 + "FROM DUAL";
         try {
-//            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
-//            this.rolesBD.setearPerfil(esquema, cadena);
+            this.rolesBD = new PersistenciaPerfiles();
+            this.cadenasKio = new PersistenciaCadenasKioskosApp();
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(consulta);
             query.setParameter(1, fechaInicio);
             query.setParameter(2, dias);

@@ -1,6 +1,8 @@
 package co.com.designer.persistencia.interfaz;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.List;
 import javax.persistence.PersistenceException;
 
 /**
@@ -30,4 +32,14 @@ public interface IPersistenciaKioVacaciones_pkg {
             String nitEmpresa,
             String fechaIniVaca,
             String fechaFinVaca, String cadena) throws PersistenceException, NullPointerException, Exception;
+    
+    public List getFechaRegreso(
+            String fechainicio, 
+            int dias, 
+            String seudonimo, 
+            String nitEmpresa, 
+            String cadena, 
+            String esquema);
+    
+    public Timestamp getFechaFinVaca(String fechainicio, String fechafin, int dias, String seudonimo, String nitEmpresa, String cadena, String esquema);
 }

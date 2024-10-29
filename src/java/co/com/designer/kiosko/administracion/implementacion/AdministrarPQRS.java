@@ -5,6 +5,7 @@ import co.com.designer.kiosko.generales.EnvioCorreo;
 import co.com.designer.persistencia.implementacion.PersistenciaKioPQRS;
 import co.com.designer.persistencia.interfaz.IPersistenciaKioPQRS;
 import co.com.designer.kiosko.generales.ExtraeCausaExcepcion;
+import co.com.designer.kiosko.generales.GenerarCorreo;
 import co.com.designer.persistencia.implementacion.PersistenciaGeneralesKiosko;
 import co.com.designer.persistencia.implementacion.PersistenciaKioPersonalizaciones;
 import co.com.designer.persistencia.interfaz.IPersistenciaGeneralesKiosko;
@@ -47,11 +48,10 @@ public class AdministrarPQRS implements IAdministrarPQRS {
 
         String mensajeTxt = "Nos permitimos informar que se ha enviado "
                 + (titulo.equalsIgnoreCase("RECLAMO") ? "el" : "la")
-                + " siguiente " 
+                + " siguiente "
                 + "<b class=\"negrilla\">"
                 + titulo + ":</b><br/> "
-                + mensaje 
-                ;
+                + mensaje;
         String asunto = "¡Nueva PQRSF enviada! " + titulo + " " + fechaGeneracion;
         String saludo = "Estimados colaboradores: ";
         String mensajeCorreo = this.generarMensaje(mensajeTxt, saludo, url);
@@ -66,9 +66,12 @@ public class AdministrarPQRS implements IAdministrarPQRS {
         if (soliciCreada) {
             try {
                 List correos = this.persisKioPersonaliza.getCorreosComiteConvivencia(nit, cadena);
-                EnvioCorreo ec = new EnvioCorreo();
-                ec.enviarCorreo(nit, cadena, asunto, mensajeCorreo, correos,
-                        this.persisGeneralesKiosko.getPathFoto(nit, cadena));
+                GenerarCorreo ec = new GenerarCorreo();
+//                ec.enviarCorreo(asunto, mensajeCorreo, correos,
+//                        this.persisGeneralesKiosko.getPathFoto(nit, cadena), nit, cadena,);
+                String destinatario = (String) correos.get(0);
+                List destinatarios = correos.subList(1, correos.size()-1);
+                ec.enviarCorreo((String) destinatario, destinatarios, asunto, mensaje, nit, cadena);
                 correoEnviado = true;
                 mensaje = "Mensaje Creado con Exito y Envío de correo.";
                 System.out.println("PQRSF creada.");

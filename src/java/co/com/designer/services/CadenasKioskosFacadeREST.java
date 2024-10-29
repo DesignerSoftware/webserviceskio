@@ -1,9 +1,15 @@
 package co.com.designer.services;
 
+import co.com.designer.persistencia.implementacion.PersistenciaCadenasKioskosApp;
+import co.com.designer.persistencia.implementacion.PersistenciaConexiones;
+import co.com.designer.persistencia.implementacion.PersistenciaPerfiles;
+import co.com.designer.persistencia.interfaz.IPersistenciaCadenasKioskosApp;
+import co.com.designer.persistencia.interfaz.IPersistenciaConexiones;
+import co.com.designer.persistencia.interfaz.IPersistenciaPerfiles;
 import java.util.List;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.Persistence;
+//import javax.persistence.EntityManager;
+//import javax.persistence.Persistence;
 import javax.persistence.Query;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -21,18 +27,31 @@ import javax.ws.rs.core.Response;
 @Path("cadenaskioskos")
 public class CadenasKioskosFacadeREST {
 
+    private IPersistenciaPerfiles rolesBD;
+    private IPersistenciaConexiones persisConexiones;
+    private IPersistenciaCadenasKioskosApp cadenasKio;
+
+    public CadenasKioskosFacadeREST() {
+        this.rolesBD = new PersistenciaPerfiles();
+        this.cadenasKio = new PersistenciaCadenasKioskosApp();
+        this.persisConexiones = new PersistenciaConexiones();
+    }
+    
+    /*
     protected EntityManager getEntityManager() {
         String unidadPersistencia = "wscadenaskioskosPU";
         EntityManager em = Persistence.createEntityManagerFactory(unidadPersistencia).createEntityManager();
         return em;
-    }
+    }*/
 
+    /*
     protected EntityManager getEntityManager(String persistence) {
         String unidadPersistencia = persistence;
         EntityManager em = Persistence.createEntityManagerFactory(unidadPersistencia).createEntityManager();
         return em;
-    }
+    }*/
 
+    /*
     protected void setearPerfil() {
         try {
             String rol = "ROLKIOSKO";
@@ -42,7 +61,7 @@ public class CadenasKioskosFacadeREST {
         } catch (Exception ex) {
             System.out.println("ex: " + ex);
         }
-    }
+    }*/
 
     @GET
     @Path("{grupo}")
@@ -54,7 +73,7 @@ public class CadenasKioskosFacadeREST {
             String sqlQuery = "SELECT CODIGO, DESCRIPCION, NITEMPRESA, GRUPO, CADENA, EMPLNOMINA, ESQUEMA, ESTADO, OBSERVACION "
                     + "FROM CADENASKIOSKOSAPP "
                     + "WHERE GRUPO=? and ? LIKE '%'||DOMINIO||'%'";
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager().createNativeQuery(sqlQuery);
             query.setParameter(1, grupo);
             query.setParameter(2, dominio);
             s = query.getResultList();
@@ -89,7 +108,7 @@ public class CadenasKioskosFacadeREST {
                 String sqlQuery = "SELECT CODIGO, DESCRIPCION, NITEMPRESA, GRUPO, CADENA, EMPLNOMINA, ESQUEMA, ESTADO, OBSERVACION "
                         + "FROM CADENASKIOSKOSAPP "
                         + "WHERE GRUPO=? AND NITEMPRESA=?";
-                Query query = getEntityManager().createNativeQuery(sqlQuery);
+                Query query = this.persisConexiones.getEntityManager().createNativeQuery(sqlQuery);
                 query.setParameter(1, grupo);
                 query.setParameter(2, nitEmpresa);
                 s = query.getResultList();
@@ -114,7 +133,7 @@ public class CadenasKioskosFacadeREST {
                     + "FROM CADENASKIOSKOSAPP "
                     + "WHERE GRUPO=? "
                     + "AND ESTADO='INACTIVO' ";
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager().createNativeQuery(sqlQuery);
             query.setParameter(1, grupo);
             res = (Long) query.getSingleResult();
             System.out.println("count(*) inactivo: " + res);

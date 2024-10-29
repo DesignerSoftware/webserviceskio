@@ -1,23 +1,30 @@
 package co.com.designer.services;
 
-import co.com.designer.kiosko.generales.EnvioCorreo;
+//import co.com.designer.kiosko.generales.EnvioCorreo;
 import co.com.designer.kiosko.entidades.VwVacaPendientesEmpleados;
+import co.com.designer.kiosko.generales.GenerarCorreo;
+import co.com.designer.persistencia.implementacion.PersistenciaCadenasKioskosApp;
 import co.com.designer.persistencia.implementacion.PersistenciaConexiones;
 import co.com.designer.persistencia.implementacion.PersistenciaConexionesKioskos;
+import co.com.designer.persistencia.implementacion.PersistenciaEmpleados;
 import co.com.designer.persistencia.implementacion.PersistenciaEmpresas;
 import co.com.designer.persistencia.implementacion.PersistenciaKioAutorizaSoliciVacas;
 import co.com.designer.persistencia.implementacion.PersistenciaKioConfigModulos;
+import co.com.designer.persistencia.implementacion.PersistenciaKioSoliciVacas;
 import co.com.designer.persistencia.implementacion.PersistenciaKioVacaciones_pkg;
 import co.com.designer.persistencia.implementacion.PersistenciaManejoFechas;
 import co.com.designer.persistencia.implementacion.PersistenciaPerfiles;
 import co.com.designer.persistencia.implementacion.PersistenciaPersonas;
 import co.com.designer.persistencia.implementacion.PersistenciaSolucionesNodos;
 import co.com.designer.persistencia.implementacion.PersistenciaVacaPendientes;
+import co.com.designer.persistencia.interfaz.IPersistenciaCadenasKioskosApp;
 import co.com.designer.persistencia.interfaz.IPersistenciaConexiones;
 import co.com.designer.persistencia.interfaz.IPersistenciaConexionesKioskos;
+import co.com.designer.persistencia.interfaz.IPersistenciaEmpleados;
 import co.com.designer.persistencia.interfaz.IPersistenciaEmpresas;
 import co.com.designer.persistencia.interfaz.IPersistenciaKioAutorizaSoliciVacas;
 import co.com.designer.persistencia.interfaz.IPersistenciaKioConfigModulos;
+import co.com.designer.persistencia.interfaz.IPersistenciaKioSoliciVacas;
 import co.com.designer.persistencia.interfaz.IPersistenciaKioVacaciones_pkg;
 import co.com.designer.persistencia.interfaz.IPersistenciaPerfiles;
 import co.com.designer.persistencia.interfaz.IPersistenciaPersonas;
@@ -25,7 +32,7 @@ import co.com.designer.persistencia.interfaz.IPersistenciaVacaPendientes;
 import co.com.designer.persistencia.interfaz.IPersistenciaManejoFechas;
 import co.com.designer.persistencia.interfaz.IPersistenciaSolucionesNodos;
 import java.math.BigDecimal;
-import java.math.BigInteger;
+//import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -37,7 +44,7 @@ import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.json.Json;
 import javax.json.JsonObject;
-import javax.persistence.PersistenceException;
+//import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -69,7 +76,10 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
     private IPersistenciaKioVacaciones_pkg persisVacaPkg;
     private IPersistenciaManejoFechas persisManejoFechas;
     private IPersistenciaSolucionesNodos persisSolNodos;
-
+    private IPersistenciaCadenasKioskosApp cadenasKio;
+    private IPersistenciaKioSoliciVacas persisKioSoliciVacas;
+    private IPersistenciaEmpleados persisEmpleados;
+    
     public VwvacaPendientesEmpleadosFacadeREST() {
 //        super(VwVacaPendientesEmpleados.class);
         this.rolesBD = new PersistenciaPerfiles();
@@ -82,6 +92,7 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         this.persisConfigModu = new PersistenciaKioConfigModulos();
         this.persisVacaPkg = new PersistenciaKioVacaciones_pkg();
         this.persisSolNodos = new PersistenciaSolucionesNodos();
+        this.cadenasKio = new PersistenciaCadenasKioskosApp();
     }
 
     /*
@@ -92,8 +103,7 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         this.rolesBD.setearPerfil();
         return super.findAll();
     }
-    */
-
+     */
     /**
      * @desc Devuelve las solicitudes por empleado, dependiendo el estado que se
      * le envie como parametro
@@ -118,13 +128,13 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
             @QueryParam("cadena") String cadena) {
         int conteo = 0;
         List s = null;
-        System.out.println("VwvacaPendientesEmpleadosFacadeREST"+".getSolicitudXEstado(): Parametros: "
-                +"seudonimo: " + documento 
-                + ", empresa: " + nitEmpresa 
-                + ", estado: " + estado 
+        System.out.println("VwvacaPendientesEmpleadosFacadeREST" + ".getSolicitudXEstado(): Parametros: "
+                + "seudonimo: " + documento
+                + ", empresa: " + nitEmpresa
+                + ", estado: " + estado
                 + ", cadena: " + cadena);
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
+            String esquema = cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
             String secEmpl = this.persisConKiosko.getSecuenciaEmplPorSeudonimo(documento, nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
@@ -163,7 +173,7 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
 
             return Response.status(Response.Status.OK).entity(s).build();
         } catch (Exception ex) {
-            System.out.println("VwvacaPendientesEmpleadosFacadeREST" + ".getSolicitudXEstado(): " +"Error: "+ ex);
+            System.out.println("VwvacaPendientesEmpleadosFacadeREST" + ".getSolicitudXEstado(): " + "Error: " + ex);
             conteo = 0;
             return Response.status(Response.Status.OK).entity("").build();
         }
@@ -176,7 +186,7 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
             @QueryParam("empresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
         int conteo = 0;
         List s = null;
-        String esquema = getEsquema(nitEmpresa, cadena);
+        String esquema = cadenasKio.getEsquema(nitEmpresa, cadena);
         this.rolesBD.setearPerfil(esquema, cadena);
         String secEmplJefe = this.persisConKiosko.getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
         System.out.println("Webservice: solicitudesXEmpleadoJefe Parametros: usuario: secEmplJefe: " + secEmplJefe + ", empresa: " + nitEmpresa);
@@ -275,7 +285,7 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
                 + "AND em.nit = ? \n"
                 + "ORDER BY \n"
                 + "kns.fechaInicialDisfrute, ksv.fechaGeneracion, kes.fechaProcesamiento";
-        String esquema = getEsquema(nitEmpresa, cadena);
+        String esquema = cadenasKio.getEsquema(nitEmpresa, cadena);
         this.rolesBD.setearPerfil(esquema, cadena);
         try {
             String secuenciaJefe = this.persisConKiosko.getSecuenciaEmplPorSeudonimo(jefe, nitEmpresa, cadena);
@@ -316,7 +326,7 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
             @QueryParam("cadena") String cadena) {
         int conteo = 0;
         List s = null;
-        String esquema = getEsquema(nitEmpresa, cadena);
+        String esquema = cadenasKio.getEsquema(nitEmpresa, cadena);
         this.rolesBD.setearPerfil(esquema, cadena);
         String secSecPerAutorizador = this.persisConKiosko.getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
         System.out.println("VwvacaPendientesEmpleadosFacadeREST" + ".getSolicitudesXAutorizador(): " + "Parametros: usuario: secPersonaAutorizador: " + secSecPerAutorizador + ", empresa: " + nitEmpresa);
@@ -424,11 +434,12 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         try {
             String esquema = null;
             try {
-                esquema = getEsquema(nitEmpresa, cadena);
+                esquema = cadenasKio.getEsquema(nitEmpresa, cadena);
             } catch (Exception e) {
                 System.out.println("Error al consultar esquema " + e.getMessage());
             }
-            String secPerAutorizador = getSecPersonaPorSeudonimo(seudonimo, nitEmpresa, cadena, esquema);
+//            String secPerAutorizador = getSecPersonaPorSeudonimo(seudonimo, nitEmpresa, cadena, esquema);
+            String secPerAutorizador = this.persisConKiosko.getPersonaPorSeudonimo(seudonimo, nitEmpresa, cadena).toPlainString() ;;
             this.rolesBD.setearPerfil(esquema, cadena);
             Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, secPerAutorizador);
@@ -467,7 +478,7 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public BigDecimal consultarDiasPendientesPerMasAntiguo(@QueryParam("seudonimo") String seudonimo,
             @QueryParam("nitempresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
-        BigDecimal retorno = new BigDecimal(BigInteger.ZERO);
+        BigDecimal retorno = BigDecimal.ZERO;
         retorno = this.persisVacaPend.getDiasPendPeriodoMasAntiguo(seudonimo, nitEmpresa, cadena);
         return retorno;
     }
@@ -478,7 +489,7 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
     public BigDecimal consultarDiasVacacionesProvisionados(@QueryParam("seudonimo") String seudonimo, @QueryParam("nitempresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
         String esquema = null;
         try {
-            esquema = getEsquema(nitEmpresa, cadena);
+            esquema = cadenasKio.getEsquema(nitEmpresa, cadena);
         } catch (Exception e) {
             System.out.println("Error al consultar esquema " + e.getMessage());
         }
@@ -526,8 +537,8 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
     @Path("/consultarDiasVacacionesPeriodosCumplidos")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public BigDecimal consultarDiasVacacionesPeriodosCumplidos(@QueryParam("usuario") String seudonimo, @QueryParam("nitempresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
-        BigDecimal retorno = BigDecimal.ZERO;
-        retorno = this.persisVacaPend.getDiasVacacionesPeriodosCumplidos(seudonimo, nitEmpresa, cadena);
+//        BigDecimal retorno = BigDecimal.ZERO;
+        BigDecimal retorno = this.persisVacaPend.getDiasVacacionesPeriodosCumplidos(seudonimo, nitEmpresa, cadena);
         return retorno;
     }
 
@@ -556,7 +567,7 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
             @QueryParam("nitempresa") String nitEmpresa,
             @QueryParam("cadena") String cadena) {
         System.out.println("Parametros consultaFechaUltimoPago(): usuario: " + seudonimo + ", nitempresa: " + nitEmpresa + ", cadena: " + cadena);
-        String esquema = getEsquema(nitEmpresa, cadena);
+        String esquema = cadenasKio.getEsquema(nitEmpresa, cadena);
         this.rolesBD.setearPerfil(esquema, cadena);
         System.out.println(this.getClass().getName() + "." + "consultaFechaUltimoPago" + "()");
         Timestamp retorno = null;
@@ -589,12 +600,12 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
             @QueryParam("cadena") String cadena) {
         String esquema = null;
         try {
-            esquema = getEsquema(nitEmpresa, cadena);
+            esquema = cadenasKio.getEsquema(nitEmpresa, cadena);
         } catch (Exception e) {
             System.out.println("Error al consultar esquema " + e.getMessage());
         }
         System.out.println(this.getClass().getName() + "." + "calculaFechaRegreso" + "()");
-        List retorno = getFechaRegreso(fechainicio, dias, seudonimo, nitEmpresa, cadena, esquema);
+        List retorno = this.persisVacaPkg.getFechaRegreso(fechainicio, dias, seudonimo, nitEmpresa, cadena, esquema);
         return retorno;
     }
 
@@ -649,11 +660,12 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         try {
             String esquema = null;
             try {
-                esquema = getEsquema(nitEmpresa, cadena);
+                esquema = cadenasKio.getEsquema(nitEmpresa, cadena);
             } catch (Exception e) {
                 System.out.println("Error al consultar esquema " + e.getMessage());
             }
-            String secPerAutorizador = getSecPersonaPorSeudonimo(autorizador, nitEmpresa, cadena, esquema);
+//            String secPerAutorizador = getSecPersonaPorSeudonimo(autorizador, nitEmpresa, cadena, esquema);
+            String secPerAutorizador = this.persisConKiosko.getPersonaPorSeudonimo(autorizador, nitEmpresa, cadena).toPlainString() ;
             this.rolesBD.setearPerfil(esquema, cadena);
 
             Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
@@ -677,9 +689,12 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
             @QueryParam("usuario") String seudonimo,
             @QueryParam("nitempresa") String nitEmpresa,
             @QueryParam("cadena") String cadena) {
+        
+        this.persisEmpleados = new PersistenciaEmpleados();
+        
         String esquema = null;
         try {
-            esquema = getEsquema(nitEmpresa, cadena);
+            esquema = cadenasKio.getEsquema(nitEmpresa, cadena);
         } catch (Exception e) {
             System.out.println("Error al consultar esquema " + e.getMessage());
         }
@@ -697,7 +712,8 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
                     retorno = this.persisPersonas.getApellidoNombreXSecPer(secPerKioAutorizador, nitEmpresa, cadena, esquema);
                 } else {
                     try {
-                        secEmplJefe = consultarSecuenciaEmpleadoJefe(secEmpleado, nitEmpresa, cadena, esquema);
+//                        secEmplJefe = consultarSecuenciaEmpleadoJefe(secEmpleado, nitEmpresa, cadena, esquema);
+                        secEmplJefe = this.persisEmpleados.consultarSecuenciaEmpleadoJefe(secEmpleado, nitEmpresa, cadena);
                         if (secEmplJefe != null) {
                             retorno = this.persisPersonas.getApellidoNombreXsecEmpl(secEmplJefe, nitEmpresa, cadena, esquema);
                             System.out.println("Empleado jefe: " + retorno);
@@ -724,6 +740,7 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         return Response.ok(json, MediaType.APPLICATION_JSON).build();
     }
 
+    /*
     public List getFechaRegreso(String fechainicio, int dias, String seudonimo, String nitEmpresa, String cadena, String esquema) {
         System.out.println("Parametros getFechaRegreso(): seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", fechainicio: " + fechainicio + ", dias: " + dias + ", cadena: " + cadena);
         String secEmpl = this.persisConKiosko.getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
@@ -750,6 +767,7 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         }
         return retorno;
     }
+    */
 
     @GET
     @Path("/calculaFechaFinVaca")
@@ -762,15 +780,17 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
             @QueryParam("cadena") String cadena) {
         String esquema = null;
         try {
-            esquema = getEsquema(nitEmpresa, cadena);
+            esquema = cadenasKio.getEsquema(nitEmpresa, cadena);
         } catch (Exception e) {
             System.out.println("Error al consultar esquema " + e.getMessage());
         }
         System.out.println(this.getClass().getName() + "." + "calculaFechaFinVaca" + "()");
-        Timestamp retorno = getFechaFinVaca(fechainicio, getFechaRegreso(fechainicio, dias, seudonimo, nitEmpresa, cadena, esquema).toString(), dias, seudonimo, nitEmpresa, cadena, esquema);
+//        Timestamp retorno = getFechaFinVaca(fechainicio, getFechaRegreso(fechainicio, dias, seudonimo, nitEmpresa, cadena, esquema).toString(), dias, seudonimo, nitEmpresa, cadena, esquema);
+        Timestamp retorno = this.persisVacaPkg.getFechaFinVaca(fechainicio, this.persisVacaPkg.getFechaRegreso(fechainicio, dias, seudonimo, nitEmpresa, cadena, esquema).toString(), dias, seudonimo, nitEmpresa, cadena, esquema);
         return retorno;
     }
 
+    /*
     public Timestamp getFechaFinVaca(String fechainicio, String fechafin, int dias, String seudonimo, String nitEmpresa, String cadena, String esquema) {
         String secEmpl = this.persisConKiosko.getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
         Timestamp retorno = null;
@@ -787,7 +807,9 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         }
         return retorno;
     }
+    */
 
+    /*
     public boolean creaKioNovedadSolici(String seudonimo, String nitEmpresa, String fechainicial, String fecharegreso, String dias, String RFVACACION, String fechaFin, String cadena, String esquema) {
         int conteo = 0;
         try {
@@ -815,7 +837,9 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
             return false;
         }
     }
+    */
 
+    /*
     public boolean creaKioSoliciVacas(String seudonimo, String secEmplJefe, String secPersonaAutorizador, String nit, String secNovedad, String fechaGeneracion, String cadena, String esquema) {
         System.out.println("Parametros creaKioSoliciVacas(): seudonimo: " + seudonimo + ", nit: " + nit + ", secNovedad: " + secNovedad + ", fechaGeneracion: " + fechaGeneracion
                 + ", autorizador: " + secPersonaAutorizador + ", secEmplJefe: " + secEmplJefe + ", cadena: " + cadena);
@@ -855,7 +879,9 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         }
         return conteo > 0;
     }
+    */
 
+    /*
     public String getSecuenciaKioNovedadesSolici(String seudonimo, String nitEmpresa,
             String fechainicio, String fecharegreso,
             String dias, String rfVacacion, String cadena, String esquema) {
@@ -890,7 +916,9 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         }
         return sec;
     }
+    */
 
+    /*
     public String getSecKioSoliciVacas(String secEmpl, String fechaGeneracion,
             String secEmplJefe, String secPerAutorizador, String kioNovedadSolici, String nitEmpresa, String cadena, String esquema) {
         String secKioSoliciVacas = null;
@@ -926,7 +954,9 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         }
         return secKioSoliciVacas;
     }
+    */
 
+    /*
     public String consultarSecuenciaEmpleadoJefe(String secEmpleado, String nitEmpresa, String cadena, String esquema) {
         System.out.println("parametros consultarSecuenciaEmpleadoJefe: secEmpleado: " + secEmpleado + ", cadena: " + cadena);
         String secJefe = null;
@@ -956,7 +986,9 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         }
         return secJefe;
     }
+    */
 
+    /*
     public String getSecPersonaPorSeudonimo(String seudonimo, String nitEmpresa, String cadena, String esquema) {
         System.out.println("Parametros getSecPersonaPorSeudonimo(): seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
         String secuencia = null;
@@ -978,7 +1010,9 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         }
         return secuencia;
     }
+    */
 
+    /*
     public String getEmplXsecKioEstadoSolici(String kioEstadoSolici, String nitEmpresa, String cadena, String esquema) {
         System.out.println("Parametros getEmplXsecKioEstadoSolici(): kioEstadoSolici: " + kioEstadoSolici + ", cadena: " + cadena);
         String secEmpl = null;
@@ -1001,6 +1035,7 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         }
         return secEmpl;
     }
+    */
 
     @POST
     @Path("/nuevoEstadoSolici")
@@ -1013,42 +1048,47 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         System.out.println("nuevoEstadoSolici()");
         System.out.println("parametros: secuencia: " + secKioEstadoSolici + ", motivo " + motivo + ", empleado " + seudonimo + ", estado: " + estado + ", cadena " + cadena + ", nit: " + nitEmpresa + ", urlKiosco: " + urlKiosco + ", grupoEmpresarial: " + grupoEmpr
                 + "fecha inicio " + fechaInicio + ", fechaFin: " + fechaFin + ", dias: " + dias + ", periodo: " + periodo);
+        
+        this.persisKioSoliciVacas = new PersistenciaKioSoliciVacas();
+        
         List s = null;
         int res = 0;
         String urlKio = urlKiosco + "#/login/" + grupoEmpr;
         String urlKioOlvidoClave = urlKiosco + "#/olvidoClave/" + grupoEmpr;
         String esquema = null;
         try {
-            esquema = getEsquema(nitEmpresa, cadena);
+            esquema = cadenasKio.getEsquema(nitEmpresa, cadena);
         } catch (Exception e) {
             System.out.println("Error al consultar esquema " + e.getMessage());
         }
         try {
             String secEmplEjecuta = this.persisConKiosko.getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
             System.out.println("La persona que ejecuta es: " + secEmplEjecuta);
-            String secEmplSolicita = getEmplXsecKioEstadoSolici(secKioEstadoSolici, nitEmpresa, cadena, esquema);
+            String secEmplSolicita = this.persisKioSoliciVacas.getEmplXsecKioEstadoSolici(secKioEstadoSolici, nitEmpresa, cadena, esquema);
             String secEmplJefe = null;
             String secPerAutoriza = null;
             String nombreAutorizaSolici = "";
             String correoAutorizaSolici = null;
             String fecha = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss").format(new Date());
-            if (motivo == null || motivo.isEmpty() ) {
+            if (motivo == null || motivo.isEmpty()) {
                 motivo = " ";
             }
             try {
-                secPerAutoriza = getSecPerAutorizadorXsecKioEstadoSolici(secKioEstadoSolici, nitEmpresa, cadena);
+                secPerAutoriza = this.persisKioSoliciVacas.getSecPerAutorizadorXsecKioEstadoSolici(secKioEstadoSolici, nitEmpresa, cadena);
             } catch (Exception e) {
                 System.out.println("Error al consultar autorizador relacionado a la solicitud");
             }
             if (secPerAutoriza != null) {
                 nombreAutorizaSolici = this.persisPersonas.getApellidoNombreXSecPer(secPerAutoriza, nitEmpresa, cadena, esquema);
-                correoAutorizaSolici = getCorreoXsecPer(secPerAutoriza, nitEmpresa, cadena, esquema);
+//                correoAutorizaSolici = getCorreoXsecPer(secPerAutoriza, nitEmpresa, cadena, esquema);
+                correoAutorizaSolici = this.persisPersonas.getCorreoPorPersona(secPerAutoriza, nitEmpresa, cadena);
             } else {
                 try {
-                    secEmplJefe = getEmplJefeXsecKioEstadoSolici(secKioEstadoSolici, nitEmpresa, cadena);
+                    secEmplJefe = this.persisKioSoliciVacas.getEmplJefeXsecKioEstadoSolici(secKioEstadoSolici, nitEmpresa, cadena);
                     if (secEmplJefe != null) {
                         nombreAutorizaSolici = this.persisPersonas.getApellidoNombreXsecEmpl(secEmplJefe, nitEmpresa, cadena, esquema);
-                        correoAutorizaSolici = getCorreoXsecEmpl(secEmplJefe, nitEmpresa, cadena, esquema);
+//                        correoAutorizaSolici = getCorreoXsecEmpl(secEmplJefe, nitEmpresa, cadena, esquema);
+                        correoAutorizaSolici = this.persisPersonas.getCorreoPorEmpleado(secEmplJefe, nitEmpresa, cadena);
                     }
                 } catch (Exception e) {
                     System.out.println("Error al consultar empleadoJefe relacionado a la solicitud");
@@ -1097,14 +1137,15 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
                 query.setParameter(4, secKioEstadoSolici);
             }
             res = query.executeUpdate();
-            EnvioCorreo c = new EnvioCorreo();
+            //EnvioCorreo c = new EnvioCorreo();
+            GenerarCorreo c = new GenerarCorreo();
             String estadoVerbo = estado.equals("CANCELADO") ? "CANCELAR"
                     : estado.equals("AUTORIZADO") ? "PRE-APROBAR"
                     : estado.equals("RECHAZADO") ? "RECHAZAR" : estado;
             String estadoPasado = estado.equals("CANCELADO") ? "canceló"
                     : estado.equals("AUTORIZADO") ? "pre-aprobó"
                     : estado.equals("RECHAZADO") ? "rechazó" : estado;
-            String mensaje = "<div style=\"color: white;\"><p>Nos permitimos informar que se acaba de " + estadoVerbo + " una solicitud de vacaciones";
+            String mensaje = "<div style=\"color: black;\"><p>Nos permitimos informar que se acaba de " + estadoVerbo + " una solicitud de vacaciones";
             if (estado.equals("RECHAZADO") || estado.equals("AUTORIZADO")) {
                 mensaje += " creada para " + this.persisPersonas.getApellidoNombreXsecEmpl(secEmplSolicita, nitEmpresa, cadena, esquema);
             }
@@ -1119,46 +1160,58 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
                 mensaje += "La persona a cargo de HACER EL SEGUIMIENTO es: " + nombreAutorizaSolici + "<br>";
             }
             if (estado.equals("AUTORIZADO")) {
-                mensaje += "Por favor seguir el proceso en: <a style='color: white !important;' target='_blank' href=" + urlKio + ">" + urlKio + "</a>";
+                mensaje += "Por favor seguir el proceso en: <a style='color: black !important;' target='_blank' href=" + urlKio + ">" + urlKio + "</a>";
                 mensaje += "<br><br>"
                         + "Si no puede ingresar, necesitará instalar la última versión de su navegador, la cual podrá descargar de forma gratuita.<br><br>"
                         + "En caso de que haya olvidado su clave podrá generar una nueva haciendo clic en ¿Olvidó su clave? en el módulo Kiosco o a través del link: "
-                        + "<br><a style='color: white !important;' href='" + urlKioOlvidoClave + "'>" + urlKioOlvidoClave + "</a></div>";
+                        + "<br><a style='color: black !important;' href='" + urlKioOlvidoClave + "'>" + urlKioOlvidoClave + "</a></div>";
             }
 
-            String fechaInicioDisfrute = getFechaInicioXsecKioEstadoSolici(secKioEstadoSolici, nitEmpresa, cadena);
+            String fechaInicioDisfrute = this.persisKioSoliciVacas.getFechaInicioXsecKioEstadoSolici(secKioEstadoSolici, nitEmpresa, cadena);
             System.out.println("url Kiosco: " + urlKio);
             if (res > 0) {
                 System.out.println("solicitud " + estado + " con éxito.");
-                String servidorsmtp = getConfigCorreoServidorSMTP(nitEmpresa, cadena, esquema);
-                String puerto = getConfigCorreo(nitEmpresa, "PUERTO", cadena, esquema);
-                String autenticado = getConfigCorreo(nitEmpresa, "AUTENTICADO", cadena, esquema);
-                String starttls = getConfigCorreo(nitEmpresa, "STARTTLS", cadena, esquema);
-                String remitente = getConfigCorreo(nitEmpresa, "REMITENTE", cadena, esquema);
-                String clave = getConfigCorreo(nitEmpresa, "CLAVE", cadena, esquema);
+//                String servidorsmtp = getConfigCorreoServidorSMTP(nitEmpresa, cadena, esquema);
+//                String puerto = getConfigCorreo(nitEmpresa, "PUERTO", cadena, esquema);
+//                String autenticado = getConfigCorreo(nitEmpresa, "AUTENTICADO", cadena, esquema);
+//                String starttls = getConfigCorreo(nitEmpresa, "STARTTLS", cadena, esquema);
+//                String remitente = getConfigCorreo(nitEmpresa, "REMITENTE", cadena, esquema);
+//                String clave = getConfigCorreo(nitEmpresa, "CLAVE", cadena, esquema);
                 if (estado.equals("CANCELADO")) {
+                    //if (c.enviarCorreoVacaciones(
+                    //        servidorsmtp, puerto, autenticado, starttls, remitente, clave,
+                    //        getCorreoXsecEmpl(secEmplSolicita, nitEmpresa, cadena, esquema),
+                    //        "Solicitud de VACACIONES Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de VACACIONES: " + fechaInicioDisfrute,
+                    //        mensaje, urlKio, nitEmpresa, cadena)) {
                     if (c.enviarCorreoVacaciones(
-                            servidorsmtp, puerto, autenticado, starttls, remitente, clave,
-                            getCorreoXsecEmpl(secEmplSolicita, nitEmpresa, cadena, esquema),
-                            "Solicitud de VACACIONES Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de VACACIONES: " + fechaInicioDisfrute,
-                            mensaje, urlKio, nitEmpresa, cadena)) {
+                            this.persisPersonas.getCorreoPorEmpleado(secEmplSolicita, nitEmpresa, cadena),
+                             "Solicitud de VACACIONES Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de VACACIONES: " + fechaInicioDisfrute,
+                             mensaje, nitEmpresa, cadena, urlKio)) {
                         System.out.println("Correo enviado a la persona que ejecuta");
                     }
                 }
 
                 if (estado.equals("AUTORIZADO") || estado.equals("RECHAZADO")) {
+                    //if (c.enviarCorreoVacaciones(
+                    //        servidorsmtp, puerto, autenticado, starttls, remitente, clave,
+                    //        getCorreoXsecEmpl(secEmplSolicita, nitEmpresa, cadena, esquema),
+                    //        "Solicitud de VACACIONES Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de VACACIONES: " + fechaInicioDisfrute,
+                    //        mensaje, urlKio, nitEmpresa, cadena)) {
                     if (c.enviarCorreoVacaciones(
-                            servidorsmtp, puerto, autenticado, starttls, remitente, clave,
-                            getCorreoXsecEmpl(secEmplSolicita, nitEmpresa, cadena, esquema),
+                            this.persisPersonas.getCorreoPorEmpleado(secEmplSolicita, nitEmpresa, cadena),
                             "Solicitud de VACACIONES Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de VACACIONES: " + fechaInicioDisfrute,
-                            mensaje, urlKio, nitEmpresa, cadena)) {
+                            mensaje, nitEmpresa, cadena, urlKio)) {
                         System.out.println("Correo enviada a la persona que ejecuta");
                     }
+                    //if (c.enviarCorreoVacaciones(
+                    //        servidorsmtp, puerto, autenticado, starttls, remitente, clave,
+                    //        correoAutorizaSolici,
+                    //        "Solicitud de VACACIONES Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de VACACIONES: " + fechaInicioDisfrute,
+                    //        mensaje, urlKio, nitEmpresa, cadena)) {
                     if (c.enviarCorreoVacaciones(
-                            servidorsmtp, puerto, autenticado, starttls, remitente, clave,
                             correoAutorizaSolici,
                             "Solicitud de VACACIONES Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de VACACIONES: " + fechaInicioDisfrute,
-                            mensaje, urlKio, nitEmpresa, cadena)) {
+                            mensaje, nitEmpresa, cadena, urlKio)) {
                         System.out.println("Correo enviado al empleado que solicita asociado " + correoAutorizaSolici);
                     }
 
@@ -1200,8 +1253,11 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
                             while (it.hasNext()) {
                                 String correoenviar = it.next();
                                 System.out.println("correo auditoria: " + correoenviar);
-                                c.enviarCorreoInformativo("Auditoria: Se ha " + estadoPasado + " una Solicitud de vacaciones Kiosco. " + fecha,
-                                        "Estimado usuario: ", mensajeAuditoria, nitEmpresa, urlKio, cadena, correoenviar, null);
+                                c.enviarCorreoInformativo(
+                                        correoenviar
+                                        , null
+                                        , "Auditoria: Se ha " + estadoPasado + " una Solicitud de vacaciones Kiosco. " + fecha
+                                        , "Estimado usuario: ", mensajeAuditoria, nitEmpresa, cadena, urlKio);
                             }
                         } else {
                             System.out.println("No lleva auditoria Vacaciones");
@@ -1219,10 +1275,11 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         }
     }
 
+    /*
     public String getFechaInicioXsecKioEstadoSolici(String secKioEstadoSolici, String nitEmpresa, String cadena) {
         String fechaInicio = null;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
+            String esquema = cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "select "
                     + "TO_CHAR(KN.FECHAINICIALDISFRUTE, 'dd/mm/yyyy') "
@@ -1243,11 +1300,13 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         }
         return fechaInicio;
     }
+    */
 
+    /*
     public String getEmplJefeXsecKioEstadoSolici(String secKioEstadoSolici, String nitEmpresa, String cadena) {
         String secEmplJefe = null;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
+            String esquema = cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT KSV.EMPLEADOJEFE "
                     + "FROM "
@@ -1267,12 +1326,14 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         }
         return secEmplJefe;
     }
+    */
 
+    /*
     public String getSecPerAutorizadorXsecKioEstadoSolici(String secKioEstadoSolici, String nitEmpresa, String cadena) {
         System.out.println("Parametros getSecPerAutorizadorXsecKioEstadoSolici(): secKioEstadoSolici: " + secKioEstadoSolici + " nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
         String secPerAutorizador = null;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
+            String esquema = cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT KSV.AUTORIZADOR "
                     + "FROM "
@@ -1292,6 +1353,7 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         }
         return secPerAutorizador;
     }
+    */
 
     @GET
     @Path("/getDiasNovedadesVaca")
@@ -1303,7 +1365,7 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         try {
             String esquema = null;
             try {
-                esquema = getEsquema(nitEmpresa, cadena);
+                esquema = cadenasKio.getEsquema(nitEmpresa, cadena);
             } catch (Exception e) {
                 System.out.println("Error al consultar esquema " + e.getMessage());
             }
@@ -1407,6 +1469,7 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
     }
 
     /*Crea nuevo registro kioestadosolici al crear nueva solicitud de vacaciones*/
+ /*
     public boolean creaKioEstadoSolici(
             String seudonimo, String nit, String kioSoliciVaca,
             String fechaProcesa, String estado, String motivo, String cadena, String esquema) {
@@ -1432,7 +1495,7 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         }
         return res > 0;
     }
-
+     */
     @POST
     @Path("/crearSolicitudVacaciones")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
@@ -1445,11 +1508,15 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
                 + " fechainicio: " + fechainicial + ", fecharegreso: " + fecharegreso + ", dias: " + dias + ", vacacion: " + RFVACACION + ", cadena: " + cadena + ", grupo: " + grupoEmpr);
         System.out.println("link Kiosco: " + urlKiosco);
         System.out.println("grupoEmpresarial: " + grupoEmpr);
+        
+        this.persisKioSoliciVacas = new PersistenciaKioSoliciVacas();
+        this.persisEmpleados = new PersistenciaEmpleados();
+        
         boolean soliciCreada = false;
         boolean soliciValida = false;
         String esquema = null;
         try {
-            esquema = getEsquema(nit, cadena);
+            esquema = cadenasKio.getEsquema(nit, cadena);
         } catch (Exception e) {
             System.out.println("Error: No se pudo consultar esquema. " + e.getMessage());
         }
@@ -1494,11 +1561,13 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
                     }
                     if (secPersonaAutorizador == null) {
                         try {
-                            secEmplJefe = consultarSecuenciaEmpleadoJefe(secEmpl, nit, cadena, esquema);
+//                            secEmplJefe = consultarSecuenciaEmpleadoJefe(secEmpl, nit, cadena, esquema);
+                            secEmplJefe = this.persisEmpleados.consultarSecuenciaEmpleadoJefe(secEmpl, nit, cadena);
                             if (secEmplJefe != null) {
                                 System.out.println("creaKioSoliciVacas: EmpleadoJefe: " + secEmplJefe);
                                 nombreAutorizaSolici += this.persisPersonas.getApellidoNombreXsecEmpl(secEmplJefe, nit, cadena, esquema);
-                                correoAutorizaSolici = getCorreoXsecEmpl(secEmplJefe, nit, cadena, esquema);
+//                                correoAutorizaSolici = getCorreoXsecEmpl(secEmplJefe, nit, cadena, esquema);
+                                correoAutorizaSolici = this.persisPersonas.getCorreoPorEmpleado(secEmplJefe, nit, cadena);
                                 System.out.println("El empleado tiene relacionado a empleadoJefe " + nombreAutorizaSolici + " - " + correoAutorizaSolici);
                             } else {
                                 System.out.println("El empleado jefe está vacío");
@@ -1508,27 +1577,28 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
                         }
                     } else {
                         nombreAutorizaSolici += this.persisPersonas.getApellidoNombreXSecPer(secPersonaAutorizador, nit, cadena, esquema);
-                        correoAutorizaSolici = getCorreoXsecPer(secPersonaAutorizador, nit, cadena, esquema);
+//                        correoAutorizaSolici = getCorreoXsecPer(secPersonaAutorizador, nit, cadena, esquema);
+                        correoAutorizaSolici = this.persisPersonas.getCorreoPorPersona(secPersonaAutorizador, nit, cadena);
                         System.out.println("El empleado tiene relacionado al autorizador " + nombreAutorizaSolici + " - " + correoAutorizaSolici);
                     }
 
                     if (secEmplJefe != null || secPersonaAutorizador != null) {
                         System.out.println("Si hay un jefe/autorizador relacionado");
                         // Insertar registro en kionovedadessolici
-                        if (creaKioNovedadSolici(seudonimo, nit, fechainicial, fecharegreso, dias, RFVACACION, fechafin, cadena, esquema)) {
-                            String secKioNovedad = getSecuenciaKioNovedadesSolici(seudonimo, nit, fechainicial, fecharegreso, dias, RFVACACION, cadena, esquema);
+                        if ( this.persisKioSoliciVacas.creaKioNovedadSolici(seudonimo, nit, fechainicial, fecharegreso, dias, RFVACACION, fechafin, cadena, esquema)) {
+                            String secKioNovedad = this.persisKioSoliciVacas.getSecuenciaKioNovedadesSolici(seudonimo, nit, fechainicial, fecharegreso, dias, RFVACACION, cadena, esquema);
                             System.out.println("secuencia kionovedadsolici creada: " + secKioNovedad);
                             // Insertar registro en kiosolicivacas
-                            if (creaKioSoliciVacas(seudonimo, secEmplJefe, secPersonaAutorizador, nit, secKioNovedad, fechaGeneracion, cadena, esquema)) {
-                                String secKioSoliciVacas = getSecKioSoliciVacas(secEmpl, fechaGeneracion, secEmplJefe, secPersonaAutorizador, secKioNovedad, nit, cadena, esquema);
+                            if (this.persisKioSoliciVacas.creaKioSoliciVacas(seudonimo, secEmplJefe, secPersonaAutorizador, nit, secKioNovedad, fechaGeneracion, cadena, esquema)) {
+                                String secKioSoliciVacas = this.persisKioSoliciVacas.getSecKioSoliciVacas(secEmpl, fechaGeneracion, secEmplJefe, secPersonaAutorizador, secKioNovedad, nit, cadena, esquema);
                                 System.out.println("secuencia kiosolicivacas creada: " + secKioSoliciVacas);
                                 // Insertar registro en kioestadossolici
-                                if (creaKioEstadoSolici(seudonimo, nit, secKioSoliciVacas, fechaGeneracion, "ENVIADO", null, cadena, esquema)) {
+                                if (this.persisKioSoliciVacas.creaKioEstadoSolici(seudonimo, nit, secKioSoliciVacas, fechaGeneracion, "ENVIADO", null, cadena, esquema)) {
                                     System.out.println("SOLICITUD DE VACACIONES CREADA EXITOSAMENTE!!!");
                                     soliciCreada = true;
                                     String Periosidad = this.persisVacaPend.getPeriodoVacas(secEmpl, RFVACACION, cadena, nit);
                                     mensaje = "Solicitud creada exitosamente.";
-                                    String mensajeCorreo = "Nos permitimos informar que se acaba de crear una solicitud de vacaciones en el módulo de Kiosco Nómina Designer. Por favor llevar el caso desde su cuenta de usuario en el portal de Kiosco y continuar con el proceso."
+                                    String mensajeCorreo = "Nos permitimos informar que se acaba de crear una solicitud de vacaciones en el módulo de autogestión Kiosco. Por favor llevar el caso desde su cuenta de usuario en el portal del módulo autogestión Kiosco y continuar con el proceso."
                                             + " <br><br> "
                                             + "La persona que CREÓ LA SOLICITUD es: " + personaCreaSolici
                                             + "<br>"
@@ -1543,29 +1613,38 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
                                             + "<br><br>"
                                             + "En caso de que haya olvidado su clave podrá generar una nueva haciendo clic en ¿Olvidó su clave? en el módulo Kiosco o a través del link: "
                                             + "<br><a style='color: white !important;' href='" + urlKioOlvidoClave + "'>" + urlKioOlvidoClave + "</a>";
-                                    EnvioCorreo c = new EnvioCorreo();
 
-                                    String servidorsmtp = getConfigCorreoServidorSMTP(nit, cadena, esquema);
-                                    String puerto = getConfigCorreo(nit, "PUERTO", cadena, esquema);
-                                    String autenticado = getConfigCorreo(nit, "AUTENTICADO", cadena, esquema);
-                                    String starttls = getConfigCorreo(nit, "STARTTLS", cadena, esquema);
-                                    String remitente = getConfigCorreo(nit, "REMITENTE", cadena, esquema);
-                                    String clave = getConfigCorreo(nit, "CLAVE", cadena, esquema);
+                                    //EnvioCorreo c = new EnvioCorreo();
+                                    GenerarCorreo c = new GenerarCorreo();
 
+//                                    String servidorsmtp = getConfigCorreoServidorSMTP(nit, cadena, esquema);
+//                                    String puerto = getConfigCorreo(nit, "PUERTO", cadena, esquema);
+//                                    String autenticado = getConfigCorreo(nit, "AUTENTICADO", cadena, esquema);
+//                                    String starttls = getConfigCorreo(nit, "STARTTLS", cadena, esquema);
+//                                    String remitente = getConfigCorreo(nit, "REMITENTE", cadena, esquema);
+//                                    String clave = getConfigCorreo(nit, "CLAVE", cadena, esquema);
+                                    //if (c.enviarCorreoVacaciones(
+                                    //        servidorsmtp, puerto, autenticado, starttls, remitente, clave,
+                                    //        getCorreoXsecEmpl(secEmpl, nit, cadena, esquema),
+                                    //        "Solicitud de VACACIONES Kiosco - Nueva solicitud: " + fechaCorreo + ". Inicio de VACACIONES: " + fechainicial,
+                                    //        mensajeCorreo, urlKio, nit, cadena)) {
                                     if (c.enviarCorreoVacaciones(
-                                            servidorsmtp, puerto, autenticado, starttls, remitente, clave,
-                                            getCorreoXsecEmpl(secEmpl, nit, cadena, esquema),
-                                            "Solicitud de VACACIONES Kiosco - Nueva solicitud: " + fechaCorreo + ". Inicio de VACACIONES: " + fechainicial,
-                                            mensajeCorreo, urlKio, nit, cadena)) {
+                                            this.persisPersonas.getCorreoPorEmpleado(secEmpl, nit, cadena),
+                                             "Solicitud de VACACIONES Kiosco - Nueva solicitud: " + fechaCorreo + ". Inicio de VACACIONES: " + fechainicial,
+                                             mensajeCorreo, nit, cadena, urlKio)) {
                                         System.out.println("Correo enviado al empleado.");
                                     }
 
                                     // Enviar correo al jefe o autorizador de vacaciones:
+                                    //if (c.enviarCorreoVacaciones(
+                                    //        servidorsmtp, puerto, autenticado, starttls, remitente, clave,
+                                    //        correoAutorizaSolici,
+                                    //        "Solicitud de VACACIONES Kiosco - Nueva solicitud: " + fechaCorreo + ". Inicio de VACACIONES: " + fechainicial,
+                                    //        mensajeCorreo, urlKio, nit, cadena)) {
                                     if (c.enviarCorreoVacaciones(
-                                            servidorsmtp, puerto, autenticado, starttls, remitente, clave,
                                             correoAutorizaSolici,
-                                            "Solicitud de VACACIONES Kiosco - Nueva solicitud: " + fechaCorreo + ". Inicio de VACACIONES: " + fechainicial,
-                                            mensajeCorreo, urlKio, nit, cadena)) {
+                                             "Solicitud de VACACIONES Kiosco - Nueva solicitud: " + fechaCorreo + ". Inicio de VACACIONES: " + fechainicial,
+                                             mensajeCorreo, nit, cadena, urlKio)) {
                                         System.out.println("Correo enviado al jefe.");
                                     }
 
@@ -1583,7 +1662,7 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
                                             System.out.println("obtener " + lista.get(0));
                                             System.out.println("size: " + lista.size());
                                             String mensajeAuditoria = "Nos permitimos informar que " + personaCreaSolici
-                                                    + " generó una SOLICITUD DE VACACIONES el " + fechaCorreo + " a las " + horaGeneracion + " en el módulo de Kiosco Nómina Designer."
+                                                    + " generó una SOLICITUD DE VACACIONES el " + fechaCorreo + " a las " + horaGeneracion + " en el módulo de autogestión Kiosco."
                                                     + "<br>"
                                                     + "La solicitud se creó por " + dias + " días, para ser disfrutados desde el " + fechainicial + " hasta el " + fechafin
                                                     + "<br>"
@@ -1592,8 +1671,11 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
                                                 String correoenviar = it.next();
                                                 System.out.println("correo auditoria: " + correoenviar);
                                                 System.out.println("codigoopcion: " + "31");
-                                                c.enviarCorreoInformativo("Auditoria: Nueva Solicitud de VACACIONES Kiosco. " + fechaCorreo,
-                                                        "Estimado usuario: ", mensajeAuditoria, nit, urlKio, cadena, correoenviar, null);
+                                                c.enviarCorreoInformativo(
+                                                        correoenviar 
+                                                        , null
+                                                        , "Auditoria: Nueva Solicitud de VACACIONES Kiosco. " + fechaCorreo
+                                                        , "Estimado usuario: ", mensajeAuditoria, nit, cadena, urlKio);
                                             }
                                         } else {
                                             System.out.println("No lleva auditoria Vacaciones");
@@ -1619,14 +1701,14 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
                     }
 
                 } catch (Exception e) {
-                    System.out.println("VwvacaPendientesEmpleadosFacadeREST" + ".crearSolicitudVacaciones(): Error-1: " + e.getMessage());
+                    System.out.println("Error-1:"+"VwvacaPendientesEmpleadosFacadeREST" + ".crearSolicitudVacaciones(): " + e.toString());
                     soliciCreada = false;
                     mensaje = "Ha ocurrido un error, por favor inténtelo de nuevo más tarde.";
                 }
             }
 
         } catch (Exception e) {
-            System.out.println("VwvacaPendientesEmpleadosFacadeREST" + ".crearSolicitudVacaciones(): Error-2: " + e.toString());
+            System.out.println("Error-2: "+"VwvacaPendientesEmpleadosFacadeREST" + ".crearSolicitudVacaciones(): Error-2: " + e.toString());
             e.printStackTrace();
         }
 
@@ -1640,28 +1722,31 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         return obj.toString();
     }
 
+    /*
     public String getCorreoSoporteKiosco(String nitEmpresa, String cadena) {
-        System.out.println("VwvacaPendientesEmpleadosFacadeREST"+".getConfigCorreoServidorSMTP()");
+        System.out.println("VwvacaPendientesEmpleadosFacadeREST" + ".getConfigCorreoServidorSMTP()");
         String emailSoporte = "";
         String sqlQuery = "SELECT EMAILCONTACTO "
-                    + "FROM KIOPERSONALIZACIONES "
-                    + "WHERE TIPOCONTACTO = 'NOMINA' "
-                    + "EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT= ? ) "
-                    + "AND ROWNUM<=1";
+                + "FROM KIOPERSONALIZACIONES "
+                + "WHERE TIPOCONTACTO = 'NOMINA' "
+                + "EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT= ? ) "
+                + "AND ROWNUM<=1";
         try {
             String esquema = getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
-            System.out.println("VwvacaPendientesEmpleadosFacadeREST"+".getConfigCorreoServidorSMTP(): "+"Query: " + sqlQuery);
+            System.out.println("VwvacaPendientesEmpleadosFacadeREST" + ".getConfigCorreoServidorSMTP(): " + "Query: " + sqlQuery);
             Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
             emailSoporte = query.getSingleResult().toString();
-            System.out.println("VwvacaPendientesEmpleadosFacadeREST"+".getConfigCorreoServidorSMTP(): "+"emailSoporte: " + emailSoporte);
+            System.out.println("VwvacaPendientesEmpleadosFacadeREST" + ".getConfigCorreoServidorSMTP(): " + "emailSoporte: " + emailSoporte);
         } catch (Exception e) {
-            System.out.println("VwvacaPendientesEmpleadosFacadeREST"+".getConfigCorreoServidorSMTP(): "+"Error-1: " + e.toString());
+            System.out.println("VwvacaPendientesEmpleadosFacadeREST" + ".getConfigCorreoServidorSMTP(): " + "Error-1: " + e.toString());
         }
         return emailSoporte;
     }
+     */
 
+ /*
     public String getConfigCorreo(String nitEmpresa, String valor, String cadena, String esquema) {
         System.out.println("getPathArchivosPlanos()");
         String servidorsmtp = "smtp.designer.com.co";
@@ -1680,7 +1765,9 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         }
         return servidorsmtp;
     }
+     */
 
+ /*
     public String getConfigCorreoServidorSMTP(String nitEmpresa, String cadena, String esquema) {
         System.out.println("getConfigCorreoServidorSMTP(): nit: " + cadena + ", cadena: " + cadena);
         String servidorsmtp = "smtp.designer.com.co";
@@ -1698,8 +1785,9 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
             System.out.println("Error: " + this.getClass().getName() + ".getConfigCorreoServidorSMTP: " + e.getMessage());
         }
         return servidorsmtp;
-    }
+    }*/
 
+ /*
     public String getCorreoXsecEmpl(String secEmpl, String nitEmpresa, String cadena, String esquema) {
         System.out.println("Parametros getCorreoXsecEmpl(): secEmpl: " + secEmpl + ", cadena: " + cadena);
         System.out.println("sec Empleado: " + secEmpl);
@@ -1721,7 +1809,9 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         }
         return correo;
     }
+     */
 
+ /*
     public String getCorreoXsecPer(String secPersona, String nitEmpresa, String cadena, String esquema) {
         System.out.println("Parametros getCorreoXsecPer(): secPer: " + secPersona + ", cadena: " + cadena);
         String correo = null;
@@ -1741,7 +1831,9 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         }
         return correo;
     }
+     */
 
+ /*
     public BigDecimal consultarCodigoJornada(String seudonimo, String nitEmpresa, String fechaDisfrute, String cadena, String esquema) throws Exception {
         System.out.println(this.getClass().getName() + "." + "consultarCodigoJornada" + "()");
         String consulta = "select nvl(j.codigo, 1) "
@@ -1775,7 +1867,9 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
             throw new Exception(e.toString());
         }
     }
+     */
 
+ /*
     public String getEsquema(String nitempresa, String cadena) {
         System.out.println("Parametros getEsquema(): nitempresa: " + nitempresa + ", cadena: " + cadena);
         String esquema = null;
@@ -1792,5 +1886,5 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         }
         return esquema;
     }
-
+     */
 }

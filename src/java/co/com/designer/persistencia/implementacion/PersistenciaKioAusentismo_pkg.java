@@ -45,6 +45,36 @@ public class PersistenciaKioAusentismo_pkg implements IPersistenciaKioAusentismo
         }
         return resultado;
     }
+    
+    @Override
+    public String getMensajeValidacionAusent(String fechaInicio, String fechaFin
+            , String seudonimo, String refSoliciAusent,
+            String nitEmpresa, String cadena, String esquemaP) {
+        String resultado = null;
+        String consulta = "SELECT "
+                + "kioausentismo_pkg.MENSAJEVALIDACIONAUSENT"
+                + "( ? "
+                + ", TO_DATE(?, 'DD/MM/YYYY') "
+                + ", TO_DATE(?, 'DD/MM/YYYY') "
+                + ", ? "
+                + ", ? "
+                + ") "
+                + "from dual";
+        try {
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(consulta);
+            query.setParameter(1, seudonimo);
+            query.setParameter(2, fechaInicio);
+            query.setParameter(3, fechaFin);
+            query.setParameter(4, nitEmpresa);
+            query.setParameter(5, refSoliciAusent);
+            resultado = query.getSingleResult().toString();
+        } catch (Exception e) {
+            System.out.println("PersistenciaKioSoliciAusentismos" + ".getMensajeValidacionAusent()-2: " + "Error-1: " + e.toString());
+        }
+        return resultado;
+    }
 
     @Override
     public String getFechaFinAusent(String fechaInicio, String dias, String seudonimo, String causa, String nitEmpresa, String cadena, String esquemaP) {

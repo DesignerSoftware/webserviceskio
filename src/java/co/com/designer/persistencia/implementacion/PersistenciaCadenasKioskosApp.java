@@ -21,9 +21,9 @@ public class PersistenciaCadenasKioskosApp implements IPersistenciaCadenasKiosko
 
     @Override
     public String getEsquema(String nitEmpresa, String cadena) {
-//        System.out.println("PersistenciaCadenasKioskosApp" + ".getEsquema(): " + "Parametros: "
-//                +"nitempresa: " + nitEmpresa 
-//                + ", cadena: " + cadena);
+        System.out.println("PersistenciaCadenasKioskosApp" + ".getEsquema(): " + "Parametros: "
+                +"nitempresa: " + nitEmpresa 
+                + ", cadena: " + cadena);
         String esquema = "";
         String sqlQuery = "SELECT ESQUEMA FROM CADENASKIOSKOSAPP WHERE NITEMPRESA=? AND CADENA=? ";
         try {
@@ -33,7 +33,8 @@ public class PersistenciaCadenasKioskosApp implements IPersistenciaCadenasKiosko
             esquema = query.getSingleResult().toString();
             System.out.println("PersistenciaCadenasKioskosApp" + ".getEsquema(): " + "Esquema consultado.");
         } catch (Exception e) {
-            System.out.println("PersistenciaCadenasKioskosApp" + ".getEsquema(): " + "Error: " + e.toString());
+            System.out.println("Error: "+"PersistenciaCadenasKioskosApp" + ".getEsquema(): " + e.toString());
+            throw e;
         }
 //        System.out.println("PersistenciaCadenasKioskosApp" + ".getEsquema(): " + "Esquema: " + esquema);
         return esquema;

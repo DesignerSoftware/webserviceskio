@@ -63,7 +63,9 @@ public class OpcionesKioskosFacadeREST { //extends AbstractFacade<OpcionesKiosko
     /**
      * Devuelve opciones de clase 'MENU'
      *
-     * @param seudonimo, nitempresa, cadena
+     * @param seudonimo 
+     * @param nitEmpresa
+     * @param cadena
      * @return List de opcioneskioskosapp con el filtro por clase 'MENU'
      */
     @GET
@@ -110,14 +112,14 @@ public class OpcionesKioskosFacadeREST { //extends AbstractFacade<OpcionesKiosko
     }
 
     public List getOpcioneskioskosApp(String nitEmpresa, String seudonimo, String cadena) { // retorna true si el usuario esta activo
-        String datos = null;
+//        String datos = null;
         List lista = null;
-        JSONArray objArray = new JSONArray();
+//        JSONArray objArray = new JSONArray();
         String documento = getDocumentoPorSeudonimo(seudonimo, nitEmpresa, cadena);
         System.out.println("Documento asociado a seudonimo: " + documento);
-        String[] codigosNoAutorizados = this.getCodigosfiltrarOpcionesKioscosApp(documento, nitEmpresa, cadena); // primer parametro documento
+//        String[] codigosNoAutorizados = this.getCodigosfiltrarOpcionesKioscosApp(documento, nitEmpresa, cadena); // primer parametro documento
 
-        List lista2 = null;
+//        List lista2 = null;
         try {
             String esquema = this.persisCadenasKio.getEsquema(nitEmpresa, cadena);
             this.persisPerfiles.setearPerfil(esquema, cadena);
@@ -302,7 +304,7 @@ public class OpcionesKioskosFacadeREST { //extends AbstractFacade<OpcionesKiosko
             BigDecimal conteo = BigDecimal.ZERO;
             conteo = (BigDecimal) query.getSingleResult();
             System.out.println("Conteo de persona: " + conteo);
-            retorno = conteo.compareTo(BigDecimal.ZERO) > 0;;
+            retorno = conteo.compareTo(BigDecimal.ZERO) > 0;
         } catch (Exception e) {
             System.out.println("Error esPersona: " + e.getMessage());
         }
@@ -373,8 +375,7 @@ public class OpcionesKioskosFacadeREST { //extends AbstractFacade<OpcionesKiosko
             try {
                 String sqlQuery2 = "SELECT P.NUMERODOCUMENTO DOCUMENTO "
                         + "FROM PERSONAS P, EMPLEADOS E "
-                        + "WHERE "
-                        + "P.SECUENCIA=E.PERSONA "
+                        + "WHERE P.SECUENCIA=E.PERSONA "
                         + "AND (lower(P.EMAIL)=lower(?)";
                 if (this.validarCodigoUsuario(usuario)) {
                     sqlQuery2 += " OR E.CODIGOEMPLEADO=?"; // si el valor es numerico validar por codigoempleado

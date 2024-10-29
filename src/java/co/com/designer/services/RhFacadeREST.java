@@ -1,7 +1,14 @@
 package co.com.designer.services;
 
 import co.com.designer.kiosko.entidades.RrHh;
-import co.com.designer.kiosko.generales.EnvioCorreo;
+//import co.com.designer.kiosko.generales.EnvioCorreo;
+import co.com.designer.kiosko.generales.GenerarCorreo;
+import co.com.designer.persistencia.implementacion.PersistenciaCadenasKioskosApp;
+import co.com.designer.persistencia.implementacion.PersistenciaConexiones;
+import co.com.designer.persistencia.implementacion.PersistenciaPerfiles;
+import co.com.designer.persistencia.interfaz.IPersistenciaCadenasKioskosApp;
+import co.com.designer.persistencia.interfaz.IPersistenciaConexiones;
+import co.com.designer.persistencia.interfaz.IPersistenciaPerfiles;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -16,8 +23,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.Persistence;
+//import javax.persistence.EntityManager;
+//import javax.persistence.Persistence;
 import javax.persistence.Query;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Consumes;
@@ -43,24 +50,36 @@ import org.json.JSONObject;
 @Path("rrhh")
 public class RhFacadeREST {
 
+    private IPersistenciaConexiones persisConexiones;
+    private IPersistenciaCadenasKioskosApp cadenasKio;
+    private IPersistenciaPerfiles rolesBD;
+
+    public RhFacadeREST() {
+        this.persisConexiones = new PersistenciaConexiones();
+        this.cadenasKio = new PersistenciaCadenasKioskosApp();
+        this.rolesBD = new PersistenciaPerfiles();
+    }
+
+    /*
     protected EntityManager getEntityManager() {
         String unidadPersistencia = "wsreportePU";
         EntityManager em = Persistence.createEntityManagerFactory(unidadPersistencia).createEntityManager();
         return em;
-    }
+    } */
 
+ /*
     protected EntityManager getEntityManager(String persistence) {
         String unidadPersistencia = persistence;
         EntityManager em = Persistence.createEntityManagerFactory(unidadPersistencia).createEntityManager();
         return em;
     }
-
+     */
     public String getCorreosXempleadosActivos(String nitEmpresa, String cadena, String esquema) {
         System.out.println("getCorreosXempleadosActivos()");
         List emailSoporte = null;
         String correoDestinatarios = "";
         try {
-            setearPerfil(esquema, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT P.EMAIL \n"
                     + "FROM EMPLEADOS E, PERSONAS P, EMPRESAS EM\n"
                     + "WHERE \n"
@@ -69,7 +88,7 @@ public class RhFacadeREST {
                     + "AND EM.NIT = ? \n"
                     + "AND EMPLEADOCURRENT_PKG.TIPOTRABAJADORCORTE(E.SECUENCIA, SYSDATE)='ACTIVO'\n"
                     + "AND P.EMAIL IS NOT NULL ";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
             emailSoporte = query.getResultList();
             Iterator<String> it = emailSoporte.iterator();
@@ -92,15 +111,15 @@ public class RhFacadeREST {
         System.out.println("Parametros getDocumentoPorSeudonimo() seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
         String documento = null;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT P.NUMERODOCUMENTO DOCUMENTO "
                     + "FROM PERSONAS P, CONEXIONESKIOSKOS CK "
                     + "WHERE CK.PERSONA=P.SECUENCIA "
                     + "AND lower(CK.SEUDONIMO)=lower(?) "
                     + "AND CK.NITEMPRESA=?";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
 
             query.setParameter(1, seudonimo);
             query.setParameter(2, nitEmpresa);
@@ -112,13 +131,14 @@ public class RhFacadeREST {
         return documento;
     }
 
+    /*
     public String getEsquema(String nitEmpresa, String cadena) {
         System.out.println("Parametros getEsquema(): nitempresa: " + nitEmpresa + ", cadena: " + cadena);
         String esquema = null;
         String sqlQuery;
         try {
             sqlQuery = "SELECT ESQUEMA FROM CADENASKIOSKOSAPP WHERE NITEMPRESA=? AND CADENA=?";
-            Query query = getEntityManager("wscadenaskioskosPU").createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager("wscadenaskioskosPU").createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
             query.setParameter(2, cadena);
             esquema = query.getSingleResult().toString();
@@ -128,7 +148,9 @@ public class RhFacadeREST {
         }
         return esquema;
     }
+*/
 
+    /*
     protected void setearPerfil(String esquema, String cadenaPersistencia) {
         try {
             String rol = "ROLKIOSKO";
@@ -137,21 +159,22 @@ public class RhFacadeREST {
             }
             System.out.println("setearPerfil(esquema, cadena)");
             String sqlQuery = "SET ROLE " + rol + " IDENTIFIED BY RLKSK ";
-            Query query = getEntityManager(cadenaPersistencia).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadenaPersistencia).createNativeQuery(sqlQuery);
             query.executeUpdate();
         } catch (Exception ex) {
             System.out.println("Error setearPerfil(cadenaPersistencia): " + ex);
         }
     }
+*/
 
     public String getSecuenciaEmplPorSeudonimo(String seudonimo, String nitEmpresa, String cadena, String esquema) {
         System.out.println("Parametros getSecuenciaEmplPorSeudonimo(): seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
         String secuencia = null;
         try {
-            setearPerfil(esquema, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT E.SECUENCIA SECUENCIAEMPLEADO FROM EMPLEADOS E, CONEXIONESKIOSKOS CK WHERE CK.EMPLEADO=E.SECUENCIA AND CK.SEUDONIMO=? AND CK.NITEMPRESA=?";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, seudonimo);
             query.setParameter(2, nitEmpresa);
             secuencia = query.getSingleResult().toString();
@@ -165,10 +188,10 @@ public class RhFacadeREST {
     public String getSecuenciaPorNitEmpresa(String nitEmpresa, String cadena, String esquema) {
         String secuencia = null;
         try {
-            setearPerfil(esquema, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT EM.SECUENCIA SECUENCIAEMPRESA FROM EMPRESAS EM WHERE EM.NIT=?";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
             secuencia = query.getSingleResult().toString();
             System.out.println("secuencia: " + secuencia);
@@ -186,7 +209,7 @@ public class RhFacadeREST {
         String secEmpleado = null;
         String secEmpresa = null;
         try {
-            setearPerfil(esquema, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             secEmpleado = getSecuenciaEmplPorSeudonimo(seudonimo, nit, cadena, esquema);
             secEmpresa = getSecuenciaPorNitEmpresa(nit, cadena, esquema);
             String sql = "INSERT INTO KIOMENSAJESRRHH (EMPRESA, TITULO, DESCRIPCION, \n"
@@ -196,7 +219,7 @@ public class RhFacadeREST {
                     + "(?, ?, ?, ? \n"
                     + ", to_date(?, 'dd/mm/yyyy'),to_date(?, 'dd/mm/yyyy'),?,TO_DATE(?, 'ddmmyyyy HH24miss'), \n"
                     + " 'ACTIVO' , TO_DATE(?, 'ddmmyyyy HH24miss'))";
-            Query query = getEntityManager(cadena).createNativeQuery(sql);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sql);
             query.setParameter(1, secEmpresa);//EMPRESA
             query.setParameter(2, titulo);
             query.setParameter(3, mensaje);
@@ -223,7 +246,7 @@ public class RhFacadeREST {
         String secEmpleado = null;
         String secEmpresa = null;
         try {
-            setearPerfil(esquema, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             secEmpleado = getSecuenciaEmplPorSeudonimo(seudonimo, nit, cadena, esquema);
             String sql = "UPDATE KIOMENSAJESRRHH \n"
                     + "set TITULO = ?, DESCRIPCION = ?,\n"
@@ -232,7 +255,7 @@ public class RhFacadeREST {
                     + "ESTADO = ?,\n"
                     + "FECHAMODIFICADO = to_date(?, 'ddmmyyyy HH24miss')\n"
                     + "WHERE SECUENCIA = ?";
-            Query query = getEntityManager(cadena).createNativeQuery(sql);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sql);
             query.setParameter(1, titulo);//EMPRESA
             query.setParameter(2, mensaje);
             query.setParameter(3, nombreAnexo);
@@ -256,10 +279,10 @@ public class RhFacadeREST {
                 + ", cadena: " + cadena + ", secuenciamsj: " + secuenciamsj);
         int conteo = 0;
         try {
-            setearPerfil(esquema, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sql = "DELETE KIOMENSAJESRRHH \n"
                     + "WHERE SECUENCIA = ? ";
-            Query query = getEntityManager(cadena).createNativeQuery(sql);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sql);
             query.setParameter(1, secuenciamsj);
             conteo = query.executeUpdate();
             System.out.println("deleteMensaje: " + conteo);
@@ -274,11 +297,11 @@ public class RhFacadeREST {
         System.out.println("Parametros getPathFoto(): cadena: " + cadena);
         String rutaFoto = "";
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT PATHFOTO FROM GENERALESKIOSKO WHERE ROWNUM<=1";
             System.out.println("Query: " + sqlQuery);
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             rutaFoto = query.getSingleResult().toString();
             System.out.println("rutaFotos: " + rutaFoto);
         } catch (Exception e) {
@@ -317,8 +340,8 @@ public class RhFacadeREST {
         System.out.println("parametros consultarmsj(): nit: " + nitEmpresa + " cadena " + cadena);
         List s = null;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT RH.SECUENCIA SECUENCIA, \n"
                     + "RH.TITULO TITULO, \n"
                     + "replace(RH.DESCRIPCION, '\\n', '<br>') DESCRIPCION, \n"
@@ -337,7 +360,7 @@ public class RhFacadeREST {
                     + "rh.empresa = em.secuencia\n"
                     + "and em.nit = ?\n"
                     + "ORDER BY RH.FECHACREACION DESC";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery, RrHh.class);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery, RrHh.class);
             query.setParameter(1, nitEmpresa);
             s = query.getResultList();
             return Response.status(Response.Status.OK).entity(s).build();
@@ -355,8 +378,8 @@ public class RhFacadeREST {
         System.out.println("parametros consultarmsj(): nit: " + nitEmpresa + " cadena " + cadena);
         List s = null;
         try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            setearPerfil(esquema, cadena);
+            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
+            this.rolesBD.setearPerfil(esquema, cadena);
             String sqlQuery = "SELECT RH.SECUENCIA SECUENCIA, \n"
                     + "RH.TITULO TITULO, \n"
                     + "replace(RH.DESCRIPCION, '\\n', '<br>') DESCRIPCION, \n"
@@ -374,7 +397,7 @@ public class RhFacadeREST {
                     + "AND RH.FECHAFIN >= SYSDATE\n "
                     + "AND RH.ESTADO = 'ACTIVO'\n "
                     + "ORDER BY RH.FECHACREACION DESC";
-            Query query = getEntityManager(cadena).createNativeQuery(sqlQuery, RrHh.class);
+            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery, RrHh.class);
             query.setParameter(1, nitEmpresa);
             s = query.getResultList();
             s.forEach(System.out::println);
@@ -406,7 +429,7 @@ public class RhFacadeREST {
         String esquema = null;
         String nombreAnexo = null; // nombre con el que debe guardarse el campo del documento anexo
         try {
-            esquema = getEsquema(nit, cadena);
+            esquema = this.cadenasKio.getEsquema(nit, cadena);
         } catch (Exception e) {
             System.out.println("Error: No se pudo consultar esquema. " + e.getMessage());
         }
@@ -432,9 +455,18 @@ public class RhFacadeREST {
                     System.out.println("Parametros enviaKIOMENSAJESRRHH(): seudonimo " + seudonimo + ", nit: " + nit + ", cadena: " + cadena);
                     String asunto = "¡Nuevo Comunicado Disponible! " + fechaGeneracion1;
                     try {
-                        EnvioCorreo e = new EnvioCorreo();
-                        if (e.enviarCorreoComunicado(asunto, "Estimados Colaboradores:", mensajeCorreo,
-                                nit, cadena, getCorreosXempleadosActivos(nit, cadena, esquema), url)) {
+                        //EnvioCorreo e = new EnvioCorreo();
+                        //if (e.enviarCorreoComunicado(asunto, "Estimados Colaboradores:", mensajeCorreo,
+                        //        nit, cadena, getCorreosXempleadosActivos(nit, cadena, esquema), url)) {
+                        GenerarCorreo e = new GenerarCorreo();
+                        if (e.enviarCorreoComunicado(
+                                getCorreosXempleadosActivos(nit, cadena, esquema),
+                                 asunto,
+                                 "Estimados Colaboradores:",
+                                 mensajeCorreo,
+                                 nit,
+                                 cadena,
+                                 url)) {
                             soliciCreada = true;
                             correoEnviado = true;
                             mensaje = "Mensaje Creado con Exito y Envío de correo.";
@@ -493,7 +525,7 @@ public class RhFacadeREST {
         String esquema = null;
         String nombreAnexo = null; // nombre con el que debe guardarse el campo del documento anexo
         try {
-            esquema = getEsquema(nit, cadena);
+            esquema = this.cadenasKio.getEsquema(nit, cadena);
         } catch (Exception e) {
             System.out.println("Error: No se pudo consultar esquema. " + e.getMessage());
         }
@@ -549,7 +581,7 @@ public class RhFacadeREST {
         String esquema = null;
         String mensaje = null;
         try {
-            esquema = getEsquema(nit, cadena);
+            esquema = this.cadenasKio.getEsquema(nit, cadena);
         } catch (Exception e) {
             System.out.println("Error: No se pudo consultar esquema. " + e.getMessage());
         }
@@ -691,7 +723,7 @@ public class RhFacadeREST {
         boolean sendEmail = false;
         String esquema = null;
         try {
-            esquema = getEsquema(nit, cadena);
+            esquema = this.cadenasKio.getEsquema(nit, cadena);
         } catch (Exception e) {
             System.out.println("Error: No se pudo consultar esquema. " + e.getMessage());
         }
@@ -705,9 +737,18 @@ public class RhFacadeREST {
                     + mensaje;
             String asunto = "¡Nuevo Comunicado Disponible! " + fechaGeneracion;
             try {
-                EnvioCorreo e = new EnvioCorreo();
-                if (e.enviarCorreoComunicado(asunto, "Estimado Usuarios", mensajeCorreo,
-                        nit, cadena, getCorreosXempleadosActivos(nit, cadena, esquema), url)) {
+                //EnvioCorreo e = new EnvioCorreo();
+                //if (e.enviarCorreoComunicado(asunto, "Estimado Usuarios", mensajeCorreo,
+                //        nit, cadena, getCorreosXempleadosActivos(nit, cadena, esquema), url)) {
+                GenerarCorreo e = new GenerarCorreo();
+                if (e.enviarCorreoComunicado(
+                        getCorreosXempleadosActivos(nit, cadena, esquema),
+                         asunto,
+                         "Estimado Usuarios:",
+                         mensajeCorreo,
+                         nit,
+                         cadena,
+                         url)) {
                     sendEmail = true;
                     mensaje = "Mensaje Enviado con Exito.";
                     System.out.println("Mensaje creado.");
