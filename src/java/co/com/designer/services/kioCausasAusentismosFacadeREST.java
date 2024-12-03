@@ -2,13 +2,10 @@ package co.com.designer.services;
 
 import co.com.designer.kiosko.administracion.implementacion.GestionArchivos;
 import co.com.designer.kiosko.administracion.interfaz.IGestionArchivos;
-//import co.com.designer.kiosko.entidades.ConfiCorreoKiosko;
 import co.com.designer.kiosko.entidades.IntervinientesSolAusent;
 import co.com.designer.kiosko.generales.GenerarCorreo;
-//import co.com.designer.kiosko.generales.EnvioCorreo;
 import co.com.designer.persistencia.implementacion.PersistenciaCausasAusentismos;
 import co.com.designer.persistencia.implementacion.PersistenciaConexionesKioskos;
-//import co.com.designer.persistencia.implementacion.PersistenciaConfiCorreoKiosko;
 import co.com.designer.persistencia.implementacion.PersistenciaDiagnosticosCategorias;
 import co.com.designer.persistencia.implementacion.PersistenciaEmpleados;
 import co.com.designer.persistencia.implementacion.PersistenciaGeneralesKiosko;
@@ -22,7 +19,6 @@ import co.com.designer.persistencia.implementacion.PersistenciaManejoFechas;
 import co.com.designer.persistencia.implementacion.PersistenciaTiposAusentismos;
 import co.com.designer.persistencia.interfaz.IPersistenciaCausasAusentismos;
 import co.com.designer.persistencia.interfaz.IPersistenciaConexionesKioskos;
-//import co.com.designer.persistencia.interfaz.IPersistenciaConfiCorreoKiosko;
 import co.com.designer.persistencia.interfaz.IPersistenciaDiagnosticosCategorias;
 import co.com.designer.persistencia.interfaz.IPersistenciaEmpleados;
 import co.com.designer.persistencia.interfaz.IPersistenciaGeneralesKiosko;
@@ -83,7 +79,6 @@ public class kioCausasAusentismosFacadeREST {
     private IPersistenciaKioAutorizaSoliciVacas persisAutorizaSoli;
     private IPersistenciaGeneralesKiosko persisGeneralesKio;
     private IPersistenciaKioConfigModulos persisKioConfigMod;
-//    private IPersistenciaConfiCorreoKiosko persisConfiCorreoKio;
     private IPersistenciaKioAusentismo_pkg persisKioAusent_pkg;
     private IPersistenciaTiposAusentismos persisTiposAusent;
     private IPersistenciaCausasAusentismos persisCausasAusent;
@@ -164,7 +159,6 @@ public class kioCausasAusentismosFacadeREST {
                             System.out.println("Empleado jefe: " + retorno);
                             mensaje = "Consulta del jefe exitosa";
                         } else {
-//                            mensaje = "No hay un autorizador/jefe relacionado";
                             mensaje += "jefe relacionado";
                             System.out.println("kioCausasAusentismosFacadeREST" + ".consultarAutorizaAusentismos(): " + "Error-2: " + "El empleado jefe no está registrado.");
                             throw new Exception("El empleado jefe no está registrado.");
@@ -187,6 +181,28 @@ public class kioCausasAusentismosFacadeREST {
         return Response.ok(json, MediaType.APPLICATION_JSON).build();
     }
 
+    /**
+     * 
+     * @param token
+     * @param seudonimo
+     * @param nit
+     * @param fechainicial
+     * @param fechaFin
+     * @param dias
+     * @param secCausaAusent
+     * @param secCodDiagnostico
+     * @param secClaseAusent
+     * @param secTipoAusent
+     * @param secKioNovedadAusent
+     * @param observacion
+     * @param anexoAdjunto
+     * @param cadena
+     * @param urlKiosco
+     * @param grupoEmpr
+     * @param fechafin
+     * @param codigoCausa
+     * @return 
+     */
     @POST
     @Path("/crearNovedadAusentismo")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
@@ -239,8 +255,10 @@ public class kioCausasAusentismosFacadeREST {
         String secPerKioAutorizador = null;
         Date fecha = new Date();
         String fechaGeneracion = new SimpleDateFormat("ddMMyyyy HHmmss").format(fecha);
-        String nombreAutorizaSolici = ""; // Nombre Jefe
-        String correoAutorizaSolici = null; // Correo Jefe
+        // Nombre Jefe
+        String nombreAutorizaSolici = ""; 
+        // Correo Jefe
+        String correoAutorizaSolici = null; 
         String mensaje = "";
         String secEmplJefe = null;
         try {
@@ -270,7 +288,6 @@ public class kioCausasAusentismosFacadeREST {
                 } else {
                     System.out.println("El empleado jefe está vacío");
                     // Si no hay una persona asignada para autorizar las vacaciones no crear la solicitud
-//                    soliciCreada = false;
                     mensaje = "No tiene un autorizador de ausentismos relacionado, por favor comuníquese con el área de nómina y recursos humanos de su empresa.";
                 }
             }
@@ -281,7 +298,7 @@ public class kioCausasAusentismosFacadeREST {
                 mensaje = "Novedad de ausentismo reportada exitosamente.";
                 if (secKioNovedadAusent.equals("null")) {
                     System.out.println("kioCausasAusentismosFacadeREST" + ".crearNovedadAusentismo(): " + "No tiene prorroga ");
-                    if (causaOrigen.equals("EG")) {
+                    if (causaOrigen != null && causaOrigen.equals("EG")) {
                         System.out.println("kioCausasAusentismosFacadeREST" + ".crearNovedadAusentismo(): " + "Causa enfermedad general ");
                         String secCausaEGPrimeros2Dias = this.persisCausasAusent.getSecuenciaCausaAusentismo("25", nit, cadena);
                         String formaLiqEGPrimeros2Dias = this.persisKioAusent_pkg.getCausaFormaLiquidacion(secCausaEGPrimeros2Dias, nit, cadena, "");
@@ -330,7 +347,7 @@ public class kioCausasAusentismosFacadeREST {
                                 mensaje = "Ha ocurrido un error y no fue posible reportar la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuniquese con el área de nómina y recursos humanos de su empresa";
                             }
                         }
-                    } else if (causaOrigen.equals("AT")) {
+                    } else if (causaOrigen != null && causaOrigen.equals("AT")) {
                         // si la causa es accidente de trabajo 
                         System.out.println("kioCausasAusentismosFacadeREST" + ".crearNovedadAusentismo(): " + "Causa accidente de trabajo.");
                         String secCausaATPrimerDia = this.persisCausasAusent.getSecuenciaCausaAusentismo("39", nit, cadena);
@@ -427,7 +444,6 @@ public class kioCausasAusentismosFacadeREST {
                         if (this.persisKioSoliciAusent.creaEstadoSolicitudAusent(seudonimo, nit, secKioSoliciAusent, fechaGeneracion, "ENVIADO", null, cadena, esquema) > 0) {
                             soliciCreada = true;
                             System.out.println("Estado de novedad de ausentismo creado.");
-//                                this.persisConexiones.getEntityManager(cadena).close();
                         } else {
                             mensaje = "Ha ocurrido un error y no fue posible crear la novedad de ausentismo, por favor inténtelo de nuevo más tarde. Si el problema persiste comuníquese con el área de nómina y recursos humanos de su empresa";
                         }
@@ -450,7 +466,8 @@ public class kioCausasAusentismosFacadeREST {
         try {
             obj.put("NovedadCreada", soliciCreada);
             obj.put("mensaje", mensaje);
-            obj.put("anexo", nombreAnexo); // retorna el nombre de como deberia guardarse el documento anexo
+            // retorna el nombre de como deberia guardarse el documento anexo
+            obj.put("anexo", nombreAnexo); 
             obj.put("solicitud", secKioSoliciAusent);
         } catch (JSONException ex) {
             Logger.getLogger(EmpleadosFacadeREST.class.getName()).log(Level.SEVERE, null, ex);
@@ -665,7 +682,6 @@ public class kioCausasAusentismosFacadeREST {
 
         List s = null;
         int res = 0;
-//        this.persisConfiCorreoKio = new PersistenciaConfiCorreoKiosko();
         this.persisPersonas = new PersistenciaPersonas();
         this.persisConKiosko = new PersistenciaConexionesKioskos();
         this.persisKioSoliciAusent = new PersistenciaKioSoliciAusentismos();
@@ -683,22 +699,16 @@ public class kioCausasAusentismosFacadeREST {
         Map<String, String> resu = new HashMap<>();
         try {
             IntervinientesSolAusent intervinientes = this.persisKioSoliciAusent.getIntervinientesPorEstadoSolici(secKioEstadoSolici, nitEmpresa, cadena);
-//            String secEmplEjecuta = this.persisConKiosko.getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
-//            if (!intervinientes.getAutorizador().toPlainString().isEmpty()) {
             if (intervinientes.getAutorizador() != null && !intervinientes.getAutorizador().toPlainString().isEmpty()) {
-//                secEmplEjecuta = intervinientes.getAutorizador().toPlainString();
                 secPerAutoriza = intervinientes.getAutorizador().toPlainString();
-//            } else if (!intervinientes.getEmpleadoJefe().toPlainString().isEmpty()) {
             } else if (intervinientes.getEmpleadoJefe() != null && !intervinientes.getEmpleadoJefe().toPlainString().isEmpty()) {
                 secEmplEjecuta = intervinientes.getEmpleadoJefe().toPlainString();
             } else {
-//                System.out.println("kioCausasAusentismosFacadeREST" + ".setNuevoEstadoSolici(): " + "Error: " + "Al consultar quien procesa la solicitud");
                 throw new Exception("kioCausasAusentismosFacadeREST" + ".setNuevoEstadoSolici(): " + "Error: " + "Al consultar quien procesa la solicitud");
             }
 
             System.out.println("kioCausasAusentismosFacadeREST" + ".setNuevoEstadoSolici(): " + "La persona que ejecuta es: " + secPerAutoriza);
             System.out.println("kioCausasAusentismosFacadeREST" + ".setNuevoEstadoSolici(): " + "El empleado que ejecuta es: " + secEmplEjecuta);
-//            String secEmplSolicita = this.persisKioSoliciAusent.getEmplXsecKioEstadoSolici(secKioEstadoSolici, nitEmpresa, cadena);
             secEmplSolicita = intervinientes.getEmpleado().toPlainString();
 
             if (motivo == null || motivo.equalsIgnoreCase("")) {
@@ -731,15 +741,17 @@ public class kioCausasAusentismosFacadeREST {
             }
         } catch (Exception ex) {
             System.out.println("kioCausasAusentismosFacadeREST" + ".setNuevoEstadoSolici(): " + "Error-3: " + ex.toString());
-            resu.put("solicitud", "error"); //Solicitud
-            resu.put("correo", "error"); //Correo
-            resu.put("excepcion", "Error-3: " + ex.toString()); //Excepcion
+            //Solicitud
+            resu.put("solicitud", "error"); 
+            //Correo
+            resu.put("correo", "error"); 
+            //Excepcion
+            resu.put("excepcion", "Error-3: " + ex.toString()); 
             return Response.status(Response.Status.NOT_FOUND).entity(resu).build();
         }
         System.out.println("kioCausasAusentismosFacadeREST" + ".setNuevoEstadoSolici(): " + "solicitud " + estado + " con éxito.");
         try {
             if (res > 0) {
-//                EnvioCorreo c = new EnvioCorreo();
                 GenerarCorreo c = new GenerarCorreo();
                 String estadoVerbo = estado.equals("CANCELADO") ? "CANCELAR"
                         : estado.equals("AUTORIZADO") ? "PRE-APROBAR"
@@ -765,24 +777,16 @@ public class kioCausasAusentismosFacadeREST {
                     mensaje += "La persona a cargo de HACER EL SEGUIMIENTO es: " + nombreAutorizaSolici + "<br>";
                 }
                 if (estado.equals("AUTORIZADO")) {
-                    mensaje += "Por favor seguir el proceso en: <a style='color: white !important;' target='_blank' href=" + urlKio + ">" + urlKio + "</a><br><br>"
+                    mensaje += "Por favor seguir el proceso en: <a style='color: black !important;' target='_blank' href=" + urlKio + ">" + urlKio + "</a><br><br>"
                             + "Si no puede ingresar, necesitará instalar la última versión de su navegador, la cual podrá descargar de forma gratuita.<br><br>"
                             + "En caso de que haya olvidado su clave podrá generar una nueva haciendo clic en ¿Olvidó su clave? en el módulo Kiosco o a través del link: "
-                            + "<br><a style='color: white !important;' href='" + urlKioOlvidoClave + "'>" + urlKioOlvidoClave + "</a>";
+                            + "<br><a style='color: black !important;' href='" + urlKioOlvidoClave + "'>" + urlKioOlvidoClave + "</a>";
                 }
                 String fechaInicioAusent = fechaInicio;
                 System.out.println("kioCausasAusentismosFacadeREST" + ".setNuevoEstadoSolici(): " + "fechaInicioAusent: " + fechaInicioAusent);
                 System.out.println("kioCausasAusentismosFacadeREST" + ".setNuevoEstadoSolici(): " + "urlKio: " + urlKio);
 
-//                ConfiCorreoKiosko cck = this.persisConfiCorreoKio.obtenerConfiguracionCorreoNativo(nitEmpresa, cadena);
-//                String servidorsmtp = cck.getServidorSMTP();
-
                 if (estado.equals("CANCELADO")) {
-                    //if (c.enviarCorreoVacaciones(
-                    //        cck.getServidorSMTP(), cck.getPuerto(), cck.getAutenticado(), cck.getStartTLS(), cck.getRemitente(), cck.getClave(),
-                    //        this.persisPersonas.getCorreoPorEmpleado(secEmplSolicita, nitEmpresa, cadena),
-                    //        "Solicitud de AUSENTISMO Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de AUSENTISMO: " + fechaInicioAusent,
-                    //        mensaje, urlKio, nitEmpresa, cadena)) {
                     if (c.enviarCorreoVacaciones(
                             this.persisPersonas.getCorreoPorEmpleado(secEmplSolicita, nitEmpresa, cadena),
                             "Solicitud de AUSENTISMO Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de AUSENTISMO: " + fechaInicioAusent,
@@ -793,23 +797,12 @@ public class kioCausasAusentismosFacadeREST {
                 }
 
                 if (estado.equals("AUTORIZADO") || estado.equals("RECHAZADO")) {
-//                    if (c.enviarCorreoVacaciones(
-//                            cck.getServidorSMTP(), cck.getPuerto(), cck.getAutenticado(), cck.getStartTLS(), cck.getRemitente(), cck.getClave(),
-//                            this.persisPersonas.getCorreoPorEmpleado(secEmplSolicita, nitEmpresa, cadena),
-//                            "Solicitud de AUSENTISMO Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de AUSENTISMO: " + fechaInicioAusent,
-//                            mensaje, urlKio, nitEmpresa, cadena)) {
                     if (c.enviarCorreoVacaciones(
                             this.persisPersonas.getCorreoPorEmpleado(secEmplSolicita, nitEmpresa, cadena),
                             "Solicitud de AUSENTISMO Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de AUSENTISMO: " + fechaInicioAusent,
                             mensaje, nitEmpresa, cadena, urlKio)) {
                         System.out.println("kioCausasAusentismosFacadeREST" + ".setNuevoEstadoSolici(): " + "Correo enviada a la persona que ejecuta.");
                     }
-                    // Enviar correo al jefe/autorizador de vacaciones
-//                    if (c.enviarCorreoVacaciones(
-//                            cck.getServidorSMTP(), cck.getPuerto(), cck.getAutenticado(), cck.getStartTLS(), cck.getRemitente(), cck.getClave(),
-//                            correoAutorizaSolici,
-//                            "Solicitud de AUSENTISMO Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de AUSENTISMO: " + fechaInicioAusent,
-//                            mensaje, urlKio, nitEmpresa, cadena)) {
                     if (c.enviarCorreoVacaciones(
                             correoAutorizaSolici,
                             "Solicitud de AUSENTISMO Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de AUSENTISMO: " + fechaInicioAusent,
@@ -821,25 +814,28 @@ public class kioCausasAusentismosFacadeREST {
             } else {
                 System.out.println("kioCausasAusentismosFacadeREST" + ".setNuevoEstadoSolici(): " + "Error al procesar la solicitud.");
             }
-//            return Response.status(Response.Status.OK).entity(res > 0).build();
-            resu.put("solicitud", "procesada"); //Solicitud
-            resu.put("correo", "enviado"); //Correo
-            resu.put("excepcion", ""); //Excepcion
+            //Solicitud
+            resu.put("solicitud", "procesada"); 
+            //Correo
+            resu.put("correo", "enviado"); 
+            //Excepcion
+            resu.put("excepcion", ""); 
             return Response.status(Response.Status.OK).entity(resu).build();
         } catch (Exception ex) {
             System.out.println("kioCausasAusentismosFacadeREST" + ".setNuevoEstadoSolici(): " + "Error-4: " + ex.toString());
 
             if (res > 0) {
-                resu.put("solicitud", "procesada"); //Solicitud
-                resu.put("correo", "error"); //Correo
-                resu.put("excepcion", "Error-4: " + ex.toString()); //Excepcion
-//                return Response.status(Response.Status.OK).entity(resu).build();
+                //Solicitud
+                resu.put("solicitud", "procesada"); 
+                //Correo
+                resu.put("correo", "error"); 
+                //Excepcion
+                resu.put("excepcion", "Error-4: " + ex.toString()); 
                 return Response.status(Response.Status.OK).entity(resu).build();
             } else {
                 resu.put("solicitud", "error"); //Solicitud
                 resu.put("correo", "error"); //Correo
                 resu.put("excepcion", "Error-5: " + ex.toString()); //Excepcion
-//                return Response.status(Response.Status.NOT_FOUND).entity("Error-3: " + ex.toString()).build();
                 return Response.status(Response.Status.NOT_FOUND).entity(resu).build();
             }
         }
@@ -901,7 +897,6 @@ public class kioCausasAusentismosFacadeREST {
                 + " urlKiosco " + urlKiosco
                 + " grupo " + grupo);
 
-//        this.persisConfiCorreoKio = new PersistenciaConfiCorreoKiosko();
         this.persisKioConfigMod = new PersistenciaKioConfigModulos();
         this.persisPersonas = new PersistenciaPersonas();
         this.persisConKiosko = new PersistenciaConexionesKioskos();
@@ -967,32 +962,18 @@ public class kioCausasAusentismosFacadeREST {
                 + "La persona a cargo de DAR APROBACIÓN es: " + nombreAutorizaSolici
                 + "<br>"
                 + "La novedad se reportó por " + dias + " días, desde el " + fechaInicial + " hasta el " + fechaFin
-                + "<br><br>Por favor seguir el proceso en: <a style='color: white !important;' href='" + urlKio + "'>" + urlKio + "</a>"
+                + "<br><br>Por favor seguir el proceso en: <a style='color: black !important;' href='" + urlKio + "'>" + urlKio + "</a>"
                 + "<br><br>"
                 + "Si no puede ingresar, necesitará instalar la última versión de su navegador, la cual podrá descargar de forma gratuita."
                 + "<br><br>"
                 + "En caso de que haya olvidado su clave podrá generar una nueva haciendo clic en ¿Olvidó su clave? en el módulo Kiosco o a través del link: "
-                + "<br><a style='color: white !important;' href='" + urlKioOlvidoClave + "'>" + urlKioOlvidoClave + "</a>";
+                + "<br><a style='color: black !important;' href='" + urlKioOlvidoClave + "'>" + urlKioOlvidoClave + "</a>";
 
         boolean enviado = true;
         asunto += " de " + personaCreaSolici + " " + fecha;
-//        EnvioCorreo e = new EnvioCorreo();
         GenerarCorreo e = new GenerarCorreo();
         try {
-//            String correoUsuario = this.persisPersonas.getCorreoConexioneskioskos(seudonimo, nitEmpresa, cadena);
-//            ConfiCorreoKiosko cck = this.persisConfiCorreoKio.obtenerConfiguracionCorreoNativo(nitEmpresa, cadena);
-//            String servidorsmtp = cck.getServidorSMTP();
-//            String puerto = cck.getPuerto();
-//            String autenticado = cck.getAutenticado();
-//            String starttls = cck.getStartTLS();
-//            String remitente = cck.getRemitente();
-//            String clave = cck.getClave();
             String correoEmpleado = this.persisPersonas.getCorreoPorEmpleado(secEmpl, nitEmpresa, cadena);
-//            if (e.enviarCorreoAusentismos(
-//                    servidorsmtp, puerto, autenticado, starttls, remitente, clave,
-//                    correoEmpleado,
-//                    "Novedad de AUSENTISMO Kiosco - Nuevo reporte: " + fechaCorreo + ". Inicio de ausentismo: " + fechaInicial,
-//                    mensaje, nombreAnexo, urlKio, nitEmpresa, cadena)) {
             if (e.enviarCorreoAusentismos(
                     correoEmpleado
                     , "Novedad de AUSENTISMO Kiosco - Nuevo reporte: " + fechaCorreo + ". Inicio de ausentismo: " + fechaInicial
@@ -1000,12 +981,6 @@ public class kioCausasAusentismosFacadeREST {
                 System.out.println("Correo enviado al empleado.");
             }
 
-            // Enviar correo al jefe o autorizador de ausentismos:
-            //if (e.enviarCorreoAusentismos(
-            //        servidorsmtp, puerto, autenticado, starttls, remitente, clave,
-            //        correoAutorizaSolici,
-            //        "Novedad de AUSENTISMO Kiosco - Nuevo reporte: " + fechaCorreo + ". Inicio de ausentismo: " + fechaInicial,
-            //        mensaje, nombreAnexo, urlKio, nitEmpresa, cadena)) {
             if (e.enviarCorreoAusentismos(
                     correoAutorizaSolici
                     , "Novedad de AUSENTISMO Kiosco - Nuevo reporte: " + fechaCorreo + ". Inicio de ausentismo: " + fechaInicial
@@ -1032,8 +1007,8 @@ public class kioCausasAusentismosFacadeREST {
                         System.out.println("correo auditoria: " + correoenviar);
                         System.out.println("codigoopcion: " + "41");
 
-                        e.enviarCorreoInformativo("Auditoria: Nueva novedad de AUSENTISMO Kiosco. " + fecha,
-                                "Estimado usuario: ", mensajeAuditoria, nitEmpresa, urlKio, cadena, correoenviar, null);
+                        e.enviarCorreoInformativo(correoenviar, "", "Auditoria: Nueva novedad de AUSENTISMO Kiosco. " + fecha,
+                                "Estimado usuario: ", mensajeAuditoria, nitEmpresa, cadena, urlKio);
                     }
                 } else {
                     System.out.println("No lleva auditoria Ausentismos");

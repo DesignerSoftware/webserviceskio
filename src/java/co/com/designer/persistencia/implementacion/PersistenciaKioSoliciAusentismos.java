@@ -624,13 +624,20 @@ public class PersistenciaKioSoliciAusentismos implements IPersistenciaKioSoliciA
             query.setParameter(4, secTipo);
             query.setParameter(5, secClase);
             query.setParameter(6, secCausa);
-            query.setParameter(7, fechaFin); // fecha fin ausentismo
-            query.setParameter(8, fechainicial); // fecha inicial pago
-            query.setParameter(9, fechaFin); // fecha fin pago
-            query.setParameter(10, formaLiq); // formaLiquidacion
-            query.setParameter(11, porcentajeLiq); // porcentLiq
-            query.setParameter(12, secCodDiagnostico.equals("null") ? null : secCodDiagnostico); // diagnostico
-            query.setParameter(13, kioSoliciAusentismo); // kioSoliciAusentismo
+            // fecha fin ausentismo
+            query.setParameter(7, fechaFin); 
+            // fecha inicial pago
+            query.setParameter(8, fechainicial); 
+            // fecha fin pago
+            query.setParameter(9, fechaFin); 
+            // formaLiquidacion
+            query.setParameter(10, formaLiq); 
+            // porcentLiq
+            query.setParameter(11, porcentajeLiq); 
+            // diagnostico
+            query.setParameter(12, secCodDiagnostico.equals("null") ? null : secCodDiagnostico); 
+            // kioSoliciAusentismo
+            query.setParameter(13, kioSoliciAusentismo); 
             query.setParameter(14, secKioNovedadSoliciAusent.equals("null") ? null : secKioNovedadSoliciAusent); // kioNovedadProrroga
             resultado = query.executeUpdate();
         } catch (Exception e) {

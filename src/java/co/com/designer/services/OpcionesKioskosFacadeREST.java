@@ -23,7 +23,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.json.JSONArray;
 
 @Stateless
 @Path("opcioneskioskosapp")
@@ -35,7 +34,6 @@ public class OpcionesKioskosFacadeREST { //extends AbstractFacade<OpcionesKiosko
     private IPersistenciaCadenasKioskosApp persisCadenasKio;
 
     public OpcionesKioskosFacadeREST() {
-//        super(OpcionesKioskosApp.class);
         persisConexiones = new PersistenciaConexiones();
         persisPerfiles = new PersistenciaPerfiles();
         persisOpcionesKio = new PersistenciaOpcionesKioskosAPP();
@@ -112,14 +110,10 @@ public class OpcionesKioskosFacadeREST { //extends AbstractFacade<OpcionesKiosko
     }
 
     public List getOpcioneskioskosApp(String nitEmpresa, String seudonimo, String cadena) { // retorna true si el usuario esta activo
-//        String datos = null;
         List lista = null;
-//        JSONArray objArray = new JSONArray();
         String documento = getDocumentoPorSeudonimo(seudonimo, nitEmpresa, cadena);
         System.out.println("Documento asociado a seudonimo: " + documento);
-//        String[] codigosNoAutorizados = this.getCodigosfiltrarOpcionesKioscosApp(documento, nitEmpresa, cadena); // primer parametro documento
 
-//        List lista2 = null;
         try {
             String esquema = this.persisCadenasKio.getEsquema(nitEmpresa, cadena);
             this.persisPerfiles.setearPerfil(esquema, cadena);
@@ -444,6 +438,9 @@ public class OpcionesKioskosFacadeREST { //extends AbstractFacade<OpcionesKiosko
      * Método que devuelve el número de ítems (números aleatorios) existentes en
      * la serie
      *
+     * @param secEmpleado
+     * @param nitEmpresa
+     * @param cadena
      * @return El número de ítems (números aleatorios) de que consta la serie
      */
     public boolean esJefe(String secEmpleado, String nitEmpresa, String cadena) {
@@ -485,11 +482,18 @@ public class OpcionesKioskosFacadeREST { //extends AbstractFacade<OpcionesKiosko
             retorno = conteo.compareTo(BigDecimal.ZERO) > 0;
         } catch (Exception e) {
             System.out.println("Error " + this.getClass().getName() + ".esJefe():" + e.getMessage());
-            return false;
+            retorno = false;
         }
         return retorno;
     }
 
+    /**
+     * 
+     * @param nitEmpresa
+     * @param opcionkioskoapp
+     * @param cadena
+     * @return 
+     */
     @GET
     @Path("/kiovigenciasCIR")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})

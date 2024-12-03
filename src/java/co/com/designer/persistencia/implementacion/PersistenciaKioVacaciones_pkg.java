@@ -29,6 +29,15 @@ public class PersistenciaKioVacaciones_pkg implements IPersistenciaKioVacaciones
         this.persisConKiosko = new PersistenciaConexionesKioskos();
     }
 
+    /**
+     * 
+     * @param seudonimo
+     * @param nitEmpresa
+     * @param fechaIniVaca
+     * @param cadena
+     * @return
+     * @throws Exception 
+     */
     @Override
     public BigDecimal verificaExistenciaSolicitud(
             String seudonimo,
@@ -74,6 +83,18 @@ public class PersistenciaKioVacaciones_pkg implements IPersistenciaKioVacaciones
         return conteo;
     }
 
+    /**
+     * 
+     * @param seudonimo
+     * @param nitEmpresa
+     * @param fechaIniVaca
+     * @param fechaFinVaca
+     * @param cadena
+     * @return
+     * @throws PersistenceException
+     * @throws NullPointerException
+     * @throws Exception 
+     */
     @Override
     public BigDecimal consultaTraslapamientos(
             String seudonimo,
@@ -115,6 +136,16 @@ public class PersistenciaKioVacaciones_pkg implements IPersistenciaKioVacaciones
         }
     }
     
+    /**
+     * 
+     * @param fechainicio
+     * @param dias
+     * @param seudonimo
+     * @param nitEmpresa
+     * @param cadena
+     * @param esquema
+     * @return 
+     */
     @Override
     public List getFechaRegreso(String fechainicio, int dias, String seudonimo, String nitEmpresa, String cadena, String esquema) {
         System.out.println("Parametros getFechaRegreso(): seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", fechainicio: " + fechainicio + ", dias: " + dias + ", cadena: " + cadena);
@@ -143,6 +174,17 @@ public class PersistenciaKioVacaciones_pkg implements IPersistenciaKioVacaciones
         return retorno;
     }
     
+    /**
+     * 
+     * @param fechainicio
+     * @param fechafin
+     * @param dias
+     * @param seudonimo
+     * @param nitEmpresa
+     * @param cadena
+     * @param esquema
+     * @return 
+     */
     @Override
     public Timestamp getFechaFinVaca(String fechainicio, String fechafin, int dias, String seudonimo, String nitEmpresa, String cadena, String esquema) {
         String secEmpl = this.persisConKiosko.getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);

@@ -1,7 +1,6 @@
 package co.com.designer.services;
 
 import co.com.designer.kiosko.entidades.RrHh;
-//import co.com.designer.kiosko.generales.EnvioCorreo;
 import co.com.designer.kiosko.generales.GenerarCorreo;
 import co.com.designer.persistencia.implementacion.PersistenciaCadenasKioskosApp;
 import co.com.designer.persistencia.implementacion.PersistenciaConexiones;
@@ -23,8 +22,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
-//import javax.persistence.EntityManager;
-//import javax.persistence.Persistence;
 import javax.persistence.Query;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Consumes;
@@ -44,7 +41,7 @@ import org.json.JSONObject;
 /**
  * REST Web Service
  *
- * @author UPC007
+ * @author Mateo Coronado
  */
 @Stateless
 @Path("rrhh")
@@ -60,20 +57,6 @@ public class RhFacadeREST {
         this.rolesBD = new PersistenciaPerfiles();
     }
 
-    /*
-    protected EntityManager getEntityManager() {
-        String unidadPersistencia = "wsreportePU";
-        EntityManager em = Persistence.createEntityManagerFactory(unidadPersistencia).createEntityManager();
-        return em;
-    } */
-
- /*
-    protected EntityManager getEntityManager(String persistence) {
-        String unidadPersistencia = persistence;
-        EntityManager em = Persistence.createEntityManagerFactory(unidadPersistencia).createEntityManager();
-        return em;
-    }
-     */
     public String getCorreosXempleadosActivos(String nitEmpresa, String cadena, String esquema) {
         System.out.println("getCorreosXempleadosActivos()");
         List emailSoporte = null;
@@ -130,42 +113,6 @@ public class RhFacadeREST {
         }
         return documento;
     }
-
-    /*
-    public String getEsquema(String nitEmpresa, String cadena) {
-        System.out.println("Parametros getEsquema(): nitempresa: " + nitEmpresa + ", cadena: " + cadena);
-        String esquema = null;
-        String sqlQuery;
-        try {
-            sqlQuery = "SELECT ESQUEMA FROM CADENASKIOSKOSAPP WHERE NITEMPRESA=? AND CADENA=?";
-            Query query = this.persisConexiones.getEntityManager("wscadenaskioskosPU").createNativeQuery(sqlQuery);
-            query.setParameter(1, nitEmpresa);
-            query.setParameter(2, cadena);
-            esquema = query.getSingleResult().toString();
-            System.out.println("Esquema: " + esquema);
-        } catch (Exception e) {
-            System.out.println("Error " + this.getClass().getName() + ".getEsquema(): " + e);
-        }
-        return esquema;
-    }
-*/
-
-    /*
-    protected void setearPerfil(String esquema, String cadenaPersistencia) {
-        try {
-            String rol = "ROLKIOSKO";
-            if (esquema != null && !esquema.isEmpty()) {
-                rol = rol + esquema.toUpperCase();
-            }
-            System.out.println("setearPerfil(esquema, cadena)");
-            String sqlQuery = "SET ROLE " + rol + " IDENTIFIED BY RLKSK ";
-            Query query = this.persisConexiones.getEntityManager(cadenaPersistencia).createNativeQuery(sqlQuery);
-            query.executeUpdate();
-        } catch (Exception ex) {
-            System.out.println("Error setearPerfil(cadenaPersistencia): " + ex);
-        }
-    }
-*/
 
     public String getSecuenciaEmplPorSeudonimo(String seudonimo, String nitEmpresa, String cadena, String esquema) {
         System.out.println("Parametros getSecuenciaEmplPorSeudonimo(): seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
@@ -427,7 +374,8 @@ public class RhFacadeREST {
         boolean soliciCreada = false;
         boolean correoEnviado = false;
         String esquema = null;
-        String nombreAnexo = null; // nombre con el que debe guardarse el campo del documento anexo
+        // nombre con el que debe guardarse el campo del documento anexo
+        String nombreAnexo = null; 
         try {
             esquema = this.cadenasKio.getEsquema(nit, cadena);
         } catch (Exception e) {
@@ -455,9 +403,6 @@ public class RhFacadeREST {
                     System.out.println("Parametros enviaKIOMENSAJESRRHH(): seudonimo " + seudonimo + ", nit: " + nit + ", cadena: " + cadena);
                     String asunto = "¡Nuevo Comunicado Disponible! " + fechaGeneracion1;
                     try {
-                        //EnvioCorreo e = new EnvioCorreo();
-                        //if (e.enviarCorreoComunicado(asunto, "Estimados Colaboradores:", mensajeCorreo,
-                        //        nit, cadena, getCorreosXempleadosActivos(nit, cadena, esquema), url)) {
                         GenerarCorreo e = new GenerarCorreo();
                         if (e.enviarCorreoComunicado(
                                 getCorreosXempleadosActivos(nit, cadena, esquema),
@@ -523,7 +468,8 @@ public class RhFacadeREST {
                 + ", estado: " + estado);
         boolean soliciCreada = false;
         String esquema = null;
-        String nombreAnexo = null; // nombre con el que debe guardarse el campo del documento anexo
+        // nombre con el que debe guardarse el campo del documento anexo
+        String nombreAnexo = null; 
         try {
             esquema = this.cadenasKio.getEsquema(nit, cadena);
         } catch (Exception e) {
@@ -560,7 +506,8 @@ public class RhFacadeREST {
         try {
             obj.put("NovedadModificada", soliciCreada);
             obj.put("mensaje", mensaje);
-            obj.put("anexo", nombreAnexo); // retorna el nombre de como deberia guardarse el documento anexo
+            // retorna el nombre de como deberia guardarse el documento anexo
+            obj.put("anexo", nombreAnexo); 
         } catch (JSONException ex) {
             Logger.getLogger(EmpleadosFacadeREST.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -737,9 +684,6 @@ public class RhFacadeREST {
                     + mensaje;
             String asunto = "¡Nuevo Comunicado Disponible! " + fechaGeneracion;
             try {
-                //EnvioCorreo e = new EnvioCorreo();
-                //if (e.enviarCorreoComunicado(asunto, "Estimado Usuarios", mensajeCorreo,
-                //        nit, cadena, getCorreosXempleadosActivos(nit, cadena, esquema), url)) {
                 GenerarCorreo e = new GenerarCorreo();
                 if (e.enviarCorreoComunicado(
                         getCorreosXempleadosActivos(nit, cadena, esquema),

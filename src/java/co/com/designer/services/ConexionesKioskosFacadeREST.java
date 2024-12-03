@@ -30,10 +30,8 @@ import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.Query;
 import javax.ws.rs.Consumes;
-//import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
-//import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -56,12 +54,12 @@ import io.jsonwebtoken.SignatureException;
 import java.sql.Date;
 import java.util.Base64;
 import javax.json.JsonValue;
-//import javax.persistence.EntityManager;
 import org.json.JSONException;
 import passwordGenerator.GeneradorClave;
 
 /**
  *
+ * @author Thalia Manrique
  * @author Edwin Hastamorir
  */
 @Stateless
@@ -74,78 +72,17 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
     private IPersistenciaConexionesKioskos persisConKio;
     private IPersistenciaGeneralesKiosko persisGenKio;
     private IPersistenciaEmpleados perisEmpleados;
-//    private IPersistenciaEmpleados persisEmple;
     private IPersistenciaPersonas persisPersonas;
     private IPersistenciaEmpresas persisEmpresas;
     private IPersistenciaKioPersonalizaciones persisPersonalizaciones;
 
     public ConexionesKioskosFacadeREST() {
-//        super(ConexionesKioskos.class);
         this.rolesBD = new PersistenciaPerfiles();
         this.cadenasKio = new PersistenciaCadenasKioskosApp();
         this.persisConexiones = new PersistenciaConexiones();
-//        this.persisGenKio = new PersistenciaGeneralesKiosko();
-//        this.perisEmpleados = new PersistenciaEmpleados();
-//        this.persisEmple = new PersistenciaEmpleados();
-//        this.persisPersonas = new PersistenciaPersonas();
         this.persisConKio = new PersistenciaConexionesKioskos();
-//        this.persisEmpresas = new PersistenciaEmpresas();
     }
 
-    /*@POST
-    @Override
-    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public void create(ConexionesKioskos entity) {
-        super.create(entity);
-    }*/
-
- /*@PUT
-    @Path("{id}")
-    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public void edit(@PathParam("id") BigDecimal id, ConexionesKioskos entity) {
-        super.edit(entity);
-    }
-     */
-
- /*@DELETE
-    @Path("{id}")
-    public void remove(@PathParam("id") BigDecimal id) {
-        super.remove(super.find(id));
-    }
-     */
-
- /*@GET
-    @Path("{id}")
-    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public ConexionesKioskos find(@PathParam("id") BigDecimal id) {
-        return super.find(id);
-    }
-     */
-
- /*
-    @GET
-    @Override
-    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public List<ConexionesKioskos> findAll() {
-        return super.findAll();
-    }
-     */
-
- /*@GET
-    @Path("{from}/{to}")
-    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public List<ConexionesKioskos> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
-        return super.findRange(new int[]{from, to});
-    }
-     */
-
- /*@GET
-    @Path("count")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String countREST() {
-        return String.valueOf(super.count());
-    }
-     */
     @GET
     @Path("{usuario}/{pass}@{bd}")
     @Produces(MediaType.TEXT_PLAIN)
@@ -158,7 +95,20 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
         return persisConKio.validaUsuario(usuario, pass, bd).toString();
     }
 
-    // Como usar: http://ip:puerto/wsreporte/webresources/conexioneskioskos/updateFechas?usuario=8125176&nitEmpresa=811025446&fechadesde=2020-08-01&fechahasta=2020-08-31&enviocorreo=false
+    /**
+     * Como usar:
+     * http://ip:puerto/wsreporte/webresources/conexioneskioskos/updateFechas?usuario=8125176&nitEmpresa=811025446&fechadesde=2020-08-01&fechahasta=2020-08-31&enviocorreo=false
+     *
+     * @param usuario
+     * @param nitEmpresa
+     * @param fechadesde
+     * @param fechahasta
+     * @param enviocorreo
+     * @param dirigidoa
+     * @param cadena
+     * @return Response
+     *
+     */
     @POST
     @Path("/updateFechas")
     @Produces(MediaType.APPLICATION_JSON)
@@ -174,7 +124,16 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
         }
     }
 
-    // como usar: http://localhost:8082/wsreporte/webresources/conexioneskioskos/updateClave?usuario={seudonimo}&nitEmpresa={nitempresa}&clave={nuevaClave}
+    /**
+     * como usar:
+     * http://localhost:8082/wsreporte/webresources/conexioneskioskos/updateClave?usuario={seudonimo}&nitEmpresa={nitempresa}&clave={nuevaClave}
+     *
+     * @param usuario
+     * @param nitEmpresa
+     * @param clave
+     * @param cadena
+     * @return
+     */
     @POST
     @Path("/updateClave")
     @Produces(MediaType.APPLICATION_JSON)
@@ -188,7 +147,15 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
         }
     }
 
-    // Como usar: http://ip:puerto/wsreporte/webresources/conexioneskioskos/updateFechas?usuario=8125176&nitEmpresa=811025446&fechadesde=2020-08-01&fechahasta=2020-08-31&enviocorreo=false
+    /**
+     * Como usar:
+     * http://ip:puerto/wsreporte/webresources/conexioneskioskos/updateFechas?usuario=8125176&nitEmpresa=811025446&fechadesde=2020-08-01&fechahasta=2020-08-31&enviocorreo=false
+     *
+     * @param usuario
+     * @param nitEmpresa
+     * @param cadena
+     * @return
+     */
     @GET
     @Path("/parametros")
     @Produces(MediaType.APPLICATION_JSON)
@@ -316,7 +283,6 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
         System.out.println(res);
         boolean resultado = false;
         int conteo = 0;
-//        BigDecimal retorno = null;
         JSONObject resp = new JSONObject();
         String mensaje = "";
         try {
@@ -328,7 +294,6 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
             query.setParameter(2, seudonimo);
             query.setParameter(3, nitEmpresa);
             conteo = query.executeUpdate();
-//            resultado = conteo > 0 ? true : false;
             resultado = conteo > 0;
             if (conteo > 0) {
                 System.out.println("modificado");
@@ -374,7 +339,6 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
             Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
             query.setParameter(1, jwt);
             conteo = query.executeUpdate();
-//            resultado = conteo > 0 ? true : false;
             resultado = conteo > 0;
             if (conteo > 0) {
                 System.out.println("modificado");
@@ -412,18 +376,9 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
             @QueryParam("cadena") String cadena) {
         System.out.println("Parametros inactivaTokensTipo(): seudonimo: " + seudonimo + ", nit: " + nitEmpresa + ", tipo: " + tipo + ", cadena: " + cadena);
         boolean resultado = false;
-//        BigDecimal conteo = BigDecimal.ZERO;
         int cambio = 0;
-//        BigDecimal retorno = null;
         JSONObject resp = new JSONObject();
         String mensaje = "";
-        /*String sqlQuery1 = "SELECT COUNT(*) "
-                + "FROM CONEXIONESTOKEN "
-                + "WHERE TIPO=? "
-                + "AND CONEXIONKIOSKO=(SELECT SECUENCIA "
-                + " FROM CONEXIONESKIOSKOS "
-                + " WHERE SEUDONIMO=? "
-                + " AND NITEMPRESA=? )"; */
         String sqlQuery2 = "UPDATE CONEXIONESTOKEN "
                 + "SET ACTIVO='N' "
                 + "WHERE TIPO=? "
@@ -434,25 +389,12 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
-//            String sqlQuery = "UPDATE CONEXIONESTOKEN SET ACTIVO='N' WHERE TIPO=? "
-//                    + "AND CONEXIONKIOSKO=(SELECT SECUENCIA FROM CONEXIONESKIOSKOS WHERE SEUDONIMO=? AND NITEMPRESA=?)";
-            /*Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery1);
-            query.setParameter(1, tipo);
-            query.setParameter(2, seudonimo);
-            query.setParameter(3, nitEmpresa);
-            conteo = (BigDecimal) query.getSingleResult();
-            if (!BigDecimal.ZERO.equals(conteo)) {*/
             Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery2);
             query.setParameter(1, tipo);
             query.setParameter(2, seudonimo);
             query.setParameter(3, nitEmpresa);
             cambio = query.executeUpdate();
-//                resultado = cambio > 0 ? true : false;
             resultado = cambio > 0;
-            /*} else {
-                cambio = -1;
-                resultado = true;
-            }*/
             if (cambio > 0) {
                 System.out.println("modificado");
             } else if (cambio < 0) {
@@ -645,19 +587,18 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
     @Path("/datosContactoKiosco/{nit}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDatosContactoKiosco(@PathParam("nit") String nitEmpresa, @QueryParam("cadena") String cadena) {
-//        BigDecimal res = null;
         List datos = null;
         this.persisPersonalizaciones = new PersistenciaKioPersonalizaciones();
-        
+
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
-            
+
             try {
                 datos = this.persisPersonalizaciones.getDatosContactoKioscoNomina(nitEmpresa, cadena, esquema);
             } catch (Exception ex) {
                 System.out.println("ConexionesKioskosFacadeREST." + "getDatosContactoKiosco(): " + "Usando la consulta tradicional para los datos de contacto");
-                
+
                 try {
                     datos = this.persisPersonalizaciones.getDatosContactoKiosco(nitEmpresa, cadena, esquema);
                 } catch (Exception exi) {
@@ -1216,12 +1157,20 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
         return resultado;
     }
 
+    /**
+     * Procedimiento para validar el JWT.
+     * 
+     * @param jwt
+     * @param cadena
+     * @return 
+     */
     @GET
-    @Path("/restKiosco/validarJWTActivarCuenta") // verificar nombre
+    @Path("/restKiosco/validarJWTActivarCuenta") 
     @Produces(MediaType.APPLICATION_JSON)
     public Response validarJWT(@QueryParam("jwt") String jwt, @QueryParam("cadena") String cadena) {
-        System.out.println("validarJWT() jwt: " + jwt + ","
-                + "ValidatJWT() cadena: " + cadena);
+        System.out.println("ConexionesKioskosFacadeREST.validarJWT() "+"Parametros: "
+                + "jwt: " + jwt 
+                + ", cadena: " + cadena);
         boolean validoToken = false;
         String mensaje = "";
         String usuario = "";
@@ -1255,7 +1204,8 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
 
             try {
                 String esquema = this.cadenasKio.getEsquema(nit, cadenaToken);
-                this.rolesBD.setearPerfil(esquema, cadena);
+//                this.rolesBD.setearPerfil(esquema, cadena);
+                this.rolesBD.setearPerfil(esquema, cadenaToken);
                 if (validarTokenExistente(jwt, nit, cadenaToken)) {
                     if (getEstadoToken(jwt, nit, cadenaToken).equals("S")) {
                         System.out.println("Token existe en bd");
@@ -1389,7 +1339,14 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
                 .build();
     }
 
-    // validar si existe token
+    /**
+     * Validar si existe token.
+     * 
+     * @param token
+     * @param nitEmpresa
+     * @param cadena
+     * @return 
+     */
     public boolean validarTokenExistente(String token, String nitEmpresa, String cadena) {
         System.out.println("Parametros validarTokenExistente(): token: " + token + ", cadena: " + cadena);
         boolean resultado = false;
@@ -1482,7 +1439,6 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
         this.persisPersonas = new PersistenciaPersonas();
         try {
             String r = this.persisPersonas.getCorreoConexioneskioskos(usuario, nitEmpresa, cadena);
-//        String[] parametros = {usuario, nitEmpresa};
             return Response.ok(
                     response("correoConexioneskioskos", "Usuario: " + usuario + ", nit: " + nitEmpresa,
                             String.valueOf(r)), MediaType.APPLICATION_JSON)
@@ -1504,7 +1460,6 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
     @Path("/restKiosco/validarUsuarioyEmpresa/{usuario}/{nitEmpresa}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response validarUsuarioyEmpresaS(@PathParam("usuario") String usuario, @PathParam("nitEmpresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
-//        String[] parametros = {usuario, nitEmpresa};
         try {
             boolean res = validarUsuarioyEmpresa(usuario, nitEmpresa, cadena);
             return Response.ok(
@@ -1530,7 +1485,6 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
     @Path("/restKiosco/validarSeudonimoyEmpresaRegistrado/{usuario}/{nitEmpresa}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response validarSeudonimoyEmpresaRegistrado(@PathParam("usuario") String usuario, @PathParam("nitEmpresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
-//        String[] parametros = {usuario, nitEmpresa};
         try {
             boolean res = validarSeudonimoRegistrado(usuario, nitEmpresa, cadena);
             return Response.ok(
@@ -1561,17 +1515,6 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
         try {
             if (updateClave) {
                 System.out.println("Contraseña actualizada a: " + nuevaClave);
-//                EnvioCorreo e = new EnvioCorreo();
-//                envioCorreo = e.enviarNuevaClave(
-//                        getConfigServidorSMTP(nitEmpresa, cadena),
-//                        getConfigCorreo(nitEmpresa, "PUERTO", cadena),
-//                        getConfigCorreo(nitEmpresa, "AUTENTICADO", cadena),
-//                        getConfigCorreo(nitEmpresa, "STARTTLS", cadena),
-//                        getConfigCorreo(nitEmpresa, "REMITENTE", cadena),
-//                        getConfigCorreo(nitEmpresa, "CLAVE", cadena),
-//                        correo,
-//                        getNombrePersona(usuario, nitEmpresa, cadena),
-//                        nuevaClave, "", this.persisGenKio.getPathFoto(nitEmpresa, cadena), nitEmpresa, cadena);
                 GenerarCorreo e = new GenerarCorreo();
                 e.enviarNuevaClave(correo, getNombrePersona(usuario, nitEmpresa, cadena),
                         nuevaClave, nitEmpresa, cadena, ""
@@ -1682,7 +1625,18 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
                 .build();
     }
 
-    // envia token para validar cuenta
+    /**
+     * envia token para validar cuenta
+     *
+     * @param usuario
+     * @param claveCod
+     * @param nit
+     * @param urlKiosco
+     * @param cadena
+     * @param grupo
+     * @return
+     * @throws UnsupportedEncodingException
+     */
     @GET
     @Path("/restKiosco/jwtValidCuenta")
     @Produces(MediaType.APPLICATION_JSON)
@@ -1693,7 +1647,6 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
         System.out.println("Parametros getJWTValidCuenta(): usuario: " + usuario + ", clave: " + claveCod + ", nit: " + nit + ", cadena: " + cadena);
         System.out.println("UrlKiosco recibido: " + urlKiosco);
         this.persisPersonas = new PersistenciaPersonas();
-//        byte[] decodedBytes = Base64.getDecoder().decode(clave) ;
         String clave = new String(Base64.getDecoder().decode(claveCod));
         System.out.println("Clave decodificada: " + clave);
         Boolean r = validarLogin(usuario, clave, nit, cadena);
@@ -1719,17 +1672,10 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
         Encriptacion e = new Encriptacion();
         String jwt = e.encrypt(jwtCompleto, passwordEncript);
         System.out.println("Token encriptado: " + jwt);
-//        EnvioCorreo p = new EnvioCorreo();
         GenerarCorreo p = new GenerarCorreo();
         creaRegistro = registraToken(usuario, nit, jwt, "VALIDACUENTA", fechaCreacion, fechaExpiracion, cadena);
         if (creaRegistro) {
             System.out.println("Token VALIDACUENTA registrado");
-//            estadoEnvioCorreo = p.enviarEnlaceValidacionCuenta(
-//                    getConfigServidorSMTP(nit, cadena),
-//                    getConfigCorreo(nit, "PUERTO", cadena),
-//                    getConfigCorreo(nit, "AUTENTICADO", cadena),
-//                    getConfigCorreo(nit, "STARTTLS", cadena), getConfigCorreo(nit, "REMITENTE", cadena), getConfigCorreo(nit, "CLAVE", cadena),
-//                    this.persisPersonas.getCorreoConexioneskioskos(usuario, nit, cadena), getNombrePersona(usuario, nit, cadena), usuario, jwt, urlKiosco, nit, cadena);
             estadoEnvioCorreo = p.enviarEnlaceValidacionCuenta(
                     this.persisPersonas.getCorreoConexioneskioskos(usuario, nit, cadena),
                     getNombrePersona(usuario, nit, cadena),
@@ -1776,44 +1722,6 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
         }
     }
 
-    /*
-    public String getConfigCorreo(String nitEmpresa, String valor, String cadena) {
-        System.out.println("getConfigCorreo()");
-        String servidorsmtpConfig = "";
-        try {
-            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
-            this.rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT " + valor + " FROM CONFICORREOKIOSKO WHERE EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?)"
-                    + " AND ROWNUM<=1";
-            System.out.println("Query: " + sqlQuery);
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, nitEmpresa);
-            servidorsmtpConfig = query.getSingleResult().toString();
-            System.out.println(valor + ": " + servidorsmtpConfig);
-        } catch (Exception e) {
-            System.out.println("Error: " + this.getClass().getName() + ".getConfigCorreo" + e.getMessage());
-        }
-        return servidorsmtpConfig;
-    }*/
-
- /*
-    public String getConfigServidorSMTP(String nitEmpresa, String cadena) {
-        System.out.println("getConfigCorreoServidorSMTP()");
-        String servidorsmtp = "smtp.designer.com.co";
-        try {
-            String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
-            this.rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT SERVIDORSMTP FROM CONFICORREOKIOSKO WHERE EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?)";
-            System.out.println("Query: " + sqlQuery);
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, nitEmpresa);
-            servidorsmtp = query.getSingleResult().toString();
-            System.out.println("Servidor smtp: " + servidorsmtp);
-        } catch (Exception e) {
-            System.out.println("Error: " + this.getClass().getName() + ".getConfigCorreoServidorSMTP: " + e.getMessage());
-        }
-        return servidorsmtp;
-    }*/
     /**
      * metodo privado para dar formato al JSON de respuesta
      *
@@ -1860,16 +1768,9 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
                 + "CK.SEUDONIMO = ? "
                 + "AND CK.NITEMPRESA = ? ";
         try {
-            /*
-            String secEmpl = this.persisConKio.getSecuenciaEmplPorSeudonimo(usuario, nitEmpresa, cadena);
-            if (secEmpl == null) {
-                secEmpl = this.perisEmpleados.getSecEmplPorCodigo(usuario, nitEmpresa, cadena);
-            }
-             */
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
             Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
-//            query.setParameter(1, secEmpl);
             query.setParameter(1, usuario);
             query.setParameter(2, nitEmpresa);
             imagen = (String) query.getSingleResult();

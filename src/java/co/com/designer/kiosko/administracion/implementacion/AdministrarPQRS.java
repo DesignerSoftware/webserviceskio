@@ -1,7 +1,6 @@
 package co.com.designer.kiosko.administracion.implementacion;
 
 import co.com.designer.kiosko.administracion.interfaz.IAdministrarPQRS;
-import co.com.designer.kiosko.generales.EnvioCorreo;
 import co.com.designer.persistencia.implementacion.PersistenciaKioPQRS;
 import co.com.designer.persistencia.interfaz.IPersistenciaKioPQRS;
 import co.com.designer.kiosko.generales.ExtraeCausaExcepcion;
@@ -67,8 +66,6 @@ public class AdministrarPQRS implements IAdministrarPQRS {
             try {
                 List correos = this.persisKioPersonaliza.getCorreosComiteConvivencia(nit, cadena);
                 GenerarCorreo ec = new GenerarCorreo();
-//                ec.enviarCorreo(asunto, mensajeCorreo, correos,
-//                        this.persisGeneralesKiosko.getPathFoto(nit, cadena), nit, cadena,);
                 String destinatario = (String) correos.get(0);
                 List destinatarios = correos.subList(1, correos.size()-1);
                 ec.enviarCorreo((String) destinatario, destinatarios, asunto, mensaje, nit, cadena);

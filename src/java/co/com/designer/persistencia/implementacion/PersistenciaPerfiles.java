@@ -16,24 +16,9 @@ public class PersistenciaPerfiles implements IPersistenciaPerfiles {
         this.persistenciaConexiones = new PersistenciaConexiones();
     }
 
-    /*@Override
-    public void setearPerfil() {
-        System.out.println("PersistenciaPerfiles" + ".setearPerfil()-1: " );
-        
-        this.setearPerfil("", "");
-    }*/
-
-    /*@Override
-    public void setearPerfil(String cadena) {
-        this.setearPerfil("", cadena);
-    }*/
-
     @Override
     public void setearPerfil(String esquema, String cadena) {
-        /*System.out.println("PersistenciaPerfiles" + ".setearPerfil()-3: " + "Parametros: "
-                + "esquema: " + esquema
-                + " , cadenaPersistencia: " + cadenaPersistencia
-        );*/
+
         String rol = "ROLKIOSKO";
         if (esquema != null && !esquema.isEmpty()) {
             rol = rol + esquema.toUpperCase();

@@ -1,6 +1,5 @@
 package co.com.designer.services;
 
-//import co.com.designer.kiosko.generales.EnvioCorreo;
 import co.com.designer.kiosko.entidades.VwVacaPendientesEmpleados;
 import co.com.designer.kiosko.generales.GenerarCorreo;
 import co.com.designer.persistencia.implementacion.PersistenciaCadenasKioskosApp;
@@ -32,7 +31,6 @@ import co.com.designer.persistencia.interfaz.IPersistenciaVacaPendientes;
 import co.com.designer.persistencia.interfaz.IPersistenciaManejoFechas;
 import co.com.designer.persistencia.interfaz.IPersistenciaSolucionesNodos;
 import java.math.BigDecimal;
-//import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -44,7 +42,6 @@ import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.json.Json;
 import javax.json.JsonObject;
-//import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -63,7 +60,7 @@ import org.json.JSONObject;
  */
 @Stateless
 @Path("vacacionesPendientes")
-public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVacaPendientesEmpleados> {
+public class VwvacaPendientesEmpleadosFacadeREST { 
 
     private IPersistenciaPerfiles rolesBD;
     private IPersistenciaConexiones persisConexiones;
@@ -81,7 +78,6 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
     private IPersistenciaEmpleados persisEmpleados;
     
     public VwvacaPendientesEmpleadosFacadeREST() {
-//        super(VwVacaPendientesEmpleados.class);
         this.rolesBD = new PersistenciaPerfiles();
         this.persisConexiones = new PersistenciaConexiones();
         this.persisAutorizaSoli = new PersistenciaKioAutorizaSoliciVacas();
@@ -95,15 +91,7 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         this.cadenasKio = new PersistenciaCadenasKioskosApp();
     }
 
-    /*
-    @GET
-    //@Path("/")
-    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public List findAlls() {
-        this.rolesBD.setearPerfil();
-        return super.findAll();
-    }
-     */
+    
     /**
      * @desc Devuelve las solicitudes por empleado, dependiendo el estado que se
      * le envie como parametro
@@ -438,7 +426,6 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
             } catch (Exception e) {
                 System.out.println("Error al consultar esquema " + e.getMessage());
             }
-//            String secPerAutorizador = getSecPersonaPorSeudonimo(seudonimo, nitEmpresa, cadena, esquema);
             String secPerAutorizador = this.persisConKiosko.getPersonaPorSeudonimo(seudonimo, nitEmpresa, cadena).toPlainString() ;;
             this.rolesBD.setearPerfil(esquema, cadena);
             Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
@@ -537,13 +524,19 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
     @Path("/consultarDiasVacacionesPeriodosCumplidos")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public BigDecimal consultarDiasVacacionesPeriodosCumplidos(@QueryParam("usuario") String seudonimo, @QueryParam("nitempresa") String nitEmpresa, @QueryParam("cadena") String cadena) {
-//        BigDecimal retorno = BigDecimal.ZERO;
         BigDecimal retorno = this.persisVacaPend.getDiasVacacionesPeriodosCumplidos(seudonimo, nitEmpresa, cadena);
         return retorno;
     }
 
-    // Obtiene la cantidad de días solicitados filtrando por el último estado de la solicitud
-    // Si no se coloca un parametro trae el total de dias sin tener en cuenta el estado
+    /** 
+     * Obtiene la cantidad de días solicitados filtrando por el último estado de la solicitud
+     * Si no se coloca un parametro trae el total de dias sin tener en cuenta el estado
+     * @param seudonimo
+     * @param nitEmpresa
+     * @param estado
+     * @param cadena
+     * @return 
+     */
     @GET
     @Path("/getDiasSoliciVacacionesXUltimoEstado")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
@@ -589,6 +582,15 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         return retorno;
     }
 
+    /**
+     * 
+     * @param seudonimo
+     * @param nitEmpresa
+     * @param fechainicio
+     * @param dias
+     * @param cadena
+     * @return 
+     */
     @GET
     @Path("/calculaFechaRegreso")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
@@ -609,6 +611,13 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         return retorno;
     }
 
+    /**
+     * 
+     * @param autorizador
+     * @param nitEmpresa
+     * @param cadena
+     * @return 
+     */
     @GET
     @Path("/getSolicitudesProcesadasXAutorizador")
     @Produces(MediaType.APPLICATION_JSON)
@@ -664,7 +673,6 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
             } catch (Exception e) {
                 System.out.println("Error al consultar esquema " + e.getMessage());
             }
-//            String secPerAutorizador = getSecPersonaPorSeudonimo(autorizador, nitEmpresa, cadena, esquema);
             String secPerAutorizador = this.persisConKiosko.getPersonaPorSeudonimo(autorizador, nitEmpresa, cadena).toPlainString() ;
             this.rolesBD.setearPerfil(esquema, cadena);
 
@@ -682,6 +690,13 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         }
     }
 
+    /**
+     * 
+     * @param seudonimo
+     * @param nitEmpresa
+     * @param cadena
+     * @return 
+     */
     @GET
     @Path("/consultaNombreAutorizaVacaciones")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
@@ -712,7 +727,6 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
                     retorno = this.persisPersonas.getApellidoNombreXSecPer(secPerKioAutorizador, nitEmpresa, cadena, esquema);
                 } else {
                     try {
-//                        secEmplJefe = consultarSecuenciaEmpleadoJefe(secEmpleado, nitEmpresa, cadena, esquema);
                         secEmplJefe = this.persisEmpleados.consultarSecuenciaEmpleadoJefe(secEmpleado, nitEmpresa, cadena);
                         if (secEmplJefe != null) {
                             retorno = this.persisPersonas.getApellidoNombreXsecEmpl(secEmplJefe, nitEmpresa, cadena, esquema);
@@ -740,35 +754,6 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         return Response.ok(json, MediaType.APPLICATION_JSON).build();
     }
 
-    /*
-    public List getFechaRegreso(String fechainicio, int dias, String seudonimo, String nitEmpresa, String cadena, String esquema) {
-        System.out.println("Parametros getFechaRegreso(): seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", fechainicio: " + fechainicio + ", dias: " + dias + ", cadena: " + cadena);
-        String secEmpl = this.persisConKiosko.getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
-        List retorno = null;
-        String consulta = "SELECT \n"
-                + "TO_CHAR(KIOVACACIONES_PKG.CALCULARFECHAFINVACA( ?, TO_DATE(?, 'YYYY-MM-DD') , \n"
-                + "KIOVACACIONES_PKG.CALCULARFECHAREGRESO( ? , TO_DATE(?, 'YYYY-MM-DD') , ? ) , 'S' ), 'DD/MM/YYYY') FECHAFIN,\n"
-                + "TO_CHAR(KIOVACACIONES_PKG.CALCULARFECHAREGRESO( ? , TO_DATE(?, 'YYYY-MM-DD') , ? ), 'DD/MM/YYYY') FECHAREGRESO\n"
-                + "FROM DUAL ";
-        try {
-            this.rolesBD.setearPerfil(esquema, cadena);
-            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(consulta);
-            query.setParameter(1, secEmpl);
-            query.setParameter(2, fechainicio);
-            query.setParameter(3, secEmpl);
-            query.setParameter(4, fechainicio);
-            query.setParameter(5, dias);
-            query.setParameter(6, secEmpl);
-            query.setParameter(7, fechainicio);
-            query.setParameter(8, dias);
-            retorno = query.getResultList();
-        } catch (Exception e) {
-            System.out.println("Error getFechaRegreso." + e);
-        }
-        return retorno;
-    }
-    */
-
     @GET
     @Path("/calculaFechaFinVaca")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
@@ -785,257 +770,9 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
             System.out.println("Error al consultar esquema " + e.getMessage());
         }
         System.out.println(this.getClass().getName() + "." + "calculaFechaFinVaca" + "()");
-//        Timestamp retorno = getFechaFinVaca(fechainicio, getFechaRegreso(fechainicio, dias, seudonimo, nitEmpresa, cadena, esquema).toString(), dias, seudonimo, nitEmpresa, cadena, esquema);
         Timestamp retorno = this.persisVacaPkg.getFechaFinVaca(fechainicio, this.persisVacaPkg.getFechaRegreso(fechainicio, dias, seudonimo, nitEmpresa, cadena, esquema).toString(), dias, seudonimo, nitEmpresa, cadena, esquema);
         return retorno;
     }
-
-    /*
-    public Timestamp getFechaFinVaca(String fechainicio, String fechafin, int dias, String seudonimo, String nitEmpresa, String cadena, String esquema) {
-        String secEmpl = this.persisConKiosko.getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
-        Timestamp retorno = null;
-        String consulta = "SELECT KIOVACACIONES_PKG.CALCULARFECHAFINVACA( ?, TO_DATE(?, 'YYYY-MM-DD') , TO_DATE(?,'YYYY-MM-DD HH:MM:SS') , 'S' ) FROM DUAL";
-        try {
-            this.rolesBD.setearPerfil(esquema, cadena);
-            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(consulta);
-            query.setParameter(1, secEmpl);
-            query.setParameter(2, fechainicio);
-            query.setParameter(3, fechafin);
-            retorno = (Timestamp) query.getSingleResult();
-        } catch (Exception e) {
-            System.out.println("Error getFechaFinVaca." + e);
-        }
-        return retorno;
-    }
-    */
-
-    /*
-    public boolean creaKioNovedadSolici(String seudonimo, String nitEmpresa, String fechainicial, String fecharegreso, String dias, String RFVACACION, String fechaFin, String cadena, String esquema) {
-        int conteo = 0;
-        try {
-            this.rolesBD.setearPerfil(esquema, cadena);
-            System.out.println("parametros creaKioNovedadSolici seudonimo: " + seudonimo + ", nit: " + nitEmpresa + ", fechainicial: " + fechainicial + ", fecharegreso: " + fecharegreso + " fecha fin: " + fechaFin + " dias: " + dias + ", rfvacacion: " + RFVACACION);
-            String sql = "INSERT INTO KIONOVEDADESSOLICI (EMPLEADO, FECHAINICIALDISFRUTE, DIAS, TIPO, SUBTIPO, FECHASISTEMA, FECHASIGUIENTEFINVACA, ESTADO, \n"
-                    + "ADELANTAPAGO, ADELANTAPAGOHASTA, FECHAPAGO, PAGADO, VACACION)\n"
-                    + "VALUES\n"
-                    + "(?, TO_DATE(?,'DD/MM/YYYY'), ?, 'VACACION', 'TIEMPO', SYSDATE, TO_DATE(?,'DD/MM/YYYY'), 'ABIERTO', ?, TO_DATE(?,'DD/MM/YYYY'), ?, 'N', ?)";
-            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sql);
-            String secEmpleado = this.persisConKiosko.getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
-            query.setParameter(1, secEmpleado);
-            query.setParameter(2, fechainicial);
-            query.setParameter(3, dias);
-            query.setParameter(4, fecharegreso);
-            query.setParameter(5, null);
-            query.setParameter(6, fechaFin);
-            query.setParameter(7, null);
-            query.setParameter(8, RFVACACION);
-            conteo = query.executeUpdate();
-            System.out.println("return creaKioNovedadSolici(): " + conteo);
-            return conteo > 0;
-        } catch (Exception e) {
-            System.out.println("Error creaKioNovedadSolici: " + e.getMessage());
-            return false;
-        }
-    }
-    */
-
-    /*
-    public boolean creaKioSoliciVacas(String seudonimo, String secEmplJefe, String secPersonaAutorizador, String nit, String secNovedad, String fechaGeneracion, String cadena, String esquema) {
-        System.out.println("Parametros creaKioSoliciVacas(): seudonimo: " + seudonimo + ", nit: " + nit + ", secNovedad: " + secNovedad + ", fechaGeneracion: " + fechaGeneracion
-                + ", autorizador: " + secPersonaAutorizador + ", secEmplJefe: " + secEmplJefe + ", cadena: " + cadena);
-        int conteo = 0;
-        String secEmpleado = null;
-        try {
-            this.rolesBD.setearPerfil(esquema, cadena);
-            secEmpleado = this.persisConKiosko.getSecuenciaEmplPorSeudonimo(seudonimo, nit, cadena);
-            String sql = "";
-            if (secEmplJefe != null || secPersonaAutorizador != null) {
-                if (secPersonaAutorizador != null) {
-                    System.out.println("creaKioSoliciVacas por kioautorizador");
-                    sql += "insert into kiosolicivacas (empleado, kionovedadsolici, usuario, autorizador, activa, fechageneracion) "
-                            + "values (?, ?, user, ?, 'S', to_date(?, 'dd/mm/yyyy HH24miss'))";
-                } else if (secEmplJefe != null) {
-                    System.out.println("creaKioSoliciVacas por empleadojefe");
-                    sql += "insert into kiosolicivacas (empleado, kionovedadsolici, usuario, empleadojefe, activa, fechageneracion) "
-                            + "values (?, ?, user, ?, 'S', to_date(?, 'dd/mm/yyyy HH24miss'))";
-                }
-                Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sql);
-                query.setParameter(1, secEmpleado);
-                query.setParameter(2, secNovedad);
-                if (secPersonaAutorizador != null) {
-                    query.setParameter(3, secPersonaAutorizador);
-                } else {
-                    query.setParameter(3, secEmplJefe);
-                }
-                query.setParameter(4, fechaGeneracion);
-                conteo = query.executeUpdate();
-                System.out.println("registro kiosolicivaca: " + conteo);
-            } else {
-                conteo = 0; // No crear la solicitud si no hay un jefe relacionado
-            }
-        } catch (Exception e) {
-            System.out.println("Error creaKioSoliciVacas: " + e.getMessage());
-            conteo = 0;
-        }
-        return conteo > 0;
-    }
-    */
-
-    /*
-    public String getSecuenciaKioNovedadesSolici(String seudonimo, String nitEmpresa,
-            String fechainicio, String fecharegreso,
-            String dias, String rfVacacion, String cadena, String esquema) {
-        System.out.println("Parametros getSecuenciaKioNovedadesSolici(): seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", fechainicio: " + fechainicio + ", fecharegreso: " + fecharegreso + ", dias: " + dias + ", rfVacacion: " + rfVacacion + ", cadena: " + cadena);
-        String sec = null;
-        try {
-            this.rolesBD.setearPerfil(esquema, cadena);
-            String secEmpleado = this.persisConKiosko.getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
-            String sqlQuery = "select max(secuencia) \n"
-                    + "                from KioNovedadesSolici \n"
-                    + "                where dias=? \n"
-                    + "                and fechainicialdisfrute=to_date(?, 'dd/mm/yyyy') \n"
-                    + "                and fechasiguientefinvaca=to_date(?, 'dd/mm/yyyy') \n"
-                    + "                and empleado=? \n"
-                    + "                and tipo='VACACION' \n"
-                    + "                and SUBTIPO='TIEMPO' \n"
-                    + "                and vacacion=? "
-                    + "  and secuencia not in (select kionovedadsolici from kiosolicivacas)";
-            System.out.println("Query: " + sqlQuery);
-            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
-
-            query.setParameter(1, dias);
-            query.setParameter(2, fechainicio);
-            query.setParameter(3, fecharegreso);
-            query.setParameter(4, secEmpleado);
-            query.setParameter(5, rfVacacion);
-
-            sec = query.getSingleResult().toString();
-            System.out.println("secuencia kionovedad: " + sec);
-        } catch (Exception e) {
-            System.out.println("Error: getSecuenciaKioNovedadesSolici: " + e.getMessage());
-        }
-        return sec;
-    }
-    */
-
-    /*
-    public String getSecKioSoliciVacas(String secEmpl, String fechaGeneracion,
-            String secEmplJefe, String secPerAutorizador, String kioNovedadSolici, String nitEmpresa, String cadena, String esquema) {
-        String secKioSoliciVacas = null;
-        String sqlQuery = "";
-        try {
-            this.rolesBD.setearPerfil(esquema, cadena);
-            System.out.println("parametros getSecKioSoliciVacas: secEmpl: " + secEmpl + ", fechaGeneracion: " + fechaGeneracion + ", secEmplJefe: " + secEmplJefe + ", autorizador: " + secPerAutorizador + ", kioNovedadSolici " + kioNovedadSolici);
-            if (secPerAutorizador != null) {
-                sqlQuery += "select secuencia "
-                        + "from kiosolicivacas "
-                        + "where empleado=? "
-                        + " and fechageneracion=to_date(?, 'dd/mm/yyyy HH24miss') "
-                        + " and autorizador=? and activa='S' and kionovedadsolici=?";
-            } else {
-                sqlQuery += "select secuencia from kiosolicivacas where empleado=? "
-                        + " and fechageneracion=to_date(?, 'dd/mm/yyyy HH24miss') "
-                        + " and empleadojefe=? and activa='S' and kionovedadsolici=?";
-            }
-            System.out.println("Query: " + sqlQuery);
-            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, secEmpl);
-            query.setParameter(2, fechaGeneracion);
-            if (secPerAutorizador != null) {
-                query.setParameter(3, secPerAutorizador);
-            } else {
-                query.setParameter(3, secEmplJefe);
-            }
-            query.setParameter(4, kioNovedadSolici);
-            secKioSoliciVacas = query.getSingleResult().toString();
-            System.out.println("SecKioSoliciVacas: " + secKioSoliciVacas);
-        } catch (Exception e) {
-            System.out.println("Error: getSecKioSoliciVacas: " + e.getMessage());
-        }
-        return secKioSoliciVacas;
-    }
-    */
-
-    /*
-    public String consultarSecuenciaEmpleadoJefe(String secEmpleado, String nitEmpresa, String cadena, String esquema) {
-        System.out.println("parametros consultarSecuenciaEmpleadoJefe: secEmpleado: " + secEmpleado + ", cadena: " + cadena);
-        String secJefe = null;
-        try {
-            this.rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "select empj.secuencia \n"
-                    + "from empleados empl, empresas em, vigenciascargos vc, estructuras es, organigramas o, empleados empj, personas pj \n"
-                    + "where em.secuencia = empl.empresa \n"
-                    + "and vc.empleado = empl.secuencia \n"
-                    + "and es.secuencia = vc.estructura\n"
-                    + "and o.secuencia = es.organigrama \n"
-                    + "and em.secuencia = o.empresa \n"
-                    + "and vc.empleadojefe = empj.secuencia \n"
-                    + "and pj.secuencia = empj.persona \n"
-                    + "and empl.secuencia = ? \n"
-                    + "and vc.fechavigencia = (select max(vci.fechavigencia) \n"
-                    + "                        from vigenciascargos vci \n"
-                    + "                        where vci.empleado = vc.empleado \n"
-                    + "                       and vci.fechavigencia <= sysdate)";
-            System.out.println("Query: " + sqlQuery);
-            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, secEmpleado);
-            secJefe = query.getSingleResult().toString();
-            System.out.println("secuencia jefe: " + secJefe);
-        } catch (Exception e) {
-            System.out.println("Error: " + this.getClass().getName() + ".consultarSecuenciaEmpleadoJefe: " + e.getMessage());
-        }
-        return secJefe;
-    }
-    */
-
-    /*
-    public String getSecPersonaPorSeudonimo(String seudonimo, String nitEmpresa, String cadena, String esquema) {
-        System.out.println("Parametros getSecPersonaPorSeudonimo(): seudonimo: " + seudonimo + ", nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
-        String secuencia = null;
-        try {
-            this.rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT P.SECUENCIA SECUENCIAPERSONA "
-                    + "FROM PERSONAS P, CONEXIONESKIOSKOS CK "
-                    + "WHERE CK.PERSONA=P.SECUENCIA "
-                    + "AND CK.SEUDONIMO=? "
-                    + "AND CK.NITEMPRESA=? ";
-            System.out.println("Query: " + sqlQuery);
-            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, seudonimo);
-            query.setParameter(2, nitEmpresa);
-            secuencia = query.getSingleResult().toString();
-            System.out.println("secuenciaEmpl: " + secuencia);
-        } catch (Exception e) {
-            System.out.println("Error: " + this.getClass().getName() + ".getSecPersonaPorSeudonimo: " + e.getMessage());
-        }
-        return secuencia;
-    }
-    */
-
-    /*
-    public String getEmplXsecKioEstadoSolici(String kioEstadoSolici, String nitEmpresa, String cadena, String esquema) {
-        System.out.println("Parametros getEmplXsecKioEstadoSolici(): kioEstadoSolici: " + kioEstadoSolici + ", cadena: " + cadena);
-        String secEmpl = null;
-        try {
-            this.rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT KSV.EMPLEADO \n"
-                    + "FROM \n"
-                    + "KIOESTADOSSOLICI KE, KIOSOLICIVACAS KSV, KIONOVEDADESSOLICI KN \n"
-                    + "WHERE \n"
-                    + "KE.KIOSOLICIVACA=KSV.SECUENCIA \n"
-                    + "AND KSV.KIONOVEDADSOLICI = KN.SECUENCIA \n"
-                    + "AND KE.SECUENCIA= ? ";
-            System.out.println("Query: " + sqlQuery);
-            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, kioEstadoSolici);
-            secEmpl = query.getSingleResult().toString();
-            System.out.println("Valor getEmplXsecKioEstadoSolici(): " + secEmpl);
-        } catch (Exception e) {
-            System.out.println("Error: " + this.getClass().getName() + ".getEmplXsecKioEstadoSolici(): " + e.getMessage());
-        }
-        return secEmpl;
-    }
-    */
 
     @POST
     @Path("/nuevoEstadoSolici")
@@ -1080,14 +817,12 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
             }
             if (secPerAutoriza != null) {
                 nombreAutorizaSolici = this.persisPersonas.getApellidoNombreXSecPer(secPerAutoriza, nitEmpresa, cadena, esquema);
-//                correoAutorizaSolici = getCorreoXsecPer(secPerAutoriza, nitEmpresa, cadena, esquema);
                 correoAutorizaSolici = this.persisPersonas.getCorreoPorPersona(secPerAutoriza, nitEmpresa, cadena);
             } else {
                 try {
                     secEmplJefe = this.persisKioSoliciVacas.getEmplJefeXsecKioEstadoSolici(secKioEstadoSolici, nitEmpresa, cadena);
                     if (secEmplJefe != null) {
                         nombreAutorizaSolici = this.persisPersonas.getApellidoNombreXsecEmpl(secEmplJefe, nitEmpresa, cadena, esquema);
-//                        correoAutorizaSolici = getCorreoXsecEmpl(secEmplJefe, nitEmpresa, cadena, esquema);
                         correoAutorizaSolici = this.persisPersonas.getCorreoPorEmpleado(secEmplJefe, nitEmpresa, cadena);
                     }
                 } catch (Exception e) {
@@ -1137,7 +872,6 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
                 query.setParameter(4, secKioEstadoSolici);
             }
             res = query.executeUpdate();
-            //EnvioCorreo c = new EnvioCorreo();
             GenerarCorreo c = new GenerarCorreo();
             String estadoVerbo = estado.equals("CANCELADO") ? "CANCELAR"
                     : estado.equals("AUTORIZADO") ? "PRE-APROBAR"
@@ -1171,18 +905,7 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
             System.out.println("url Kiosco: " + urlKio);
             if (res > 0) {
                 System.out.println("solicitud " + estado + " con éxito.");
-//                String servidorsmtp = getConfigCorreoServidorSMTP(nitEmpresa, cadena, esquema);
-//                String puerto = getConfigCorreo(nitEmpresa, "PUERTO", cadena, esquema);
-//                String autenticado = getConfigCorreo(nitEmpresa, "AUTENTICADO", cadena, esquema);
-//                String starttls = getConfigCorreo(nitEmpresa, "STARTTLS", cadena, esquema);
-//                String remitente = getConfigCorreo(nitEmpresa, "REMITENTE", cadena, esquema);
-//                String clave = getConfigCorreo(nitEmpresa, "CLAVE", cadena, esquema);
                 if (estado.equals("CANCELADO")) {
-                    //if (c.enviarCorreoVacaciones(
-                    //        servidorsmtp, puerto, autenticado, starttls, remitente, clave,
-                    //        getCorreoXsecEmpl(secEmplSolicita, nitEmpresa, cadena, esquema),
-                    //        "Solicitud de VACACIONES Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de VACACIONES: " + fechaInicioDisfrute,
-                    //        mensaje, urlKio, nitEmpresa, cadena)) {
                     if (c.enviarCorreoVacaciones(
                             this.persisPersonas.getCorreoPorEmpleado(secEmplSolicita, nitEmpresa, cadena),
                              "Solicitud de VACACIONES Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de VACACIONES: " + fechaInicioDisfrute,
@@ -1192,22 +915,12 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
                 }
 
                 if (estado.equals("AUTORIZADO") || estado.equals("RECHAZADO")) {
-                    //if (c.enviarCorreoVacaciones(
-                    //        servidorsmtp, puerto, autenticado, starttls, remitente, clave,
-                    //        getCorreoXsecEmpl(secEmplSolicita, nitEmpresa, cadena, esquema),
-                    //        "Solicitud de VACACIONES Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de VACACIONES: " + fechaInicioDisfrute,
-                    //        mensaje, urlKio, nitEmpresa, cadena)) {
                     if (c.enviarCorreoVacaciones(
                             this.persisPersonas.getCorreoPorEmpleado(secEmplSolicita, nitEmpresa, cadena),
                             "Solicitud de VACACIONES Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de VACACIONES: " + fechaInicioDisfrute,
                             mensaje, nitEmpresa, cadena, urlKio)) {
                         System.out.println("Correo enviada a la persona que ejecuta");
                     }
-                    //if (c.enviarCorreoVacaciones(
-                    //        servidorsmtp, puerto, autenticado, starttls, remitente, clave,
-                    //        correoAutorizaSolici,
-                    //        "Solicitud de VACACIONES Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de VACACIONES: " + fechaInicioDisfrute,
-                    //        mensaje, urlKio, nitEmpresa, cadena)) {
                     if (c.enviarCorreoVacaciones(
                             correoAutorizaSolici,
                             "Solicitud de VACACIONES Kiosco - " + estadoPasado + ": " + fecha + ". Inicio de VACACIONES: " + fechaInicioDisfrute,
@@ -1274,86 +987,6 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
             return Response.status(Response.Status.NOT_FOUND).entity("Error").build();
         }
     }
-
-    /*
-    public String getFechaInicioXsecKioEstadoSolici(String secKioEstadoSolici, String nitEmpresa, String cadena) {
-        String fechaInicio = null;
-        try {
-            String esquema = cadenasKio.getEsquema(nitEmpresa, cadena);
-            this.rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "select "
-                    + "TO_CHAR(KN.FECHAINICIALDISFRUTE, 'dd/mm/yyyy') "
-                    + "from "
-                    + "KIOESTADOSSOLICI KE, KIOSOLICIVACAS KSV, KIONOVEDADESSOLICI KN "
-                    + "WHERE "
-                    + "KE.KIOSOLICIVACA = KSV.SECUENCIA "
-                    + "AND KSV.KIONOVEDADSOLICI=KN.SECUENCIA "
-                    + "AND KE.SECUENCIA=?";
-            System.out.println("Query: " + sqlQuery);
-            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
-
-            query.setParameter(1, secKioEstadoSolici);
-            fechaInicio = query.getSingleResult().toString();
-            System.out.println("Fecha inicio: " + fechaInicio);
-        } catch (Exception e) {
-            System.out.println("Error: " + this.getClass().getName() + ".getFechaInicioXsecKioEstadoSolici: " + e.getMessage());
-        }
-        return fechaInicio;
-    }
-    */
-
-    /*
-    public String getEmplJefeXsecKioEstadoSolici(String secKioEstadoSolici, String nitEmpresa, String cadena) {
-        String secEmplJefe = null;
-        try {
-            String esquema = cadenasKio.getEsquema(nitEmpresa, cadena);
-            this.rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT KSV.EMPLEADOJEFE "
-                    + "FROM "
-                    + "KIOESTADOSSOLICI KE, KIOSOLICIVACAS KSV, KIONOVEDADESSOLICI KN "
-                    + "WHERE "
-                    + "KE.KIOSOLICIVACA=KSV.SECUENCIA "
-                    + "AND KSV.KIONOVEDADSOLICI = KN.SECUENCIA "
-                    + "AND KE.SECUENCIA=?";
-            System.out.println("Query: " + sqlQuery);
-            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
-
-            query.setParameter(1, secKioEstadoSolici);
-            secEmplJefe = query.getSingleResult().toString();
-            System.out.println("Empl jefe asociado: " + secEmplJefe);
-        } catch (Exception e) {
-            System.out.println("Error: " + this.getClass().getName() + ".getEmplJefeXsecKioEstadoSolici: " + e.getMessage());
-        }
-        return secEmplJefe;
-    }
-    */
-
-    /*
-    public String getSecPerAutorizadorXsecKioEstadoSolici(String secKioEstadoSolici, String nitEmpresa, String cadena) {
-        System.out.println("Parametros getSecPerAutorizadorXsecKioEstadoSolici(): secKioEstadoSolici: " + secKioEstadoSolici + " nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
-        String secPerAutorizador = null;
-        try {
-            String esquema = cadenasKio.getEsquema(nitEmpresa, cadena);
-            this.rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT KSV.AUTORIZADOR "
-                    + "FROM "
-                    + "KIOESTADOSSOLICI KE, KIOSOLICIVACAS KSV, KIONOVEDADESSOLICI KN "
-                    + "WHERE "
-                    + "KE.KIOSOLICIVACA=KSV.SECUENCIA "
-                    + "AND KSV.KIONOVEDADSOLICI = KN.SECUENCIA "
-                    + "AND KE.SECUENCIA=?";
-            System.out.println("Query: " + sqlQuery);
-            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
-
-            query.setParameter(1, secKioEstadoSolici);
-            secPerAutorizador = query.getSingleResult().toString();
-            System.out.println("Secuencia persona KioAutorizador: " + secPerAutorizador);
-        } catch (Exception e) {
-            System.out.println("Error: " + this.getClass().getName() + ".getSecPerAutorizadorXsecKioEstadoSolici: " + e.getMessage());
-        }
-        return secPerAutorizador;
-    }
-    */
 
     @GET
     @Path("/getDiasNovedadesVaca")
@@ -1468,33 +1101,19 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         }
     }
 
-    /*Crea nuevo registro kioestadosolici al crear nueva solicitud de vacaciones*/
- /*
-    public boolean creaKioEstadoSolici(
-            String seudonimo, String nit, String kioSoliciVaca,
-            String fechaProcesa, String estado, String motivo, String cadena, String esquema) {
-        System.out.println("parametros creaKioEstadoSolici(): seudonimo: " + seudonimo + ", nit: " + nit + ", kiosolicivaca: " + kioSoliciVaca + ""
-                + "\n fechaProcesa: " + fechaProcesa + ", estado: " + estado + ", cadena: " + cadena);
-        int res = 0;
-        try {
-            String secEmpl = this.persisConKiosko.getSecuenciaEmplPorSeudonimo(seudonimo, nit, cadena);
-            this.rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "INSERT INTO KIOESTADOSSOLICI (KIOSOLICIVACA, FECHAPROCESAMIENTO, ESTADO, EMPLEADOEJECUTA, MOTIVOPROCESA)\n"
-                    + "VALUES (?, to_date(?, 'dd/mm/yyyy HH24miss'), ?, ?, ?)";
-            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, kioSoliciVaca);
-            query.setParameter(2, fechaProcesa);
-            query.setParameter(3, estado);
-            query.setParameter(4, secEmpl);
-            query.setParameter(5, motivo);
-            res = query.executeUpdate();
-            System.out.println("registro kioestadosolici: " + res);
-        } catch (Exception ex) {
-            System.out.println("Error " + this.getClass().getName() + ".creaKioEstadoSolici: " + ex.getMessage());
-            return false;
-        }
-        return res > 0;
-    }
+    /**
+     * 
+     * @param seudonimo
+     * @param nit
+     * @param fechainicial
+     * @param fecharegreso
+     * @param dias
+     * @param RFVACACION
+     * @param cadena
+     * @param urlKiosco
+     * @param grupoEmpr
+     * @param fechafin
+     * @return 
      */
     @POST
     @Path("/crearSolicitudVacaciones")
@@ -1561,12 +1180,10 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
                     }
                     if (secPersonaAutorizador == null) {
                         try {
-//                            secEmplJefe = consultarSecuenciaEmpleadoJefe(secEmpl, nit, cadena, esquema);
                             secEmplJefe = this.persisEmpleados.consultarSecuenciaEmpleadoJefe(secEmpl, nit, cadena);
                             if (secEmplJefe != null) {
                                 System.out.println("creaKioSoliciVacas: EmpleadoJefe: " + secEmplJefe);
                                 nombreAutorizaSolici += this.persisPersonas.getApellidoNombreXsecEmpl(secEmplJefe, nit, cadena, esquema);
-//                                correoAutorizaSolici = getCorreoXsecEmpl(secEmplJefe, nit, cadena, esquema);
                                 correoAutorizaSolici = this.persisPersonas.getCorreoPorEmpleado(secEmplJefe, nit, cadena);
                                 System.out.println("El empleado tiene relacionado a empleadoJefe " + nombreAutorizaSolici + " - " + correoAutorizaSolici);
                             } else {
@@ -1577,7 +1194,6 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
                         }
                     } else {
                         nombreAutorizaSolici += this.persisPersonas.getApellidoNombreXSecPer(secPersonaAutorizador, nit, cadena, esquema);
-//                        correoAutorizaSolici = getCorreoXsecPer(secPersonaAutorizador, nit, cadena, esquema);
                         correoAutorizaSolici = this.persisPersonas.getCorreoPorPersona(secPersonaAutorizador, nit, cadena);
                         System.out.println("El empleado tiene relacionado al autorizador " + nombreAutorizaSolici + " - " + correoAutorizaSolici);
                     }
@@ -1607,27 +1223,15 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
                                             + "La solicitud se creó por " + dias + " días, para ser disfrutados desde el " + fechainicial + " hasta el " + fechafin
                                             + "<br>"
                                             + "Del periodo: " + Periosidad
-                                            + "<br><br>Por favor seguir el proceso en: <a style='color: white !important;' href='" + urlKio + "'>" + urlKio + "</a>"
+                                            + "<br><br>Por favor seguir el proceso en: <a style='color: black !important;' href='" + urlKio + "'>" + urlKio + "</a>"
                                             + "<br><br>"
                                             + "Si no puede ingresar, necesitará instalar la última versión de su navegador, la cual podrá descargar de forma gratuita."
                                             + "<br><br>"
                                             + "En caso de que haya olvidado su clave podrá generar una nueva haciendo clic en ¿Olvidó su clave? en el módulo Kiosco o a través del link: "
                                             + "<br><a style='color: white !important;' href='" + urlKioOlvidoClave + "'>" + urlKioOlvidoClave + "</a>";
 
-                                    //EnvioCorreo c = new EnvioCorreo();
                                     GenerarCorreo c = new GenerarCorreo();
 
-//                                    String servidorsmtp = getConfigCorreoServidorSMTP(nit, cadena, esquema);
-//                                    String puerto = getConfigCorreo(nit, "PUERTO", cadena, esquema);
-//                                    String autenticado = getConfigCorreo(nit, "AUTENTICADO", cadena, esquema);
-//                                    String starttls = getConfigCorreo(nit, "STARTTLS", cadena, esquema);
-//                                    String remitente = getConfigCorreo(nit, "REMITENTE", cadena, esquema);
-//                                    String clave = getConfigCorreo(nit, "CLAVE", cadena, esquema);
-                                    //if (c.enviarCorreoVacaciones(
-                                    //        servidorsmtp, puerto, autenticado, starttls, remitente, clave,
-                                    //        getCorreoXsecEmpl(secEmpl, nit, cadena, esquema),
-                                    //        "Solicitud de VACACIONES Kiosco - Nueva solicitud: " + fechaCorreo + ". Inicio de VACACIONES: " + fechainicial,
-                                    //        mensajeCorreo, urlKio, nit, cadena)) {
                                     if (c.enviarCorreoVacaciones(
                                             this.persisPersonas.getCorreoPorEmpleado(secEmpl, nit, cadena),
                                              "Solicitud de VACACIONES Kiosco - Nueva solicitud: " + fechaCorreo + ". Inicio de VACACIONES: " + fechainicial,
@@ -1635,12 +1239,6 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
                                         System.out.println("Correo enviado al empleado.");
                                     }
 
-                                    // Enviar correo al jefe o autorizador de vacaciones:
-                                    //if (c.enviarCorreoVacaciones(
-                                    //        servidorsmtp, puerto, autenticado, starttls, remitente, clave,
-                                    //        correoAutorizaSolici,
-                                    //        "Solicitud de VACACIONES Kiosco - Nueva solicitud: " + fechaCorreo + ". Inicio de VACACIONES: " + fechainicial,
-                                    //        mensajeCorreo, urlKio, nit, cadena)) {
                                     if (c.enviarCorreoVacaciones(
                                             correoAutorizaSolici,
                                              "Solicitud de VACACIONES Kiosco - Nueva solicitud: " + fechaCorreo + ". Inicio de VACACIONES: " + fechainicial,
@@ -1721,170 +1319,4 @@ public class VwvacaPendientesEmpleadosFacadeREST { //extends AbstractFacade<VwVa
         }
         return obj.toString();
     }
-
-    /*
-    public String getCorreoSoporteKiosco(String nitEmpresa, String cadena) {
-        System.out.println("VwvacaPendientesEmpleadosFacadeREST" + ".getConfigCorreoServidorSMTP()");
-        String emailSoporte = "";
-        String sqlQuery = "SELECT EMAILCONTACTO "
-                + "FROM KIOPERSONALIZACIONES "
-                + "WHERE TIPOCONTACTO = 'NOMINA' "
-                + "EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT= ? ) "
-                + "AND ROWNUM<=1";
-        try {
-            String esquema = getEsquema(nitEmpresa, cadena);
-            this.rolesBD.setearPerfil(esquema, cadena);
-            System.out.println("VwvacaPendientesEmpleadosFacadeREST" + ".getConfigCorreoServidorSMTP(): " + "Query: " + sqlQuery);
-            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, nitEmpresa);
-            emailSoporte = query.getSingleResult().toString();
-            System.out.println("VwvacaPendientesEmpleadosFacadeREST" + ".getConfigCorreoServidorSMTP(): " + "emailSoporte: " + emailSoporte);
-        } catch (Exception e) {
-            System.out.println("VwvacaPendientesEmpleadosFacadeREST" + ".getConfigCorreoServidorSMTP(): " + "Error-1: " + e.toString());
-        }
-        return emailSoporte;
-    }
-     */
-
- /*
-    public String getConfigCorreo(String nitEmpresa, String valor, String cadena, String esquema) {
-        System.out.println("getPathArchivosPlanos()");
-        String servidorsmtp = "smtp.designer.com.co";
-        try {
-            this.rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT " + valor + " "
-                    + "FROM CONFICORREOKIOSKO "
-                    + "WHERE EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT= ? )";
-            System.out.println("Query: " + sqlQuery);
-            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, nitEmpresa);
-            servidorsmtp = query.getSingleResult().toString();
-            System.out.println(valor + ": " + servidorsmtp);
-        } catch (Exception e) {
-            System.out.println("Error: " + this.getClass().getName() + ".getConfigCorreo(): " + e.getMessage());
-        }
-        return servidorsmtp;
-    }
-     */
-
- /*
-    public String getConfigCorreoServidorSMTP(String nitEmpresa, String cadena, String esquema) {
-        System.out.println("getConfigCorreoServidorSMTP(): nit: " + cadena + ", cadena: " + cadena);
-        String servidorsmtp = "smtp.designer.com.co";
-        try {
-            this.rolesBD.setearPerfil(esquema, cadena);
-            String sqlQuery = "SELECT SERVIDORSMTP "
-                    + "FROM CONFICORREOKIOSKO "
-                    + "WHERE EMPRESA=(SELECT SECUENCIA FROM EMPRESAS WHERE NIT=?)";
-            System.out.println("Query: " + sqlQuery);
-            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, nitEmpresa);
-            servidorsmtp = query.getSingleResult().toString();
-            System.out.println("Servidor smtp: " + servidorsmtp);
-        } catch (Exception e) {
-            System.out.println("Error: " + this.getClass().getName() + ".getConfigCorreoServidorSMTP: " + e.getMessage());
-        }
-        return servidorsmtp;
-    }*/
-
- /*
-    public String getCorreoXsecEmpl(String secEmpl, String nitEmpresa, String cadena, String esquema) {
-        System.out.println("Parametros getCorreoXsecEmpl(): secEmpl: " + secEmpl + ", cadena: " + cadena);
-        System.out.println("sec Empleado: " + secEmpl);
-        String correo = null;
-        String sqlQuery;
-        try {
-            this.rolesBD.setearPerfil(esquema, cadena);
-            sqlQuery = "SELECT P.EMAIL "
-                    + " FROM EMPLEADOS E, PERSONAS P "
-                    + " WHERE  "
-                    + " P.SECUENCIA=E.PERSONA "
-                    + " AND E.SECUENCIA= ? ";
-            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, secEmpl);
-            System.out.println("getCorreoXsecEmpl(): " + correo);
-            correo = query.getSingleResult().toString();
-        } catch (Exception e) {
-            System.out.println("Error: " + this.getClass().getName() + "getCorreoXsecEmpl(): " + e.getMessage());
-        }
-        return correo;
-    }
-     */
-
- /*
-    public String getCorreoXsecPer(String secPersona, String nitEmpresa, String cadena, String esquema) {
-        System.out.println("Parametros getCorreoXsecPer(): secPer: " + secPersona + ", cadena: " + cadena);
-        String correo = null;
-        String sqlQuery;
-        try {
-            this.rolesBD.setearPerfil(esquema, cadena);
-            sqlQuery = "SELECT P.EMAIL "
-                    + " FROM PERSONAS P "
-                    + " WHERE "
-                    + " P.SECUENCIA=? ";
-            Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(sqlQuery);
-            query.setParameter(1, secPersona);
-            System.out.println("getCorreoXsecPer(): " + correo);
-            correo = query.getSingleResult().toString();
-        } catch (Exception e) {
-            System.out.println("Error: " + this.getClass().getName() + "getCorreoXsecPer(): " + e.getMessage());
-        }
-        return correo;
-    }
-     */
-
- /*
-    public BigDecimal consultarCodigoJornada(String seudonimo, String nitEmpresa, String fechaDisfrute, String cadena, String esquema) throws Exception {
-        System.out.println(this.getClass().getName() + "." + "consultarCodigoJornada" + "()");
-        String consulta = "select nvl(j.codigo, 1) "
-                + "from vigenciasjornadas v, jornadaslaborales j "
-                + "where v.empleado = ? "
-                + "and j.secuencia = v.jornadatrabajo "
-                + "and v.fechavigencia = (select max(vi.fechavigencia) "
-                + "from vigenciasjornadas vi "
-                + "where vi.empleado = v.empleado "
-                + "and vi.fechavigencia <= to_date( ? , 'dd/mm/yyyy') ) ";
-        Query query = null;
-        BigDecimal codigoJornada;
-        String secEmpleado = this.persisConKiosko.getSecuenciaEmplPorSeudonimo(seudonimo, nitEmpresa, cadena);
-        System.out.println("secuencia: " + secEmpleado);
-        System.out.println("fecha en txt: " + fechaDisfrute);
-        try {
-            this.rolesBD.setearPerfil(esquema, cadena);
-            query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(consulta);
-            query.setParameter(1, secEmpleado);
-            query.setParameter(2, fechaDisfrute);
-            codigoJornada = new BigDecimal(query.getSingleResult().toString());
-            return codigoJornada;
-        } catch (PersistenceException pe) {
-            System.out.println("Error de persistencia.");
-            throw new Exception(pe.toString());
-        } catch (NullPointerException npee) {
-            System.out.println("Nulo general");
-            return null;
-        } catch (Exception e) {
-            System.out.println("Error general. " + e);
-            throw new Exception(e.toString());
-        }
-    }
-     */
-
- /*
-    public String getEsquema(String nitempresa, String cadena) {
-        System.out.println("Parametros getEsquema(): nitempresa: " + nitempresa + ", cadena: " + cadena);
-        String esquema = null;
-        String sqlQuery;
-        try {
-            sqlQuery = "SELECT ESQUEMA FROM CADENASKIOSKOSAPP WHERE NITEMPRESA=? AND CADENA=? ";
-            Query query = this.persisConexiones.getEntityManager("wscadenaskioskosPU").createNativeQuery(sqlQuery);
-            query.setParameter(1, nitempresa);
-            query.setParameter(2, cadena);
-            esquema = query.getSingleResult().toString();
-            System.out.println("Esquema: " + esquema);
-        } catch (Exception e) {
-            System.out.println("Error " + this.getClass().getName() + ".getEsquema(): " + e);
-        }
-        return esquema;
-    }
-     */
 }

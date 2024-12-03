@@ -50,8 +50,10 @@ public class PersistenciaKioPQRS implements IPersistenciaKioPQRS {
             String sql = "INSERT INTO KIOPQRS (PERSONA, EMPRESA, TIPO, MENSAJE, FECHAGENERACION, ANONIMA) VALUES "
                     + "( ? , ? , ? , ? , SYSDATE, 'N' ) ";
             Query query = this.persistenciaConexiones.getEntityManager(cadena).createNativeQuery(sql);
-            query.setParameter(1, secPersona);//PERSONA
-            query.setParameter(2, secEmpresa);//EMPRESA
+            //PERSONA
+            query.setParameter(1, secPersona);
+            //EMPRESA
+            query.setParameter(2, secEmpresa);
             query.setParameter(3, titulo);
             query.setParameter(4, mensaje);
             conteo = query.executeUpdate();

@@ -25,7 +25,19 @@ public class PersistenciaKioSoliciVacas implements IPersistenciaKioSoliciVacas {
         this.persisConKiosko = new PersistenciaConexionesKioskos();
     }
 
-    /*Crea nuevo registro kioestadosolici al crear nueva solicitud de vacaciones*/
+    /** 
+     * Crea nuevo registro kioestadosolici al crear nueva solicitud de vacaciones
+     * 
+     * @param seudonimo
+     * @param nit
+     * @param kioSoliciVaca
+     * @param fechaProcesa
+     * @param estado
+     * @param motivo
+     * @param cadena
+     * @param esquema
+     * @return 
+     */
     @Override
     public boolean creaKioEstadoSolici(
             String seudonimo, String nit, String kioSoliciVaca,
@@ -54,6 +66,13 @@ public class PersistenciaKioSoliciVacas implements IPersistenciaKioSoliciVacas {
         return res > 0;
     }
 
+    /**
+     * 
+     * @param secKioEstadoSolici
+     * @param nitEmpresa
+     * @param cadena
+     * @return 
+     */
     @Override
     public String getSecPerAutorizadorXsecKioEstadoSolici(String secKioEstadoSolici, String nitEmpresa, String cadena) {
         System.out.println("Parametros getSecPerAutorizadorXsecKioEstadoSolici(): secKioEstadoSolici: " + secKioEstadoSolici + " nitEmpresa: " + nitEmpresa + ", cadena: " + cadena);
@@ -79,6 +98,13 @@ public class PersistenciaKioSoliciVacas implements IPersistenciaKioSoliciVacas {
         return secPerAutorizador;
     }
 
+    /**
+     * 
+     * @param secKioEstadoSolici
+     * @param nitEmpresa
+     * @param cadena
+     * @return 
+     */
     @Override
     public String getEmplJefeXsecKioEstadoSolici(String secKioEstadoSolici, String nitEmpresa, String cadena) {
         String secEmplJefe = null;
@@ -103,6 +129,13 @@ public class PersistenciaKioSoliciVacas implements IPersistenciaKioSoliciVacas {
         return secEmplJefe;
     }
 
+    /**
+     * 
+     * @param secKioEstadoSolici
+     * @param nitEmpresa
+     * @param cadena
+     * @return 
+     */
     @Override
     public String getFechaInicioXsecKioEstadoSolici(String secKioEstadoSolici, String nitEmpresa, String cadena) {
         String fechaInicio = null;
@@ -128,6 +161,14 @@ public class PersistenciaKioSoliciVacas implements IPersistenciaKioSoliciVacas {
         return fechaInicio;
     }
 
+    /**
+     * 
+     * @param kioEstadoSolici
+     * @param nitEmpresa
+     * @param cadena
+     * @param esquema
+     * @return 
+     */
     @Override
     public String getEmplXsecKioEstadoSolici(String kioEstadoSolici, String nitEmpresa, String cadena, String esquema) {
         System.out.println("Parametros getEmplXsecKioEstadoSolici(): kioEstadoSolici: " + kioEstadoSolici + ", cadena: " + cadena);
@@ -151,6 +192,19 @@ public class PersistenciaKioSoliciVacas implements IPersistenciaKioSoliciVacas {
         return secEmpl;
     }
 
+    /**
+     * 
+     * @param seudonimo
+     * @param nitEmpresa
+     * @param fechainicial
+     * @param fecharegreso
+     * @param dias
+     * @param RFVACACION
+     * @param fechaFin
+     * @param cadena
+     * @param esquema
+     * @return 
+     */
     @Override
     public boolean creaKioNovedadSolici(String seudonimo, String nitEmpresa, String fechainicial, String fecharegreso, String dias, String RFVACACION, String fechaFin, String cadena, String esquema) {
         int conteo = 0;
@@ -181,6 +235,18 @@ public class PersistenciaKioSoliciVacas implements IPersistenciaKioSoliciVacas {
         }
     }
 
+    /**
+     * 
+     * @param seudonimo
+     * @param secEmplJefe
+     * @param secPersonaAutorizador
+     * @param nit
+     * @param secNovedad
+     * @param fechaGeneracion
+     * @param cadena
+     * @param esquema
+     * @return 
+     */
     @Override
     public boolean creaKioSoliciVacas(String seudonimo, String secEmplJefe, String secPersonaAutorizador, String nit, String secNovedad, String fechaGeneracion, String cadena, String esquema) {
         System.out.println("Parametros creaKioSoliciVacas(): seudonimo: " + seudonimo + ", nit: " + nit + ", secNovedad: " + secNovedad + ", fechaGeneracion: " + fechaGeneracion
@@ -213,7 +279,8 @@ public class PersistenciaKioSoliciVacas implements IPersistenciaKioSoliciVacas {
                 conteo = query.executeUpdate();
                 System.out.println("registro kiosolicivaca: " + conteo);
             } else {
-                conteo = 0; // No crear la solicitud si no hay un jefe relacionado
+                // No crear la solicitud si no hay un jefe relacionado
+                conteo = 0; 
             }
         } catch (Exception e) {
             System.out.println("Error creaKioSoliciVacas: " + e.getMessage());
@@ -222,6 +289,18 @@ public class PersistenciaKioSoliciVacas implements IPersistenciaKioSoliciVacas {
         return conteo > 0;
     }
 
+    /**
+     * 
+     * @param seudonimo
+     * @param nitEmpresa
+     * @param fechainicio
+     * @param fecharegreso
+     * @param dias
+     * @param rfVacacion
+     * @param cadena
+     * @param esquema
+     * @return 
+     */
     @Override
     public String getSecuenciaKioNovedadesSolici(String seudonimo, String nitEmpresa,
             String fechainicio, String fecharegreso,
@@ -258,6 +337,18 @@ public class PersistenciaKioSoliciVacas implements IPersistenciaKioSoliciVacas {
         return sec;
     }
 
+    /**
+     * 
+     * @param secEmpl
+     * @param fechaGeneracion
+     * @param secEmplJefe
+     * @param secPerAutorizador
+     * @param kioNovedadSolici
+     * @param nitEmpresa
+     * @param cadena
+     * @param esquema
+     * @return 
+     */
     @Override
     public String getSecKioSoliciVacas(String secEmpl, String fechaGeneracion,
             String secEmplJefe, String secPerAutorizador, String kioNovedadSolici, String nitEmpresa, String cadena, String esquema) {

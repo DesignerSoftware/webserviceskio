@@ -44,25 +44,4 @@ public class PersistenciaConfiCorreoKiosko implements IPersistenciaConfiCorreoKi
         }
     }
 
-    /*
-    @Override
-    public ConfiCorreoKiosko obtenerConfiguracionCorreo(String nit, String cadena) {
-        
-        try {
-            String esquema = this.cadenasKio.getEsquema(nit, cadena);
-            this.rolesBD.setearPerfil(esquema, cadena);
-            String sql = "SELECT cck "
-                    + "FROM ConfiCorreoKiosko cck, Empresas em "
-                    + "WHERE cck.empresa = em.secuencia "
-                    + "AND em.nit = :nit ";
-            Query query = this.persistenciaConexiones.getEntityManager(cadena).createQuery(sql, ConfiCorreoKiosko.class);
-            query.setParameter(":nit", Long.valueOf(nit)); 
-            ConfiCorreoKiosko res = (ConfiCorreoKiosko) query.getSingleResult();
-            return res;
-        } catch (Exception e) {
-            System.out.println("PersistenciaConfiCorreoKiosko"+".obtenerConfiguracionCorreo(): "+"Error: "+"En algo de la base de datos. " + e.toString());
-            throw e;
-        }
-    }
-     */
 }

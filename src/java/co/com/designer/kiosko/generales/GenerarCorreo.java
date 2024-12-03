@@ -33,7 +33,6 @@ public class GenerarCorreo {
     private IPersistenciaKioPersonalizaciones persisPersonaliza;
     private IPersistenciaEmpresas persisEmpresas;
 
-//    private final String urlKio = "https://www.nomina.com.co/images/images/kiosko/prueba/";
     private final String urlKio = "https://www.nomina.com.co/images/images/kiosko/";
 
     public GenerarCorreo() {
@@ -68,114 +67,9 @@ public class GenerarCorreo {
         EnvioCorreo ec = new EnvioCorreo();
         List<String> destinatarios = new ArrayList();
         List<ArchivoCorreo> adjuntos = new ArrayList();
-//        Calendar fenvio = Calendar.getInstance();
 
         String rutaImagenes = this.persisGeneralesKiosko.getPathFoto(nitEmpresa, cadena);
 
-//        String htmlText
-//                = "<div style=\"background: #00223c;\">\n"
-//                + "  <div\n"
-//                + "   style=\"padding:10%;color:white; background: #00223c; background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url("
-//                + urlKio
-//                + "imgcorreoreporte.jpg);  min-height:100%; background-size:cover\" !important;>\n"
-//                + "    <table style=\"max-width:90%; padding:10%; margin:0 auto; border-collapse:collapse;\">\n"
-//                + "      <tbody>\n"
-//                + "        <tr>\n"
-//                + "          <td style=\"text-align:center; padding: 0;\">\n"
-//                + "            <div style=\"text-align:center\">\n"
-//                + "              <a style='color: white !important;' href=" + urlKiosco + " target=\"_blank\"\n"
-//                + "                 data-saferedirecturl=" + urlKiosco + ">\n"
-//                + "                <img width=\"80px\" height=\"80px\" style=\"display:block;margin:auto auto 0px auto\"\n"
-//                + "                     src=\"" + urlKio + "kioscologopro.png\">\n"
-//                + "              </a>\n"
-//                + "            </div>\n"
-//                + "          </td>\n"
-//                + "        </tr>\n"
-//                + "        <tr style=\"padding-bottom:2%\">\n"
-//                + "          <td>\n"
-//                + "            <div style=\"margin:2% 4% 4% auto; text-align:justify; font-family:sans-serif;\">\n"
-//                + "              <h2 style=\"margin:0 0 5px;text-align:center\">Estimado usuario(a):</h2>\n"
-//                + "              <br>\n"
-//                + "              <h4 style=\"margin:2px;text-align:center\">\n"
-//                + mensaje
-//                + "              </h4>\n"
-//                + "              <h4 style=\"text-align:center; margin-top:10px;\">\n"
-//                + "Este reporte se ha generado automáticamente desde el Módulo Autogestión Kiosco."
-//                + "              </h4>\n"
-//                + "              <h4 style=\"text-align:center; margin-top:10px;\">"
-//                + "Revisa los archivos adjuntos."
-//                + "              </h4><br>\n"
-//                + "              <div style=\"width:100%; text-align:center;\">\n"
-//                + "                <a style=\"text-decoration:none; border-radius:5px; padding:11px 23px; margin-bottom:4%; color:white; background-color:#3498db;\"\n"
-//                + "                   href=" + urlKiosco + " target=\"_blank\"\n"
-//                + "                   data-saferedirecturl=" + urlKiosco + ">"
-//                + "Ir a Kiosco\n"
-//                + "                </a>\n"
-//                + "                <br>\n"
-//                + "                <br>\n"
-//                + "                <ul style=\"width: 100%; height: 20px; text-align: center; padding: 10px 0 0 0 !important;\">\n"
-//                + "                  <li style=\"background: #3b5998; display:inline;\">"
-//                + "                    <a href=\"https://www.facebook.com/nominads\" target=\"_blank\">\n"
-//                + "                      <img width=\"19px\" height=\"19px\" src=\"" + urlKio + "21113922.png\" style=\"width: 19px; height: 19px;  \n"
-//                + "                           color: #fff;\n"
-//                + "                           background: #000;\n"
-//                + "                           padding: 10px 15px;\n"
-//                + "                           text-decoration: none;\n"
-//                + "                           background: #3b5998;\">\n"
-//                + "                    </a>\n"
-//                + "                  </li>\n"
-//                + "                  <li style=\"background: #00abf0; display:inline;\">\n"
-//                + "                    <a href=\"https://twitter.com/NominaDesigner\" target=\"_blank\"\n"
-//                + "                       class=\"icon-twitter\"> \n"
-//                + "                      <img width=\"19px\" height=\"19px\" src=\"" + urlKio + "733635.png\" style=\"width: 19px; height: 19px;\n"
-//                + "                           color: #fff;\n"
-//                + "                           background: #000;\n"
-//                + "                           padding: 10px 15px;\n"
-//                + "                           text-decoration: none;\n"
-//                + "                           -webkit-transition: all 300ms ease;\n"
-//                + "                           -o-transition: all 300ms ease;\n"
-//                + "                           transition: all 300ms ease;\n"
-//                + "                           background: #00abf0;\">\n"
-//                + "                    </a>\n"
-//                + "                  </li>\n"
-//                + "                  <li style=\"background: #0ad2ec; display:inline;\">\n"
-//                + "                    <a href=\"https://www.nomina.com.co/\" target=\"_blank\"\n"
-//                + "                       class=\"icon-nomina\"> \n"
-//                + "                      <img width=\"19px\" height=\"19px\" src=\"" + urlKio + "3522533.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
-//                + "                           color: #fff;\n"
-//                + "                           background: #000;\n"
-//                + "                           padding: 10px 15px;\n"
-//                + "                           text-decoration: none;\n"
-//                + "                           -webkit-transition: all 300ms ease;\n"
-//                + "                           -o-transition: all 300ms ease;\n"
-//                + "                           transition: all 300ms ease;\n"
-//                + "                           background: #0ad2ec;\">\n"
-//                + "                    </a>\n"
-//                + "                  </li>\n"
-//                + "                  <li style=\"background: #ce1010; display:inline;\">\n"
-//                + "                    <a href=\"https://www.youtube.com/user/nominads\" target=\"_blank\"\n"
-//                + "                       class=\"icon-youtube\"> \n"
-//                + "                      <img width=\"19px\" height=\"19px\" src=\"" + urlKio + "733646.png\" \n"
-//                + "                           style=\"width: 19px; height: 19px; display: inline-block;\n"
-//                + "                           color: #fff;\n"
-//                + "                           background: #000;\n"
-//                + "                           padding: 10px 15px;\n"
-//                + "                           text-decoration: none;\n"
-//                + "                           -webkit-transition: all 300ms ease;\n"
-//                + "                           -o-transition: all 300ms ease;\n"
-//                + "                           transition: all 300ms ease;\n"
-//                + "                           background: #ce1010;\"> \n"
-//                + "                    </a>\n"
-//                + "                  </li> \n"
-//                + "                </ul>\n"
-//                + "              </div>\n"
-//                + "            </div>\n"
-//                + "          </td>\n"
-//                + "        </tr>\n"
-//                + "      </tbody>\n"
-//                + "    </table>\n"
-//                + "  </div>"
-//                + "</div>";
         String htmlText
                 = this.plantillaMensajeGenerica(
                         "Reporte",
@@ -200,7 +94,6 @@ public class GenerarCorreo {
                     asunto, htmlText,
                     destinatario, destinatarios, adjuntos);
         } catch (Exception e) {
-//            System.err.println("Error al enviar correo: " + e.getMessage());
             System.err.println("Error: " + "GenerarCorreo." + "pruebaEnvio2(): " + " al enviar correo: " + e.getMessage());
             e.printStackTrace();
         }
@@ -214,7 +107,6 @@ public class GenerarCorreo {
         EnvioCorreo ec = new EnvioCorreo();
         List<String> destinatarios = new ArrayList();
         List<ArchivoCorreo> adjuntos = new ArrayList();
-//        Calendar fenvio = Calendar.getInstance();
 
         String rutaImagenes = this.persisGeneralesKiosko.getPathFoto(nitEmpresa, cadena);
 
@@ -225,17 +117,6 @@ public class GenerarCorreo {
                     "<image>"
             ));
 
-//            String htmlText
-//                    = "<center>"
-//                    + "<img src=\'cid:image\'>"
-//                    + "<H1>¡Hola " + nombreUsuario + "!</H1>\n"
-//                    + "<p style='font-size: 20px'>Tu nueva contraseña para ingresar al Módulo de Autogestión Kiosco es:<br><br>"
-//                    + nuevaClave
-//                    + "</p>"
-//                    + "<br><br><br><br>"
-//                    + "Este mensaje se generó de manera automática. Por favor no responda o escriba a esta cuenta.\n"
-//                    + "Si requiere apoyo con alguna duda, por favor comuníquese con el área de Talento Humano de su empresa."
-//                    + "</center>";
             String mensaje = "Tu nueva contraseña para ingresar al Módulo de Autogestión Kiosco es: <br><br>"
                     + nuevaClave + "";
 
@@ -251,7 +132,6 @@ public class GenerarCorreo {
                     "Tu nueva clave de Kiosco!", htmlText,
                     destinatario, destinatarios, adjuntos);
         } catch (Exception e) {
-//            System.err.println("Error al enviar correo: " + e.getMessage());
             System.err.println("Error: " + "GenerarCorreo." + "enviarNuevaClave(): " + " al enviar correo: " + e.getMessage());
             e.printStackTrace();
         }
@@ -268,26 +148,11 @@ public class GenerarCorreo {
         EnvioCorreo ec = new EnvioCorreo();
         List<String> destinatarios = new ArrayList();
         List<ArchivoCorreo> adjuntos = new ArrayList();
-//        Calendar fenvio = Calendar.getInstance();
 
         String rutaImagenes = this.persisGeneralesKiosko.getPathFoto(nitEmpresa, cadena);
         String logo = "headerlogocorreokiosko.png";
         
         try {
-//            String logoEmpresa = this.persisEmpresas.getLogoEmpresa(nitEmpresa, cadena);
-//            String[] logoArr = logoEmpresa.split("[\\.]");
-//            System.out.println("GenerarCorreo." + "enviarEnlaceValidacionCuenta(): " + " tamLogoArr: " + logoArr.length);
-//            try {
-//                for(int i=0; i<=0; i++){
-//                    System.out.println("GenerarCorreo." + "enviarEnlaceValidacionCuenta(): " + " s: " + logoArr[i]);
-//                    logo = logoArr[i] + "-dark-xl.png";
-//                }
-//                System.out.println("GenerarCorreo." + "enviarEnlaceValidacionCuenta(): " + " logo: " + logo);
-//            } catch (ArrayIndexOutOfBoundsException aie) {
-//                System.out.println("Error: " + "GenerarCorreo." + "enviarEnlaceValidacionCuenta(): " + " al consultar el logo de la empresa: " + aie.toString());
-//                aie.printStackTrace();
-//                logo = "headerlogocorreokiosko.png";
-//            }
             adjuntos.add(new ArchivoCorreo(rutaImagenes,
                     logo,
                     "imagen",
@@ -300,23 +165,6 @@ public class GenerarCorreo {
             } else {
                 urlValidacion = urlKiosco + "/#/validacionCuenta/" + jwt;
             }
-//            String htmlText
-//                    = "<center>"
-//                    + "<img src=\'cid:image\'>"
-//                    + "<H1>¡Bienvenid@ " + nombreUsuario + "!</H1>"
-//                    + "\n"
-//                    + "<p style='font-size: 15px'>Recuerda que tu usuario para ingresar al Módulo de Autogestión Kiosco es: <b>" + seudonimo + "</b> </p>"
-//                    + "<p style='font-size: 20px'>Puedes confirmar tu cuenta a través del siguiente enlace:</p>"
-//                    + "\n"
-//                    + "<br>"
-//                    + "<a href='" + urlValidacion + "' style='width: 80px; border: 1px solid blue; padding: 10px; border-radius: 3px; text-decoration: none; color: black; font-size: 16px'>Confirmar mi cuenta</a>"
-//                    + "<br><br><br><br>"
-//                    + "Si el botón no funciona, copie y pegue en su navegador el siguiente enlace: "
-//                    + urlValidacion
-//                    + "<br><br>"
-//                    + "Este mensaje se generó de manera automática. Por favor no responda o escriba a esta cuenta.\n"
-//                    + "Si requiere apoyo con alguna duda, por favor comuníquese con el área de Talento Humano de su empresa."
-//                    + "</center>";
             String mensaje = "Recuerda que tu usuario para ingresar al Módulo de Autogestión Kiosco es: " + seudonimo
                     + ". <br/> Puedes confirmar dando clic en el botón \"Ir a Kiosco\". <br/>"
                     + "Si el botón no funciona, copie y pegue en su navegador el siguiente enlace: <br/><br/>"
@@ -348,7 +196,6 @@ public class GenerarCorreo {
         EnvioCorreo ec = new EnvioCorreo();
         List<String> destinatarios = new ArrayList();
         List<ArchivoCorreo> adjuntos = new ArrayList();
-//        Calendar fenvio = Calendar.getInstance();
 
         String rutaImagenes = this.persisGeneralesKiosko.getPathFoto(nitEmpresa, cadena);
 
@@ -359,111 +206,6 @@ public class GenerarCorreo {
                     "<image>"
             ));
 
-//            String htmlText
-//                    = "<style>"
-//                    + " a:link { color: white !important; } \n"
-//                    + " a:visited { color: white !important; } \n"
-//                    + " a:hover { background: yellow !important; } \n"
-//                    //                    + " a:active { color: white !important; } "
-//                    + " a:active { color: LightSteelBlue !important; } "
-//                    + " .ii a[href] {\n"
-//                    + "   color: #ccc !important;\n"
-//                    + " } "
-//                    + "</style>"
-//                    + "<div style=\"background: #00223c; color: LightSteelBlue;\">\n"
-//                    + "<div\n"
-//                    + " style=\"padding:10%; color:LightSteelBlue; background: #00223c; background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url(" + urlKio + "imgcorreoreporte.jpg);  min-height:100%; background-size:cover;\"> \n"
-//                    + "  <table style=\"max-width:90%; padding:10%; margin:0 auto; border-collapse:collapse; \">\n"
-//                    + "    <tbody>\n"
-//                    + "      <tr>\n"
-//                    + "        <td style=\"text-align:center; padding:0;\">\n"
-//                    + "          <div style=\"text-align:center;\">\n"
-//                    + "            <a href='" + urlKiosco + "' target=\"_blank\"\n"
-//                    + "               data-saferedirecturl=" + urlKiosco + ">\n"
-//                    + "              <img width=\"80px\"  height=\"80px;\" style=\"display:block; margin:auto auto 0px auto;\"\n"
-//                    + "                   src=\"" + urlKio + "kioscologopro.png\">\n"
-//                    + "            </a>\n"
-//                    + "          </div>\n"
-//                    + "        </td>\n"
-//                    + "      </tr>\n"
-//                    + "      <tr style=\"padding-bottom:2%\">\n"
-//                    + "        <td>\n"
-//                    + "          <div style=\"margin:2% 4% 4% auto; text-align:justify; font-family:sans-serif;\">\n"
-//                    + "            <h2 style=\"margin:0 0 5px;text-align:center\">Estimado usuario(a):</h2>\n"
-//                    + "            <br>\n"
-//                    + "            <h4 style=\"margin:2px;text-align:center\">\n"
-//                    + mensaje
-//                    + "            </h4>\n"
-//                    + "            <h4 style=\"text-align:center; margin-top:10px;\">\n"
-//                    + "Este correo se ha enviado automáticamente desde el Módulo Autogestión Kiosco.\n"
-//                    + "            </h4>\n"
-//                    + "            <div style=\"width:100%; text-align:center;\">\n"
-//                    + "              <a style=\"text-decoration:none; border-radius:5px; padding:11px 23px; margin-bottom:4%; color:white; background-color:#3498db;\"\n"
-//                    + "                 href=" + urlKiosco + " target=\"_blank\"\n"
-//                    + "                 data-saferedirecturl=" + urlKiosco + ">"
-//                    + "Ir a Kiosco\n"
-//                    + "              </a>\n"
-//                    + "              <br>\n"
-//                    + "              <br>\n"
-//                    + "              <ul style=\"width: 100%; height: 20px; text-align: center; padding: 10px 0 0 0 !important;\">\n"
-//                    + "              <li style=\"background: #3b5998; display:inline;\">"
-//                    + "                <a href=\"https://www.facebook.com/nominads\" target=\"_blank\"\n >"
-//                    + "                  <img width=\"19px\" height=\"19px\"  src=\"" + urlKio + "21113922.png\" style=\"width: 19px; height: 19px; \n"
-//                    + "                       color: #fff;\n"
-//                    + "                       background: #000;\n"
-//                    + "                       padding: 10px 15px;\n"
-//                    + "                       text-decoration: none;\n"
-//                    + "                       background: #3b5998;\">"
-//                    + "                </a>"
-//                    + "              </li>"
-//                    + "              <li style=\"background: #00abf0; display:inline;\">"
-//                    + "                <a href=\"https://twitter.com/NominaDesigner\" target=\"_blank\"\n"
-//                    + "                   class=\"icon-twitter\"> "
-//                    + "                  <img width=\"19px\" height=\"19px\"  src=\"" + urlKio + "733635.png\" style=\"width: 19px; height: 19px;\n"
-//                    + "                       color: #fff;\n"
-//                    + "                       background: #000;\n"
-//                    + "                       padding: 10px 15px;\n"
-//                    + "                       text-decoration: none;\n"
-//                    + "                       -webkit-transition: all 300ms ease;\n"
-//                    + "                       -o-transition: all 300ms ease;\n"
-//                    + "                       transition: all 300ms ease;\n"
-//                    + "                       background: #00abf0;\">"
-//                    + "                </a>"
-//                    + "              </li>\n"
-//                    + "              <li style=\"background: #0ad2ec; display:inline;\">"
-//                    + "                <a href=\"https://www.nomina.com.co/\" target=\"_blank\"\n"
-//                    + "                   class=\"icon-nomina\"> "
-//                    + "                  <img width=\"19px\" height=\"19px\"  src=\"" + urlKio + "3522533.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
-//                    + "                       color: #fff;\n"
-//                    + "                       background: #000;\n"
-//                    + "                       padding: 10px 15px;\n"
-//                    + "                       text-decoration: none;\n"
-//                    + "                       -webkit-transition: all 300ms ease;\n"
-//                    + "                       -o-transition: all 300ms ease;\n"
-//                    + "                       transition: all 300ms ease;\n"
-//                    + "                       background: #0ad2ec;\">"
-//                    + "                </a>"
-//                    + "              </li>\n"
-//                    + "              <li style=\"background: #ce1010; display:inline;\">"
-//                    + "                <a href=\"https://www.youtube.com/user/nominads\" target=\"_blank\"\n"
-//                    + "                   class=\"icon-youtube\"> <img width=\"19px\" height=\"19px\"  src=\"" + urlKio + "733646.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
-//                    + "                   color: #fff;\n"
-//                    + "                   background: #000;\n"
-//                    + "                   padding: 10px 15px;\n"
-//                    + "                   text-decoration: none;\n"
-//                    + "                   -webkit-transition: all 300ms ease;\n"
-//                    + "                   -o-transition: all 300ms ease;\n"
-//                    + "                   transition: all 300ms ease;\n"
-//                    + "                   background: #ce1010;\">"
-//                    + "                </a> \n"
-//                    + "              </li> \n"
-//                    + "            </ul>\n"
-//                    + "          </td>\n"
-//                    + "        </tr>\n"
-//                    + "      </tbody>\n"
-//                    + "    </table>\n"
-//                    + "  </div>"
-//                    + "</div>";
             String htmlText
                     = this.plantillaMensajeGenerica(
                             "Vacaciones",
@@ -477,7 +219,6 @@ public class GenerarCorreo {
                     htmlText,
                     destinatario, destinatarios, adjuntos);
         } catch (Exception e) {
-//            System.err.println("Error al enviar correo: " + e.getMessage());
             System.err.println("Error: " + "GenerarCorreo." + "enviarCorreoVacaciones(): " + " al enviar correo: " + e.getMessage());
             e.printStackTrace();
         }
@@ -503,7 +244,6 @@ public class GenerarCorreo {
         EnvioCorreo ec = new EnvioCorreo();
         List<String> destinatarios = new ArrayList();
         List<ArchivoCorreo> adjuntos = new ArrayList();
-//        Calendar fenvio = Calendar.getInstance();
 
         try {
             String rutaImagenes = this.persisGeneralesKiosko.getPathFoto(nitEmpresa, cadena);
@@ -523,116 +263,6 @@ public class GenerarCorreo {
                 ));
             }
 
-//            String htmlText
-//                    = "<style>"
-//                    + " a:link { color: white !important; } \n"
-//                    + " a:visited { color: white !important; } \n"
-//                    + " a:hover { background: yellow !important; } \n"
-//                    + " a:active { color: white !important; } "
-//                    + " .ii a[href] {\n"
-//                    + "   color: #ccc !important;\n"
-//                    + " } "
-//                    + "</style>"
-//                    + "<div style=\"background: #00223c;\">\n"
-//                    + "  <div\n"
-//                    + "   style=\"padding:10%;color:white; background: #00223c;background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url(" + urlKio + "imgcorreoreporte.jpg); min-height:100%;background-size:cover\">\n"
-//                    + "    <table style=\"max-width:90%;padding:10%;margin:0 auto;border-collapse:collapse\">\n"
-//                    + "      <tbody>\n"
-//                    + "        <tr>\n"
-//                    + "          <td style=\"text-align:center;padding:0\">\n"
-//                    + "            <div style=\"text-align:center\">\n"
-//                    + "              <a href='" + urlKiosco + "' target=\"_blank\"\n"
-//                    + "                  data-saferedirecturl=" + urlKiosco + ">\n"
-//                    + "                <img width=\"80px\" height=\"80px\" style=\"display:block;margin:auto auto 0px auto\"\n"
-//                    + "                      src=\"" + urlKio + "kioscologopro.png\">\n"
-//                    + "              </a>\n"
-//                    + "            </div>\n"
-//                    + "          </td>\n"
-//                    + "        </tr>\n"
-//                    + "        <tr style=\"padding-bottom:2%\">\n"
-//                    + "          <td>\n"
-//                    + "            <div style=\"margin:2% 4% 4% auto; text-align:justify; font-family:sans-serif;\">\n"
-//                    + "              <h2 style=\"margin:0 0 5px;text-align:center\">Estimado usuario(a):</h2>\n"
-//                    + "              <br>\n"
-//                    + "              <h4 style=\"margin:2px;text-align:center\">\n"
-//                    + mensaje
-//                    + "              </h4>\n"
-//                    + ((nombreAnexo == null || nombreAnexo.equals("null")) ? "" : "<h4 style=\"text-align:center;margin-top:10px\">"
-//                    + "Adjunto a este correo encontrará el documento anexo a la novedad de ausentismo.</h4>")
-//                    + "              <h4 style=\"text-align:center; margin-top:10px;\">\n"
-//                    + "Este correo se ha enviado automáticamente desde Kiosco Nómina Designer.\n"
-//                    + "              </h4>\n"
-//                    + "              <div style=\"width:100%; text-align:center;\">\n"
-//                    + "                <a style=\"text-decoration:none; border-radius:5px; padding:11px 23px; margin-bottom:4%; color:white; background-color:#3498db;\"\n"
-//                    + "                    href=" + urlKiosco + " target=\"_blank\"\n"
-//                    + "                    data-saferedirecturl=" + urlKiosco + ">"
-//                    + "Ir a Kiosco\n"
-//                    + "                </a>\n"
-//                    + "                <br>\n"
-//                    + "                <br>\n"
-//                    + "                <ul style=\"width: 100%; height: 20px; text-align: center; padding: 10px 0 0 0 !important;\">\n"
-//                    + "                  <li style=\"background: #3b5998; display:inline;\">"
-//                    + "                    <a href=\"https://www.facebook.com/nominads\" target=\"_blank\"> \n"
-//                    + "                       <img width=\"19px\" height=\"19px\"  src=\"" + urlKio + "21113922.png\" style=\"width: 19px; height: 19px;  \n"
-//                    + "                            color: #fff;\n"
-//                    + "                            background: #000;\n"
-//                    + "                            padding: 10px 15px;\n"
-//                    + "                            text-decoration: none;\n"
-//                    + "                            background: #3b5998;\">"
-//                    + "                    </a>"
-//                    + "                  </li>"
-//                    + "                  <li style=\"background: #00abf0; display:inline;\">"
-//                    + "                    <a href=\"https://twitter.com/NominaDesigner\" target=\"_blank\"\n"
-//                    + "                        class=\"icon-twitter\"> <img width=\"19px\" height=\"19px\"  src=\"" + urlKio + "733635.png\" style=\"width: 19px; height: 19px;\n"
-//                    + "                        color: #fff;\n"
-//                    + "                        background: #000;\n"
-//                    + "                        padding: 10px 15px;\n"
-//                    + "                        text-decoration: none;\n"
-//                    + "                        -webkit-transition: all 300ms ease;\n"
-//                    + "                        -o-transition: all 300ms ease;\n"
-//                    + "                        transition: all 300ms ease;\n"
-//                    + "                        background: #00abf0;\">"
-//                    + "                    </a>"
-//                    + "                  </li>\n"
-//                    + "                  <li style=\"background: #0ad2ec; display:inline;\">"
-//                    + "                    <a href=\"https://www.nomina.com.co/\" target=\"_blank\"\n"
-//                    + "                        class=\"icon-nomina\"> "
-//                    + "                       <img width=\"19px\" height=\"19px\"  src=\"" + urlKio + "3522533.png\" style=\"width: 19px; height: 19px; display: inline-block;\n"
-//                    + "                            color: #fff;\n"
-//                    + "                            background: #000;\n"
-//                    + "                            padding: 10px 15px;\n"
-//                    + "                            text-decoration: none;\n"
-//                    + "                            -webkit-transition: all 300ms ease;\n"
-//                    + "                            -o-transition: all 300ms ease;\n"
-//                    + "                            transition: all 300ms ease;\n"
-//                    + "                            background: #0ad2ec;\">"
-//                    + "                    </a>"
-//                    + "                  </li>\n"
-//                    + "                  <li style=\"background: #ce1010; display:inline;\">"
-//                    + "                    <a href=\"https://www.youtube.com/user/nominads\" target=\"_blank\"\n"
-//                    + "                        class=\"icon-youtube\"> "
-//                    + "                      <img width=\"19px\" height=\"19px\" src=\"" + urlKio + "733646.png\" "
-//                    + "                           alt=\"" + urlKio + "733646.png\""
-//                    + "                           style=\"width: 19px; height: 19px; display: inline-block;\n"
-//                    + "                           color: #fff;\n"
-//                    + "                           background: #000;\n"
-//                    + "                           padding: 10px 15px;\n"
-//                    + "                           text-decoration: none;\n"
-//                    + "                           -webkit-transition: all 300ms ease;\n"
-//                    + "                           -o-transition: all 300ms ease;\n"
-//                    + "                           transition: all 300ms ease;\n"
-//                    + "                           background: #ce1010;\">"
-//                    + "                    </a>"
-//                    + "                  </li>\n"
-//                    + "                </ul>\n"
-//                    + "              </div>"
-//                    + "            </div>"
-//                    + "          </td>\n"
-//                    + "        </tr>\n"
-//                    + "      </tbody>\n"
-//                    + "    </table>\n"
-//                    + "   </div>"
-//                    + "</div>";
             if (nombreAnexo != null && !nombreAnexo.equals("null")) {
                 mensaje = mensaje + "</p><p>Adjunto a este correo encontrará el documento anexo a la novedad de ausentismo.";
             }
@@ -690,97 +320,6 @@ public class GenerarCorreo {
                     "<image>"
             ));
 
-//            String htmlText
-//                    = "\"<style>\"\n"
-//                    + "                      \" a:link { color: white !important; } \n"
-//                    + "                      \"a:visited { color: white !important; }\n"
-//                    + "                      \"a:hover { background: yellow !important; } \n"
-//                    + "                      \"span.im { color: white !important; } \n"
-//                    + "                      \"a:active { color: white !important; } "
-//                    + "                      \".ii a[href] { "
-//                    + "                      \"    color: #ccc !important; \n"
-//                    + "                      \"} "
-//                    + "                      \"</style>\""
-//                    + "<div style=\"background: #00223c;\">\n"
-//                    + "<div\n"
-//                    + "        style=\"padding:10%;color:white ; background: #00223c; background-image:linear-gradient(rgba(3,20,64,1.0),rgba(0,0,0,0.5)),url(" + urlKio + "imgcorreoreporte.jpg); min-height:100%;background-size:cover\">\n"
-//                    + "        <table style=\"max-width:90%;padding:10%;margin:0 auto;border-collapse:collapse\">\n"
-//                    + "            <tbody>\n"
-//                    + "                <tr >\n"
-//                    + "                    <td style=\"text-align:center;padding:0\">\n"
-//                    + "                        <div style=\"text-align:center\">\n"
-//                    + "                            <a href='" + urlKiosco + "' target=\"_blank\"\n"
-//                    + "                                >\n"
-//                    + "\n"
-//                    + "                                <img width=\"80px\" height=\"80px\"  style=\"display:block;margin:auto auto 0px auto;\"\n"
-//                    + "                                    src=\"" + urlKio + "kioscologopro.png\">\n"
-//                    + "                            </a>\n"
-//                    + "                        </div>\n"
-//                    + "                    </td>\n"
-//                    + "                </tr>\n"
-//                    + "\n"
-//                    + "                <tr style=\"padding-bottom:2%\">\n"
-//                    + "                    <td>\n"
-//                    + "                        <div style=\"margin:2% 4% 4% auto;text-align:justify;font-family:sans-serif\">\n"
-//                    + "                            <h2 style=\"margin:0 0 5px;text-align:center\">" + saludo + "</h2>\n"
-//                    + "                            <br><br>\n"
-//                    + "                            <h4 style=\"margin:2px;text-align:center\">\n" + mensaje + "</h4>\n"
-//                    + "                                <br><br> "
-//                    + "                            <h4 style=\"text-align:center;margin-top:10px\">\n"
-//                    + "                                Este correo se ha enviado automáticamente desde el Módulo Autogestión Kiosco.</h4>\n"
-//                    + "                            <h4>\n"
-//                    + "                            </h4>\n"
-//                    + "                            <div style=\"width:100%;text-align:center\">\n"
-//                    + "                                <br>                                                                \n"
-//                    + "                                <br>                                                                \n"
-//                    + "                                    <ul style=\"width: 100% !important; height: 20px !important; text-align: center !important; padding: 10px 0 0 0 !important;\">\n"
-//                    + "                <li style=\"background: #3b5998 !important; display:inline !important;\"><a href=\"https://www.facebook.com/nominads\" target=\"_blank\"\n"
-//                    + "                    > <img width=\"19px\" height=\"19px\"  src=\"" + urlKio + "21113922.png\" style=\"width: 19px !important; height: 19px !important;  \n"
-//                    + "                     color: #fff !important;\n"
-//                    + "                     background: #000 !important;\n"
-//                    + "                     padding: 10px 15px !important;\n"
-//                    + "                     text-decoration: none !important;\n"
-//                    + "                     \n"
-//                    + "                     background: #3b5998 !important;\"></a></li>"
-//                    + "                                        <li style=\"background: #00abf0 !important; display:inline !important;\"><a href=\"https://twitter.com/NominaDesigner\" target=\"_blank\"\n"
-//                    + "                                            class=\"icon-twitter\"> <img width=\"19px\" height=\"19px\"  src=\"" + urlKio + "733635.png\" style=\"width: 19px !important; height: 19px !important;\n"
-//                    + "                                            color: #fff !important;\n"
-//                    + "                                            background: #000 !important;\n"
-//                    + "                                            padding: 10px 15px !important;\n"
-//                    + "                                            text-decoration: none !important;\n"
-//                    + "                                            -webkit-transition: all 300ms ease !important;\n"
-//                    + "                                            -o-transition: all 300ms ease !important;\n"
-//                    + "                                            transition: all 300ms ease !important;\n"
-//                    + "                                            background: #00abf0 !important;\"></a></li>\n"
-//                    + "                                        <li style=\"background: #0ad2ec !important; display:inline !important;\"><a href=\"https://www.nomina.com.co/\" target=\"_blank\"\n"
-//                    + "                                                class=\"icon-nomina\"> <img width=\"19px\" height=\"19px\"  src=\"" + urlKio + "3522533.png\" style=\"width: 19px !important; height: 19px !important; display: inline-block !important;\n"
-//                    + "                                                color: #fff !important;\n"
-//                    + "                                                background: #000 !important;\n"
-//                    + "                                                padding: 10px 15px !important;\n"
-//                    + "                                                text-decoration: none !important;\n"
-//                    + "                                                -webkit-transition: all 300ms ease !important;\n"
-//                    + "                                                -o-transition: all 300ms ease !important;\n"
-//                    + "                                                transition: all 300ms ease !important;\n"
-//                    + "                                                background: #0ad2ec !important;\"></a></li>\n"
-//                    + "                                        <li style=\"background: #ce1010 !important; display:inline !important; \"><a href=\"https://www.youtube.com/user/nominads\" target=\"_blank\"\n"
-//                    + "                                                    class=\"icon-youtube\"> <img width=\"19px\" height=\"19px\"  src=\"" + urlKio + "733646.png\" style=\"width: 19px !important; height: 19px !important; display: inline-block !important;\n"
-//                    + "                                                    color: #fff !important;\n"
-//                    + "                                                    background: #000 !important;\n"
-//                    + "                                                    padding: 10px 15px !important;\n"
-//                    + "                                                    text-decoration: none !important;\n"
-//                    + "                                                    -webkit-transition: all 300ms ease !important;\n"
-//                    + "                                                    -o-transition: all 300ms ease !important;\n"
-//                    + "                                                    transition: all 300ms ease !important;\n"
-//                    + "                                                    background: #ce1010 !important;\"></a></li>        \n"
-//                    + "                                       \n"
-//                    + "                                    </ul>\n"
-//                    + "                                \n"
-//                    + "                            </td>\n"
-//                    + "                        </tr>\n"
-//                    + "            </tbody>\n"
-//                    + "        </table>\n"
-//                    + "    </div>"
-//                    + " </div>";
             String htmlText
                     = this.plantillaMensajeGenerica(
                             "Comunicado publicado",
@@ -820,7 +359,6 @@ public class GenerarCorreo {
         EnvioCorreo ec = new EnvioCorreo();
         List<String> destinatarios = new ArrayList();
         List<ArchivoCorreo> adjuntos = new ArrayList();
-//        Calendar fenvio = Calendar.getInstance();
 
         try {
             String rutaImagenes = this.persisGeneralesKiosko.getPathFoto(nitEmpresa, cadena);
@@ -831,58 +369,6 @@ public class GenerarCorreo {
                     "<image>"
             ));
 
-//            String font = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css";
-//            String css = "https://www.nomina.com.co/images/images/kiosko/estilo_correo.css";
-//            String htmlText
-//                    = "<div style=\"background-color: rgba(237, 237, 237, 0.8);\">\n"
-//                    + "   <div style=\"padding: 10px 0px;\">"
-//                    + "      <div style=\"background-color: white;margin: 0 auto; width: 700px;\">\n"
-//                    + "         <div\n"
-//                    + "            style=\"margin: 0px auto;text-align: center;font-family: sans-serif;  justify-content: flex-start; padding-top: 20px; font-size: 18px;\">\n"
-//                    + "            <!-- <h3 >MÓDULO AUTOGESTIÓN KIOSCO</h3> -->\n"
-//                    + "            <img src=\"https://www.nomina.com.co/images/images/kiosko/LOGO.png\" alt=\"\" style=\"width: 250px;\">\n"
-//                    + "            <br>\n"
-//                    + "            <img src=\"https://www.nomina.com.co/images/images/logoKiosco.png\" alt=\"\" style=\"padding: 0px 0px 0px 0px; width: 700px;\">"
-//                    + "            <div style=\"margin: 0 auto;width: 550px;padding: 5px;\">\n"
-//                    + "               <h3 style=\"color: #00223c;\">" + saludo + " </h3>\n"
-//                    + "               <p>" + mensaje + " </b>\n"
-//                    + "                   Este reporte se ha generado automáticamente desde el Módulo Autogestión Kiosco.\n"
-//                    + "                 Revisa los archivos adjuntos.</p>\n"
-//                    + "                <h4>Revisa los archivos adjuntos</h4>\n"
-//                    + "                <br>\n"
-//                    + "                <div>\n"
-//                    + "                   <a style=\"text-decoration:none;border-radius:5px;padding:10px 48px; color:white;background-color:#3498db;\"\n"
-//                    + "                    href=" + url + " target=\"_blank\" data-saferedirecturl=" + url + "> Ir a Kiosco </a>\n"
-//                    + "\n"
-//                    + "                <!-- <a style=\"text-decoration:none;border-radius:5px;margin:11px 23px;color:white;background-color:#3498db\"\n"
-//                    + "                     href=\"+urlKiosco+\" target=\"_blank\" data-saferedirecturl=\"+urlKiosco+\">Ir a Kiosco</a> -->\n"
-//                    + "              </div>\n"
-//                    + "               <br>\n"
-//                    + "             </div>\n"
-//                    + "             <hr>\n"
-//                    + "             <a href=\"https://nomina.com.co/\" target=\"_blank\"><img src=\"https://www.nomina.com.co/images/images/kiosko/LOGO_N.png\" style=\"width: 60px;\" alt=\"\"></a>\n"
-//                    + "             <div style=\"padding: 10px 0px 0px 0px;color: #00223c;\">\n"
-//                    + "               <ul style=\"padding: 0px;margin: 0px;\">\n"
-//                    + "                 <li style=\"display:inline;\"><a href=\"https://www.facebook.com/nominads\" target=\"_blank\">\n"
-//                    + "                   <img src=\"https://www.nomina.com.co/images/images/kiosko/ico_face.png\" style=\"color: #00223c;padding: 0px 10px;width: 40px;\" alt=\"\"></a>\n"
-//                    + "                 </li>\n"
-//                    + "                  <li style=\"display:inline;\"><a href=\"https://twitter.com/NominaDesigner\" target=\"_blank\">\n"
-//                    + "                    <img src=\"https://www.nomina.com.co/images/images/kiosko/ico_twitee.png\" style=\"color: #00223c;padding: 0px 10px;width: 40px;\" alt=\"\"></a>\n"
-//                    + "                 </li>\n"
-//                    + "                <li style=\"display:inline;\"><a href=\"https://www.youtube.com/user/nominads\" target=\"_blank\"> \n"
-//                    + "                   <img src=\"https://www.nomina.com.co/images/images/kiosko/ico_youtube.png\" style=\"color: #00223c;padding: 0px 10px;width: 40px;\" alt=\"\"></a>\n"
-//                    + "                </li>\n"
-//                    + "                <li style=\"display:inline;\"><a href=\"https://www.instagram.com/nomina_designer\" target=\"_blank\"> \n"
-//                    + "                   <img src=\"https://www.nomina.com.co/images/images/kiosko/ico_insta.png\" style=\"color: #00223c;padding: 0px 10px;width: 40px;\" alt=\"\"></a>\n"
-//                    + "                 </li>\n"
-//                    + "               </ul>\n"
-//                    + "           </div>\n"
-//                    + "             <p style=\"font-size: 0.8rem;padding: 10px 0px;margin: 0px;\">Este reporte se ha generado automáticamente desde Kiosco Nómina Designer.</p>\n"
-//                    + "          <!-- <img src=\"https://www.nomina.com.co/images/images/logoCorreoHeader.png\" alt=\"\" style=\"padding: 0px 0px;\"> -->\n"
-//                    + "         </div>\n"
-//                    + "    </div>"
-//                    + "  </div>"
-//                    + "</div>";
             String htmlText = this.plantillaMensajeGenerica(
                     "Comunicado publicado",
                     mensaje,
@@ -917,9 +403,7 @@ public class GenerarCorreo {
     public boolean enviarCorreo(String destinatario, List destinatarios, String asunto, String mensaje, String nitEmpresa, String cadena) {
         boolean envioCorreo = false;
         EnvioCorreo ec = new EnvioCorreo();
-//        List<String> destinatarios = new ArrayList();
         List<ArchivoCorreo> adjuntos = new ArrayList();
-//        Calendar fenvio = Calendar.getInstance();
 
         try {
             String rutaImagenes = this.persisGeneralesKiosko.getPathFoto(nitEmpresa, cadena);

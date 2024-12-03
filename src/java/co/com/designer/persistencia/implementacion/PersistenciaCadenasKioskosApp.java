@@ -22,7 +22,7 @@ public class PersistenciaCadenasKioskosApp implements IPersistenciaCadenasKiosko
     @Override
     public String getEsquema(String nitEmpresa, String cadena) {
         System.out.println("PersistenciaCadenasKioskosApp" + ".getEsquema(): " + "Parametros: "
-                +"nitempresa: " + nitEmpresa 
+                + "nitempresa: " + nitEmpresa
                 + ", cadena: " + cadena);
         String esquema = "";
         String sqlQuery = "SELECT ESQUEMA FROM CADENASKIOSKOSAPP WHERE NITEMPRESA=? AND CADENA=? ";
@@ -30,13 +30,18 @@ public class PersistenciaCadenasKioskosApp implements IPersistenciaCadenasKiosko
             Query query = this.persistenciaConexiones.getEntityManager("wscadenaskioskosPU").createNativeQuery(sqlQuery);
             query.setParameter(1, nitEmpresa);
             query.setParameter(2, cadena);
-            esquema = query.getSingleResult().toString();
-            System.out.println("PersistenciaCadenasKioskosApp" + ".getEsquema(): " + "Esquema consultado.");
+//            esquema = query.getSingleResult().toString();
+            Object res = query.getSingleResult();
+            if (res != null) {
+                esquema = res.toString();
+                System.out.println("PersistenciaCadenasKioskosApp" + ".getEsquema(): " + "Esquema consultado.");
+            } else {
+                System.out.println("PersistenciaCadenasKioskosApp" + ".getEsquema(): " + "Esquema nulo.");
+            }
         } catch (Exception e) {
-            System.out.println("Error: "+"PersistenciaCadenasKioskosApp" + ".getEsquema(): " + e.toString());
+            System.out.println("Error: " + "PersistenciaCadenasKioskosApp" + ".getEsquema(): " + e.toString());
             throw e;
         }
-//        System.out.println("PersistenciaCadenasKioskosApp" + ".getEsquema(): " + "Esquema: " + esquema);
         return esquema;
     }
 

@@ -8,8 +8,6 @@ import co.com.designer.persistencia.interfaz.IPersistenciaConexiones;
 import co.com.designer.persistencia.interfaz.IPersistenciaPerfiles;
 import java.util.List;
 import javax.ejb.Stateless;
-//import javax.persistence.EntityManager;
-//import javax.persistence.Persistence;
 import javax.persistence.Query;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -22,6 +20,7 @@ import javax.ws.rs.core.Response;
 /**
  *
  * @author Thalia Manrique
+ * @author Edwin Hastamorir
  */
 @Stateless
 @Path("cadenaskioskos")
@@ -37,32 +36,6 @@ public class CadenasKioskosFacadeREST {
         this.persisConexiones = new PersistenciaConexiones();
     }
     
-    /*
-    protected EntityManager getEntityManager() {
-        String unidadPersistencia = "wscadenaskioskosPU";
-        EntityManager em = Persistence.createEntityManagerFactory(unidadPersistencia).createEntityManager();
-        return em;
-    }*/
-
-    /*
-    protected EntityManager getEntityManager(String persistence) {
-        String unidadPersistencia = persistence;
-        EntityManager em = Persistence.createEntityManagerFactory(unidadPersistencia).createEntityManager();
-        return em;
-    }*/
-
-    /*
-    protected void setearPerfil() {
-        try {
-            String rol = "ROLKIOSKO";
-            String sqlQuery = "SET ROLE " + rol + " IDENTIFIED BY RLKSK ";
-            Query query = getEntityManager().createNativeQuery(sqlQuery);
-            query.executeUpdate();
-        } catch (Exception ex) {
-            System.out.println("ex: " + ex);
-        }
-    }*/
-
     @GET
     @Path("{grupo}")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})

@@ -34,7 +34,6 @@ public class PersistenciaDiagnosticosCategorias implements IPersistenciaDiagnost
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
             Query query = this.persisConexiones.getEntityManager(cadena).createQuery(consulta);
-//            query.setParameter("nitempresa", Long.valueOf(nitEmpresa));
             resultado = query.getResultList();
             return resultado;
         } catch (Exception e) {
@@ -53,7 +52,6 @@ public class PersistenciaDiagnosticosCategorias implements IPersistenciaDiagnost
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
             Query query = this.persisConexiones.getEntityManager(cadena).createNativeQuery(consulta);
-//            query.setParameter(1, Long.valueOf(nitEmpresa));
             resultado = query.getResultList();
             return resultado;
         } catch (Exception e) {

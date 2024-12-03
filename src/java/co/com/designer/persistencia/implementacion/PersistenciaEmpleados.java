@@ -39,7 +39,8 @@ public class PersistenciaEmpleados implements IPersistenciaEmpleados {
                     + "P.SECUENCIA=E.PERSONA "
                     + "AND ( lower(P.EMAIL) = lower( ? ) ";
             if (validarCodigoUsuario(usuario)) {
-                sqlQuery2 += " OR E.CODIGOEMPLEADO= ? "; // si el valor es numerico validar por codigoempleado
+                // si el valor es numerico validar por codigoempleado
+                sqlQuery2 += " OR E.CODIGOEMPLEADO= ? "; 
             }
             sqlQuery2 += ") ";
             System.out.println("Query2: " + sqlQuery2);
