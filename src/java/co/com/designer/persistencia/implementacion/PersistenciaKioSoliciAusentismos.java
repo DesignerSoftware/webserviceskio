@@ -437,13 +437,24 @@ public class PersistenciaKioSoliciAusentismos implements IPersistenciaKioSoliciA
             String secEmplJefe, String secAutorizador,
             String nitEmpresa, String cadena, String esquemaP) {
         String resultado = null;
-        String consulta = "SELECT secuencia "
-                + "FROM KioSoliciAusentismos "
-                + "WHERE empleado=? "
-                + "AND fechaGeneracion = TO_DATE(?, 'ddmmyyyy HH24miss') "
-                + "AND (empleadoJefe = ? "
-                + " OR autorizador = ? )"
-                + "AND activa = 'S' ";
+        String consulta = "";
+        if (secEmplJefe == null && secAutorizador == null) {
+            consulta = "SELECT secuencia "
+                    + "FROM KioSoliciAusentismos "
+                    + "WHERE empleado=? "
+                    + "AND fechaGeneracion = TO_DATE(?, 'ddmmyyyy HH24miss') "
+                    + "AND empleadoJefe is ? "
+                    + "AND autorizador is ? "
+                    + "AND activa = 'S' ";
+        } else {
+            consulta = "SELECT secuencia "
+                    + "FROM KioSoliciAusentismos "
+                    + "WHERE empleado=? "
+                    + "AND fechaGeneracion = TO_DATE(?, 'ddmmyyyy HH24miss') "
+                    + "AND (empleadoJefe = ? "
+                    + " OR autorizador = ? )"
+                    + "AND activa = 'S' ";
+        }
         try {
             String esquema = this.cadenasKio.getEsquema(nitEmpresa, cadena);
             this.rolesBD.setearPerfil(esquema, cadena);
@@ -625,19 +636,19 @@ public class PersistenciaKioSoliciAusentismos implements IPersistenciaKioSoliciA
             query.setParameter(5, secClase);
             query.setParameter(6, secCausa);
             // fecha fin ausentismo
-            query.setParameter(7, fechaFin); 
+            query.setParameter(7, fechaFin);
             // fecha inicial pago
-            query.setParameter(8, fechainicial); 
+            query.setParameter(8, fechainicial);
             // fecha fin pago
-            query.setParameter(9, fechaFin); 
+            query.setParameter(9, fechaFin);
             // formaLiquidacion
-            query.setParameter(10, formaLiq); 
+            query.setParameter(10, formaLiq);
             // porcentLiq
-            query.setParameter(11, porcentajeLiq); 
+            query.setParameter(11, porcentajeLiq);
             // diagnostico
-            query.setParameter(12, secCodDiagnostico.equals("null") ? null : secCodDiagnostico); 
+            query.setParameter(12, secCodDiagnostico.equals("null") ? null : secCodDiagnostico);
             // kioSoliciAusentismo
-            query.setParameter(13, kioSoliciAusentismo); 
+            query.setParameter(13, kioSoliciAusentismo);
             query.setParameter(14, secKioNovedadSoliciAusent.equals("null") ? null : secKioNovedadSoliciAusent); // kioNovedadProrroga
             resultado = query.executeUpdate();
         } catch (Exception e) {
