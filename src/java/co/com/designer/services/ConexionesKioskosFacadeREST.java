@@ -1502,7 +1502,8 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
     @Path("/restKiosco/generarClave")
     public Response generadorClaveAleatoria(@QueryParam("usuario") String usuario, @QueryParam("nit") String nitEmpresa, @QueryParam("cadena") String cadena) {
         System.out.println("Parametros generadorClaveAleatoria(): usuario: " + usuario + ", nit: " + nitEmpresa + ", cadena: " + cadena);
-        String nuevaClave = GeneradorClave.generatePassword(); // generador de contraseña aleatoria
+        // generador de contraseña aleatoria
+        String nuevaClave = GeneradorClave.generatePassword(); 
         boolean envioCorreo = false;
         boolean updateClave = false;
         this.persisGenKio = new PersistenciaGeneralesKiosko();
@@ -1516,7 +1517,7 @@ public class ConexionesKioskosFacadeREST { //extends AbstractFacade<ConexionesKi
             if (updateClave) {
                 System.out.println("Contraseña actualizada a: " + nuevaClave);
                 GenerarCorreo e = new GenerarCorreo();
-                e.enviarNuevaClave(correo, getNombrePersona(usuario, nitEmpresa, cadena),
+                envioCorreo = e.enviarNuevaClave(correo, getNombrePersona(usuario, nitEmpresa, cadena),
                         nuevaClave, nitEmpresa, cadena, ""
                 );
             } else {

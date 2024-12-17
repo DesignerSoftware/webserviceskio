@@ -199,6 +199,7 @@ public class EnvioCorreo {
             throw new EMailExcepcion("Autenticacion fallida: usuario y clave no aceptada.");
         } catch (NoSuchElementException nsee) {
             System.out.println("Error al leer el listado de archivos adjuntos");
+            envioCorreo = false;
             nsee.printStackTrace();
             throw new EMailExcepcion("Error al leer el listado de archivos adjuntos");
         } catch (Exception ex) {
