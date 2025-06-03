@@ -55,7 +55,7 @@ public class PersistenciaVacaPendientes implements IPersistenciaVacaPendientes {
             periodos = query.getResultList();
             return periodos;
         } catch (PersistenceException pe) {
-            System.out.println("PersistenciaVacaPendientes" + ".getPeriodosPendientesEmpleado(): "+"Error-1: " + pe.toString());
+            System.out.println("PersistenciaVacaPendientes" + ".getPeriodosPendientesEmpleado(): " + "Error-1: " + pe.toString());
 //            throw pe;
             return null;
         } catch (NullPointerException npee) {
@@ -84,7 +84,9 @@ public class PersistenciaVacaPendientes implements IPersistenciaVacaPendientes {
                 + "  FROM KIONOVEDADESSOLICI N, KIOSOLICIVACAS S, KIOESTADOSSOLICI E \n"
                 + "  WHERE N.SECUENCIA = S.KIONOVEDADSOLICI \n"
                 + "  AND S.SECUENCIA = E.KIOSOLICIVACA \n"
-                + "  AND E.ESTADO IN ('GUARDADO', 'ENVIADO', 'AUTORIZADO', 'LIQUIDADO' ) \n"
+                + "  AND ( \n"
+                + "    (E.ESTADO IN ('GUARDADO', 'ENVIADO', 'AUTORIZADO', 'LIQUIDADO' ) AND TO_CHAR(N.FECHAINICIALDISFRUTE, 'DD') <> '31' ) \n"
+                + "    OR (E.ESTADO IN ('GUARDADO', 'ENVIADO', 'AUTORIZADO' ) AND TO_CHAR(N.FECHAINICIALDISFRUTE, 'DD') = '31' AND N.DIAS = 1 ))"
                 + "  AND S.EMPLEADO = ? \n"
                 + "  AND E.SECUENCIA = (SELECT MAX(EI.SECUENCIA) \n"
                 + "   FROM KIOESTADOSSOLICI EI \n"
@@ -131,7 +133,9 @@ public class PersistenciaVacaPendientes implements IPersistenciaVacaPendientes {
                 + "  FROM KIONOVEDADESSOLICI N, KIOSOLICIVACAS S, KIOESTADOSSOLICI E \n"
                 + "  WHERE N.SECUENCIA = S.KIONOVEDADSOLICI \n"
                 + "  AND S.SECUENCIA = E.KIOSOLICIVACA \n"
-                + "  AND E.ESTADO IN ('GUARDADO', 'ENVIADO', 'AUTORIZADO', 'LIQUIDADO' ) \n"
+                + "  AND ( \n"
+                + "    (E.ESTADO IN ('GUARDADO', 'ENVIADO', 'AUTORIZADO', 'LIQUIDADO' ) AND TO_CHAR(N.FECHAINICIALDISFRUTE, 'DD') <> '31' ) \n"
+                + "    OR (E.ESTADO IN ('GUARDADO', 'ENVIADO', 'AUTORIZADO' ) AND TO_CHAR(N.FECHAINICIALDISFRUTE, 'DD') = '31' AND N.DIAS = 1 ))"
                 + "  AND S.EMPLEADO = ? \n"
                 + "  AND E.SECUENCIA = (SELECT MAX(EI.SECUENCIA) \n"
                 + "   FROM KIOESTADOSSOLICI EI \n"
@@ -226,8 +230,6 @@ public class PersistenciaVacaPendientes implements IPersistenciaVacaPendientes {
         return retorno;
     }
 
-    
-    
     @Override
     public String getPeriodoVacas(String secEmpleado, String refVacas, String cadena, String nitEmpresa) {
         String periodo = null;

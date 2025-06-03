@@ -565,13 +565,20 @@ public class RhFacadeREST {
             @FormDataParam("fichero") FormDataContentDisposition fileFormDataContentDisposition,
             @QueryParam("nit") String nitEmpresa,
             @QueryParam("cadena") String cadena) {
+        System.out.println("RhFacadeREST.cargarAnexo parametros:"
+                + " fileInputStream: "+fileInputStream.toString()
+                + " fileFormDataContentDisposition: "+fileFormDataContentDisposition.getFileName()
+                + " nitEmpresa: "+nitEmpresa
+                + " cadena: "+cadena
+        );
         String fileName = null;
         String uploadFilePath = null;
         try {
             fileName = fileFormDataContentDisposition.getFileName();
             uploadFilePath = writeToFileServer(fileInputStream, fileName, nitEmpresa, cadena);
         } catch (Exception e) {
-            System.out.println("Ha ocurrido un error " + this.getClass().getName() + ".cargarAnexo() " + e.getMessage());
+//            System.out.println("Ha ocurrido un error " + this.getClass().getName() + ".cargarAnexo() " + e.getMessage());
+            System.out.println("ERROR: RhFacadeREST.cargarAnexo(): "+"Ha ocurrido un error "+ e.toString() );
         }
         System.out.println("fuchero para uploadFilePath: " + uploadFilePath);
         return Response.ok("Fichero subido a " + uploadFilePath).build();
